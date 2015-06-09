@@ -1,5 +1,5 @@
 {
-  "name": "selector",
+  "name": "browser-monkey",
   "version": "1.0.0",
   "description": "reliable dom testing",
   "main": "index.js",
@@ -28,10 +28,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/featurist/selector.git"
+    "url": "https://github.com/featurist/browser-monkey.git"
   },
   "bugs": {
-    "url": "https://github.com/featurist/selector/issues"
+    "url": "https://github.com/featurist/browser-monkey/issues"
   },
-  "homepage": "https://github.com/featurist/selector"
+  "homepage": "https://github.com/featurist/browser-monkey"
 }

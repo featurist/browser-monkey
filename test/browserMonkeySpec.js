@@ -1,9 +1,9 @@
-var selector = require('..');
+var browser = require('..');
 var expect = require('chai').expect;
 var createTestDiv = require('./createTestDiv');
 var $ = require('jquery');
 
-describe('selector', function () {
+describe('browser-monkey', function () {
   var div;
 
   beforeEach(function () {
@@ -11,7 +11,7 @@ describe('selector', function () {
   });
 
   it('should eventually find an element', function () {
-    var promise = selector.find('.element').exists();
+    var promise = browser.find('.element').exists();
     setTimeout(function () {
       $('<div class="element"></div>').appendTo(div);
     }, 200);
@@ -19,7 +19,7 @@ describe('selector', function () {
   });
 
   it('should eventually click an element', function () {
-    var promise = selector.find('.element').click();
+    var promise = browser.find('.element').click();
     var clicked = false;
 
     setTimeout(function () {
@@ -34,7 +34,7 @@ describe('selector', function () {
   });
 
   it('should eventually enter text into an element', function () {
-    var promise = selector.find('.element').typeIn('haha');
+    var promise = browser.find('.element').typeIn('haha');
     var clicked = false;
 
     setTimeout(function () {
@@ -47,7 +47,7 @@ describe('selector', function () {
   });
 
   it('eventually finds an element containing text', function () {
-    var promise = selector.find('.element', {text: 'some t'}).exists();
+    var promise = browser.find('.element', {text: 'some t'}).exists();
     setTimeout(function () {
       $('<div class="element"><div>some text</div></div>').appendTo(div);
     }, 200);
@@ -55,7 +55,7 @@ describe('selector', function () {
   });
 
   it('eventually finds an element containing another element', function () {
-    var promise = selector.find('.outer').containing('.inner').exists();
+    var promise = browser.find('.outer').containing('.inner').exists();
     setTimeout(function () {
       $('<div class="outer"><div>bad</div></div>').appendTo(div);
       $('<div class="outer"><div class="inner">good</div></div>').appendTo(div);
@@ -70,10 +70,10 @@ describe('selector', function () {
     var red = $('<div><div class="element">red</div></div>').appendTo(div);
     var blue = $('<div><div class="element">blue</div></div>').appendTo(div);
 
-    return selector.scope(red).find('.element').exists().then(function (element) {
+    return browser.scope(red).find('.element').exists().then(function (element) {
       expect($(element).text()).to.equal('red');
     }).then(function () {
-      return selector.scope(blue).find('.element').exists();
+      return browser.scope(blue).find('.element').exists();
     }).then(function (element) {
       expect($(element).text()).to.equal('blue');
     });
@@ -83,10 +83,10 @@ describe('selector', function () {
     var red = $('<div class="red"><div class="element">red</div></div>').appendTo(div);
     var blue = $('<div class="blue"><div class="element">blue</div></div>').appendTo(div);
 
-    return selector.scope(selector.find('.red')).find('.element').exists().then(function (element) {
+    return browser.scope(browser.find('.red')).find('.element').exists().then(function (element) {
       expect($(element).text()).to.equal('red');
     }).then(function () {
-      return selector.scope(selector.find('.blue')).find('.element').exists();
+      return browser.scope(browser.find('.blue')).find('.element').exists();
     }).then(function (element) {
       expect($(element).text()).to.equal('blue');
     });
@@ -94,7 +94,7 @@ describe('selector', function () {
 
   describe('extend', function () {
     it('can return new selectors by extending', function () {
-      var user = selector.extend({
+      var user = browser.extend({
         name: function () {
           return this.find('.user-name');
         },
@@ -114,13 +114,13 @@ describe('selector', function () {
     });
 
     it('can return new scoped selectors', function () {
-      var admin = selector.extend({
+      var admin = browser.extend({
         user: function () {
           return user.scope(this.find('.user'));
         }
       });
 
-      var user = selector.extend({
+      var user = browser.extend({
         name: function () {
           return this.find('.user-name');
         },
