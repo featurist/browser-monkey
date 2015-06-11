@@ -47,27 +47,48 @@ function elementFinder(css, options) {
 }
 
 function elementTester(css, options) {
-  var text = options && options.hasOwnProperty('text')? options.text: undefined;
-  var ensure = options && options.hasOwnProperty('ensure')? options.ensure: undefined;
-  var message = options && options.hasOwnProperty('message')? options.message: undefined;
+  if (typeof css !== 'string') {
+    options = css;
+    css = undefined;
+  }
 
-  var cssContains = cssWithText(css, {
-    text: text
-  });
+  var predicate;
+  if (typeof options === 'function') {
+    predicate = options;
+    options = undefined;
+  }
+
+  var css, text, message;
+
+  if (typeof options === 'string') {
+    css = options;
+  } else {
+    css = options && options.hasOwnProperty('css')? options.css: undefined;
+    text = options && options.hasOwnProperty('text')? options.text: undefined;
+    message = options && options.hasOwnProperty('message')? options.message: undefined;
+  }
 
   return {
     find: function(element) {
       var els = $(element);
-      if (els.has(cssContains)) {
-        if (ensure) {
-          ensure(els);
-        }
-        return els;
+
+      if (css && !els.is(css)) {
+        return;
       }
+
+      if (text && !(els.text().indexOf(text) >= 0)) {
+        return;
+      }
+
+      if (predicate && !predicate(els)) {
+        return;
+      }
+
+      return els;
     },
 
     toString: function() {
-      return message || cssContains;
+      return message || css || text;
     }
   };
 }
@@ -175,8 +196,8 @@ Selector.prototype.exists = function () {
   return this.resolve();
 };
 
-Selector.prototype.has = function() {
-  return this.addFinder(elementTester.apply(null, arguments));
+Selector.prototype.has = function(options) {
+  return this.addFinder(elementTester(options)).exists();
 };
 
 Selector.prototype.click = function() {

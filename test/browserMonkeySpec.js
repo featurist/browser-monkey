@@ -1,7 +1,11 @@
 var browser = require('..');
-var expect = require('chai').expect;
+var chai = require("chai");
+var expect = chai.expect;
 var createTestDiv = require('./createTestDiv');
 var $ = require('jquery');
+var chaiAsPromised = require("chai-as-promised");
+
+chai.use(chaiAsPromised);
 
 describe('browser-monkey', function () {
   var div;
@@ -52,6 +56,38 @@ describe('browser-monkey', function () {
       $('<div class="element"><div>some text</div></div>').appendTo(div);
     }, 200);
     return promise;
+  });
+
+  describe('has', function () {
+    it('eventually finds an element and asserts that it has text', function () {
+      var good = browser.find('.element').has({text: 'some t'});
+      var bad = browser.find('.element').has({text: 'sme t'});
+
+      setTimeout(function () {
+        $('<div class="element"><div>some text</div></div>').appendTo(div);
+      }, 200);
+
+      return Promise.all([
+        good,
+        expect(bad).to.be.rejected
+      ]);
+    });
+
+    it('eventually finds an element and asserts that it has css', function () {
+      var good = browser.find('.element').has({css: '.the-class'});
+      var bad1 = browser.find('.element').has({css: '.not-the-class'});
+      var bad2 = browser.find('.element').has({css: '.not-found'});
+
+      setTimeout(function () {
+        $('<div class="element the-class"><div class="not-the-class">some text</div></div>').appendTo(div);
+      }, 200);
+
+      return Promise.all([
+        good,
+        expect(bad1).to.be.rejected,
+        expect(bad2).to.be.rejected
+      ]);
+    });
   });
 
   it('eventually finds an element containing another element', function () {
