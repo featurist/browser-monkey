@@ -76,8 +76,12 @@ function elementTester(css, options) {
         return;
       }
 
-      if (text && !(els.text().indexOf(text) >= 0)) {
-        return;
+      if (text) {
+        var elementText = els.text();
+
+        if (elementText.indexOf(text) < 0) {
+          throw new Error('expected element to have text ' + JSON.stringify(text) + ' but contained ' + JSON.stringify(elementText));
+        }
       }
 
       if (predicate && !predicate(els)) {
