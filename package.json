@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "jquery": "2.1.3",
-    "trytryagain": "0.1.0"
+    "trytryagain": "1.0.1"
   },
   "keywords": [
     "dom",

@@ -58,10 +58,10 @@ describe('browser-monkey', function () {
     return promise;
   });
 
-  describe('has', function () {
+  describe('shouldHave', function () {
     it('eventually finds an element and asserts that it has text', function () {
-      var good = browser.find('.element').has({text: 'some t'});
-      var bad = browser.find('.element').has({text: 'sme t'});
+      var good = browser.find('.element').shouldHave({text: 'some t'});
+      var bad = browser.find('.element').shouldHave({text: 'sme t'});
 
       setTimeout(function () {
         $('<div class="element"><div>some text</div></div>').appendTo(div);
@@ -74,9 +74,9 @@ describe('browser-monkey', function () {
     });
 
     it('eventually finds an element and asserts that it has css', function () {
-      var good = browser.find('.element').has({css: '.the-class'});
-      var bad1 = browser.find('.element').has({css: '.not-the-class'});
-      var bad2 = browser.find('.element').has({css: '.not-found'});
+      var good = browser.find('.element').shouldHave({css: '.the-class'});
+      var bad1 = browser.find('.element').shouldHave({css: '.not-the-class'});
+      var bad2 = browser.find('.element').shouldHave({css: '.not-found'});
 
       setTimeout(function () {
         $('<div class="element the-class"><div class="not-the-class">some text</div></div>').appendTo(div);
@@ -86,6 +86,42 @@ describe('browser-monkey', function () {
         good,
         expect(bad1).to.be.rejected,
         expect(bad2).to.be.rejected
+      ]);
+    });
+
+    it('eventually finds an element and asserts that it has n elements', function () {
+      var good = browser.find('.element').shouldHave({length: 2});
+      var bad1 = browser.find('.element').shouldHave({length: 1});
+
+      setTimeout(function () {
+        $('<div class="element"></div><div class="element"></div>').appendTo(div);
+      }, 200);
+
+      return Promise.all([
+        good,
+        expect(bad1).to.be.rejected
+      ]);
+    });
+
+    it('eventually finds an element and asserts that it passes a predicate', function () {
+      var good1 = browser.find('.element').shouldHave({elements: function (elements) {
+        return elements.text() == 'a';
+      }});
+      var good2 = browser.find('.element').shouldHave(function (elements) {
+        return elements.text() == 'a';
+      });
+      var bad1 = browser.find('.element').shouldHave({elements: function (elements) {
+        return elements.text() == 'b';
+      }, message: 'expected to have text b'});
+
+      setTimeout(function () {
+        $('<div class="element"></div><div class="element">a</div>').appendTo(div);
+      }, 200);
+
+      return Promise.all([
+        good1,
+        good2,
+        expect(bad1).to.be.rejectedWith('expected to have text b')
       ]);
     });
   });

@@ -46,26 +46,21 @@ function elementFinder(css, options) {
   };
 }
 
-function elementTester(css, options) {
-  if (typeof css !== 'string') {
-    options = css;
-    css = undefined;
-  }
+function elementTester(options) {
+  var optionsObject = typeof options === 'object';
 
-  var predicate;
-  if (typeof options === 'function') {
-    predicate = options;
-    options = undefined;
-  }
-
-  var css, text, message;
+  var css = optionsObject && options.hasOwnProperty('css')? options.css: undefined;
+  var text = optionsObject && options.hasOwnProperty('text')? options.text: undefined;
+  var message = optionsObject && options.hasOwnProperty('message')? options.message: undefined;
+  var predicate = optionsObject && options.hasOwnProperty('elements')? options.elements: undefined;
+  var length = optionsObject && options.hasOwnProperty('length')? options.length: undefined;
 
   if (typeof options === 'string') {
     css = options;
-  } else {
-    css = options && options.hasOwnProperty('css')? options.css: undefined;
-    text = options && options.hasOwnProperty('text')? options.text: undefined;
-    message = options && options.hasOwnProperty('message')? options.message: undefined;
+  }
+
+  if (typeof options === 'function') {
+    predicate = options;
   }
 
   return {
@@ -73,19 +68,29 @@ function elementTester(css, options) {
       var els = $(element);
 
       if (css && !els.is(css)) {
-        return;
+        if (!els.is(css)) {
+          throw new Error(message || ('expected elements to have css ' + css));
+        }
       }
 
       if (text) {
         var elementText = els.text();
 
         if (elementText.indexOf(text) < 0) {
-          throw new Error('expected element to have text ' + JSON.stringify(text) + ' but contained ' + JSON.stringify(elementText));
+          throw new Error(message || ('expected element to have text ' + JSON.stringify(text) + ' but contained ' + JSON.stringify(elementText)));
         }
       }
 
-      if (predicate && !predicate(els)) {
-        return;
+      if (length !== undefined) {
+        if (els.length !== length) {
+          throw new Error(message || ('expected to find ' + length + ' elements but found ' + els.length));
+        }
+      }
+
+      if (predicate) {
+        if (!predicate(els)) {
+          throw new Error(message || 'expected elements to pass predicate');
+        }
       }
 
       return els;
@@ -162,7 +167,7 @@ Selector.prototype.printFinders = function (finders) {
   return finders.map(function (f) { return f.toString(); }).join(' / ');
 };
 
-Selector.prototype.findElement = function (el) {
+Selector.prototype.findElement = function () {
   var self = this;
 
   function findWithFinder(el, finderIndex) {
@@ -170,9 +175,11 @@ Selector.prototype.findElement = function (el) {
 
     if (finder) {
       var found = finder.find(el);
+
       if (!found) {
         throw new Error("expected to find: " + self.printFinders(self.finders.slice(0, finderIndex + 1)));
       }
+
       return findWithFinder(found, finderIndex + 1);
     } else {
       return el;
@@ -182,13 +189,14 @@ Selector.prototype.findElement = function (el) {
   return findWithFinder($(this.selector || 'body'), 0);
 };
 
-Selector.prototype.resolve = function() {
+Selector.prototype.resolve = function(options) {
   var self = this;
+  var allowMultiple = options && options.hasOwnProperty('allowMultiple')? options.allowMultiple: false;
 
   return retry(function() {
     var els = self.findElement();
 
-    if (els.length !== 1) {
+    if (!allowMultiple && els.length !== 1) {
       throw new Error("expected to find exactly one element: " + self.printFinders(self.finders));
     }
 
@@ -196,12 +204,16 @@ Selector.prototype.resolve = function() {
   });
 };
 
-Selector.prototype.exists = function () {
-  return this.resolve();
+Selector.prototype.exists = function (options) {
+  return this.resolve(options);
 };
 
 Selector.prototype.has = function(options) {
-  return this.addFinder(elementTester(options)).exists();
+  return this.addFinder(elementTester(options)).exists({allowMultiple: true});
+};
+
+Selector.prototype.shouldHave = function(options) {
+  return this.has(options);
 };
 
 Selector.prototype.click = function() {
