@@ -78,7 +78,7 @@ describe('browser-monkey', function () {
       var bad1 = browser.find('.element div').shouldHave({text: ['one']});
       var bad2 = browser.find('.element div').shouldHave({text: ['one', 'three']});
 
-      eventuallyInsertHtml('<div class="element"><div>one</div><div>two</div></div>');
+      eventuallyInsertHtml('<div class="element"><div>\none</div><div>two\n</div></div>');
 
       return Promise.all([
         good,

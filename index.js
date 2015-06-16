@@ -76,7 +76,7 @@ function elementTester(options) {
       if (text) {
         if (text instanceof Array) {
           var actualTexts = els.toArray().map(function (item) {
-            return $(item).text();
+            return $(item).text().trim();
           });
 
           expect(actualTexts).to.eql(text);
