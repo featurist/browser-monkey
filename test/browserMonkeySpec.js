@@ -73,6 +73,20 @@ describe('browser-monkey', function () {
       ]);
     });
 
+    it('eventually finds elements and asserts that they each have text', function () {
+      var good = browser.find('.element div').shouldHave({text: ['one', 'two']});
+      var bad1 = browser.find('.element div').shouldHave({text: ['one']});
+      var bad2 = browser.find('.element div').shouldHave({text: ['one', 'three']});
+
+      eventuallyInsertHtml('<div class="element"><div>one</div><div>two</div></div>');
+
+      return Promise.all([
+        good,
+        expect(bad1).to.be.rejected,
+        expect(bad2).to.be.rejected
+      ]);
+    });
+
     it('eventually finds an element and asserts that it has css', function () {
       var good = browser.find('.element').shouldHave({css: '.the-class'});
       var bad1 = browser.find('.element').shouldHave({css: '.not-the-class'});

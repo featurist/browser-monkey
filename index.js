@@ -74,10 +74,18 @@ function elementTester(options) {
       }
 
       if (text) {
-        var elementText = els.text();
+        if (text instanceof Array) {
+          var actualTexts = els.toArray().map(function (item) {
+            return $(item).text();
+          });
 
-        if (elementText.indexOf(text) < 0) {
-          throw new Error(message || ('expected element to have text ' + JSON.stringify(text) + ' but contained ' + JSON.stringify(elementText)));
+          expect(actualTexts).to.eql(text);
+        } else {
+          var elementText = els.text();
+
+          if (elementText.indexOf(text) < 0) {
+            throw new Error(message || ('expected element to have text ' + JSON.stringify(text) + ' but contained ' + JSON.stringify(elementText)));
+          }
         }
       }
 
