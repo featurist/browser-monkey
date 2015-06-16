@@ -205,11 +205,23 @@ Selector.prototype.resolve = function(options) {
 };
 
 Selector.prototype.exists = function (options) {
+  return this.shouldExist(options);
+};
+
+Selector.prototype.shouldExist = function (options) {
   return this.resolve(options);
 };
 
+Selector.prototype.elements = function (options) {
+  return this.resolve({allowMultiple: true});
+};
+
+Selector.prototype.element = function (options) {
+  return this.resolve();
+};
+
 Selector.prototype.has = function(options) {
-  return this.addFinder(elementTester(options)).exists({allowMultiple: true});
+  return this.addFinder(elementTester(options)).shouldExist({allowMultiple: true});
 };
 
 Selector.prototype.shouldHave = function(options) {
@@ -232,15 +244,6 @@ Selector.prototype.typeInHtml = function(html) {
   return this.resolve().then(function($element) {
     return sendkeys.html($element[0], html);
   });
-};
-
-Selector.prototype.expect = function(assertion) {
-  return this.addFinder({
-    find: function(element) {
-      assertion(element);
-      return element;
-    }
-  }).exists();
 };
 
 module.exports = new Selector();
