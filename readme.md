@@ -97,7 +97,69 @@ Returns a new scope that matches `css`.
 var scope = scope.containing(css, [options]);
 ```
 
-Ensures that the scope contains the `css` and `options.text`, the scope returned still refers to the outer scope.
+Ensures that the scope contains the `css` and `options.text`, the scope returned still refers to the outer scope. This is useful, for example, in finding list items that contain certain elements, but still referring to the list items.
 
 * `css` - css to find in the scope
 * `options.text` - text to find in the scope.
+
+For example, find the `li` that contains the `h2` with the text `Second`, and click the link in the `li`.
+
+```html
+<ul>
+	<li>
+		<h2>First</h2>
+        <a href="first">link</a>
+	</li>
+	<li>
+		<h2>Second</h2>
+        <a href="second">link</a>
+	</li>
+	<li>
+		<h2>Third</h2>
+        <a href="third">link</a>
+	</li>
+</ul>
+```
+
+```js
+browser.find('ul li').containing('h2', {text: 'Second'}).find('a').click();
+```
+
+## component
+
+Represents a component on the page, with methods to access certain elements of the component.
+
+```js
+var componentScope = scope.component(methods);
+```
+
+* `methods` - an object containing functions for scopes of elements inside the component.
+* `componentScope` - a scope, but containing additional access methods
+
+You can create a component from another component too, simply extending the functionality in that component.
+
+For example, you may have an area on the page that deals with instant messages. You have a list of messages, a text box to enter a new message, and a button to send the message.
+
+```js
+var messages = browser.component({
+  messages: function () {
+    return this.find('.messages');
+  },
+  messageText: function () {
+    return this.find('input.message');
+  },
+  sendButton: function () {
+    return this.find('button', {text: 'Send'});
+  }
+});
+```
+
+You can then use the messages component:
+
+```js
+messages.messages().shouldHave({text: ['hi!', 'wassup?']}).then(function () {
+  return messages.messageBox().typeIn("just hangin'");
+}).then(function () {
+  return messages.sendButton().click();
+});
+```

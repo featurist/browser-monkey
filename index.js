@@ -79,7 +79,7 @@ function elementTester(options) {
             return $(item).text().trim();
           });
 
-          expect(actualTexts).to.eql(text);
+          expect(actualTexts).to.eql(text.map(String));
         } else {
           var elementText = els.text();
 
@@ -134,6 +134,10 @@ Selector.prototype.scope = function (scope) {
 };
 
 Selector.prototype.extend = function (methods) {
+  return this.component(methods);
+};
+
+Selector.prototype.component = function (methods) {
   function Extension() {
     Selector.apply(this, arguments);
   }

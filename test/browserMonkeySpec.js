@@ -74,11 +74,11 @@ describe('browser-monkey', function () {
     });
 
     it('eventually finds elements and asserts that they each have text', function () {
-      var good = browser.find('.element div').shouldHave({text: ['one', 'two']});
+      var good = browser.find('.element div').shouldHave({text: ['one', 2]});
       var bad1 = browser.find('.element div').shouldHave({text: ['one']});
       var bad2 = browser.find('.element div').shouldHave({text: ['one', 'three']});
 
-      eventuallyInsertHtml('<div class="element"><div>\none</div><div>two\n</div></div>');
+      eventuallyInsertHtml('<div class="element"><div>\none</div><div> 2\n</div></div>');
 
       return Promise.all([
         good,
@@ -223,9 +223,9 @@ describe('browser-monkey', function () {
     });
   });
 
-  describe('extend', function () {
+  describe('component', function () {
     it('can return new selectors by extending', function () {
-      var user = browser.extend({
+      var user = browser.component({
         name: function () {
           return this.find('.user-name');
         },
@@ -243,13 +243,13 @@ describe('browser-monkey', function () {
     });
 
     it('can return new scoped selectors', function () {
-      var admin = browser.extend({
+      var admin = browser.component({
         user: function () {
           return user.scope(this.find('.user'));
         }
       });
 
-      var user = browser.extend({
+      var user = browser.component({
         name: function () {
           return this.find('.user-name');
         },
