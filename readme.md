@@ -163,3 +163,47 @@ messages.messages().shouldHave({text: ['hi!', 'wassup?']}).then(function () {
   return messages.sendButton().click();
 });
 ```
+
+## scope
+
+You can reset the starting point for the scope, the element from which all elements are searched for. By default this is the `<body>` element, but you can set it to a more specific element, or indeed another scope.
+
+```js
+var scopeUnderElement = scope.scope(element | selector | anotherScope);
+```
+
+* `element` - an element
+* `selector` - a CSS selector string
+* `anotherScope` a scope to define where to start this scope. This is useful if you want to set the starting scope of a comonent. E.g.
+
+    ```js
+    var component = browser.component({
+      ... methods ...
+    });
+    var componentScope = component.scope(browser.find('.component'));
+    ```
+
+## shouldExist
+
+Wait for an element to exist.
+
+```js
+var promise = scope.shouldExist();
+```
+
+Returns a promise that resolves when the element exists, or is rejected if the timeout expires.
+
+## shouldHave
+
+Assert that a scope has certain properties
+
+```js
+var promise = scope.shouldHave(options);
+```
+
+* `options.text` - a string, expects the resolved scope to have the text. If an array of strings, expects the elements to have the same number of elements as there are strings in the array, and expects each string to be found in each respective element's text.
+* `options.css` - a CSS string. Expects the resolved element to be matched by the CSS selector. Note that it won't match if the element contains other elements that match the CSS selector. So if we have `{css: '.class'}` then we expect the resolved element to have a class `class`.
+* `options.value` - a string, expects the resolved element to be an input and have the value. An array expects the same number of inputs, each with the respective value.
+* `options.length` - a number, expects there to be this number of elements
+* `options.elements` - a function, which is passed the resolved elements, return truthy for a match, falsey for a failure.
+* `options.message` - the error message

@@ -46,6 +46,28 @@ function elementFinder(css, options) {
   };
 }
 
+function assertElementProperties(elements, expected, getProperty) {
+  function assertion(actual, expected) {
+    expect(actual, 'expected element to have ' + JSON.stringify(expected) + ' but contained ' + JSON.stringify(actual)).to.contain(expected);
+  }
+
+  if (expected instanceof Array) {
+    var actualTexts = elements.toArray().map(function (item) {
+      return getProperty($(item));
+    });
+
+    expect(actualTexts.length, 'expected to have ' + expected.length + ' elements, but found ' + actualTexts.length).to.eql(expected.length);
+
+    expected.forEach(function (expected, index) {
+      var actualText = actualTexts[index];
+      assertion(actualText, expected);
+    });
+  } else {
+    var elementText = getProperty(elements);
+    assertion(elementText, expected);
+  }
+}
+
 function elementTester(options) {
   var optionsObject = typeof options === 'object';
 
@@ -54,6 +76,7 @@ function elementTester(options) {
   var message = optionsObject && options.hasOwnProperty('message')? options.message: undefined;
   var predicate = optionsObject && options.hasOwnProperty('elements')? options.elements: undefined;
   var length = optionsObject && options.hasOwnProperty('length')? options.length: undefined;
+  var value = optionsObject && options.hasOwnProperty('value')? options.value: undefined;
 
   if (typeof options === 'string') {
     css = options;
@@ -74,19 +97,11 @@ function elementTester(options) {
       }
 
       if (text) {
-        if (text instanceof Array) {
-          var actualTexts = els.toArray().map(function (item) {
-            return $(item).text().trim();
-          });
+        assertElementProperties(els, text, function (e) { return e.text(); });
+      }
 
-          expect(actualTexts).to.eql(text.map(String));
-        } else {
-          var elementText = els.text();
-
-          if (elementText.indexOf(text) < 0) {
-            throw new Error(message || ('expected element to have text ' + JSON.stringify(text) + ' but contained ' + JSON.stringify(elementText)));
-          }
-        }
+      if (value) {
+        assertElementProperties(els, value, function (e) { return e.val(); });
       }
 
       if (length !== undefined) {

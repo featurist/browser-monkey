@@ -73,12 +73,38 @@ describe('browser-monkey', function () {
       ]);
     });
 
+    it('eventually finds an element and asserts that it has value', function () {
+      var good = browser.find('.element input').shouldHave({value: 'some t'});
+      var bad = browser.find('.element input').shouldHave({value: 'sme t'});
+
+      eventuallyInsertHtml('<div class="element"><input type=text value="some text" /></div>');
+
+      return Promise.all([
+        good,
+        expect(bad).to.be.rejected
+      ]);
+    });
+
     it('eventually finds elements and asserts that they each have text', function () {
       var good = browser.find('.element div').shouldHave({text: ['one', 2]});
       var bad1 = browser.find('.element div').shouldHave({text: ['one']});
       var bad2 = browser.find('.element div').shouldHave({text: ['one', 'three']});
 
-      eventuallyInsertHtml('<div class="element"><div>\none</div><div> 2\n</div></div>');
+      eventuallyInsertHtml('<div class="element"><div>\nfirst one</div><div>number 2\n</div></div>');
+
+      return Promise.all([
+        good,
+        expect(bad1).to.be.rejected,
+        expect(bad2).to.be.rejected
+      ]);
+    });
+
+    it('eventually finds elements and asserts that they each have value', function () {
+      var good = browser.find('.element input').shouldHave({value: ['one', 2]});
+      var bad1 = browser.find('.element input').shouldHave({value: ['one']});
+      var bad2 = browser.find('.element input').shouldHave({value: ['one', 'three']});
+
+      eventuallyInsertHtml('<div class="element"><input type=text value="first one"></input><input type=text value="number 2"></input></div>');
 
       return Promise.all([
         good,
