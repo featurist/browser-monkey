@@ -199,16 +199,16 @@ Returns a promise that resolves when the element exists, or is rejected if the t
 
 ## shouldNotExist
 
-Wait a while for to be sure the element doesn't exist.
+Waits for the element not to exist.
 
 ```js
 var promise = scope.shouldNotExist([options]);
 ```
 
-* `options.duration` - the duration to wait (100ms)
+* `options.timeout` - length of time to wait for the element (1000ms)
 * `options.interval` - time between testing the dom (10ms)
 
-Returns a promise that resolves when the element doesn't exist, or is rejected if the timeout expires.
+Returns a promise that resolves when the element no longer exists, or is rejected if the timeout expires.
 
 ## shouldHave
 

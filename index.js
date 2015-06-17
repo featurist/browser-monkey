@@ -231,10 +231,8 @@ Selector.prototype.resolve = function(options) {
 
 Selector.prototype.notResolve = function(options) {
   var self = this;
-  var interval = options && options.hasOwnProperty('interval') && options.interval !== undefined? options.interval: undefined;
-  var duration = options && options.hasOwnProperty('duration') && options.duration !== undefined? options.duration: 100;
 
-  return retry.ensuring({interval: interval, duration: duration}, function() {
+  return retry(options, function() {
     var found = false;
     try {
       self.findElement({allowMultiple: true});

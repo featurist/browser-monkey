@@ -29,11 +29,16 @@ describe('browser-monkey', function () {
   });
 
   describe('shouldNotExist', function () {
-    it('should ensure that element never exists', function () {
-      var good = browser.find('.not-element').shouldNotExist();
-      var bad = browser.find('.element').shouldNotExist();
+    it("should ensure that element eventually doesn't exists", function () {
+      var elementToRemove = $('<div class="removing"></div>').appendTo(div);
+      var elementToStay = $('<div class="staying"></div>').appendTo(div);
 
-      eventuallyInsertHtml('<div class="element"></div>');
+      var good = browser.find('.removing').shouldNotExist();
+      var bad = browser.find('.staying').shouldNotExist();
+
+      setTimeout(function () {
+        elementToRemove.remove();
+      }, 50);
 
       return Promise.all([
         good,
