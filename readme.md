@@ -205,8 +205,8 @@ Wait a while for to be sure the element doesn't exist.
 var promise = scope.shouldNotExist([options]);
 ```
 
-* `options.duration` - the duration to wait, default 1000ms.
-* `options.interval` - time between testing the dom
+* `options.duration` - the duration to wait (100ms)
+* `options.interval` - time between testing the dom (10ms)
 
 Returns a promise that resolves when the element doesn't exist, or is rejected if the timeout expires.
 
