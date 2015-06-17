@@ -194,8 +194,9 @@ Selector.prototype.printFinders = function (finders) {
   return finders.map(function (f) { return f.toString(); }).join(' / ');
 };
 
-Selector.prototype.findElement = function () {
+Selector.prototype.findElement = function (options) {
   var self = this;
+  var allowMultiple = options && options.hasOwnProperty('allowMultiple')? options.allowMultiple: false;
 
   function findWithFinder(el, finderIndex) {
     var finder = self.finders[finderIndex];
@@ -213,21 +214,34 @@ Selector.prototype.findElement = function () {
     }
   };
 
-  return findWithFinder($(this.selector || 'body'), 0);
+  var elements = findWithFinder($(this.selector || 'body'), 0);
+  if (!allowMultiple && elements.length !== 1) {
+    throw new Error("expected to find exactly one element: " + self.printFinders(self.finders));
+  }
+  return elements;
 };
 
 Selector.prototype.resolve = function(options) {
   var self = this;
-  var allowMultiple = options && options.hasOwnProperty('allowMultiple')? options.allowMultiple: false;
 
-  return retry(function() {
-    var els = self.findElement();
+  return retry(options, function() {
+    return self.findElement(options);
+  });
+};
 
-    if (!allowMultiple && els.length !== 1) {
-      throw new Error("expected to find exactly one element: " + self.printFinders(self.finders));
+Selector.prototype.notResolve = function(options) {
+  var self = this;
+
+  return retry.ensuring(options, function() {
+    var found = false;
+    try {
+      self.findElement({allowMultiple: true});
+      found = true;
+    } catch (e) {
     }
-
-    return els;
+    if (found) {
+      throw new Error("didn't expect to find element: " + self.printFinders(self.finders));
+    }
   });
 };
 
@@ -239,6 +253,10 @@ Selector.prototype.shouldExist = function (options) {
   return this.resolve(options);
 };
 
+Selector.prototype.shouldNotExist = function (options) {
+  return this.notResolve(options);
+};
+
 Selector.prototype.elements = function (options) {
   return this.resolve({allowMultiple: true});
 };
@@ -248,27 +266,34 @@ Selector.prototype.element = function (options) {
 };
 
 Selector.prototype.has = function(options) {
-  return this.addFinder(elementTester(options)).shouldExist({allowMultiple: true});
+  return this.shouldHave(options);
 };
 
 Selector.prototype.shouldHave = function(options) {
-  return this.has(options);
+  var resolveOptions;
+  if (typeof options === 'object') {
+    resolveOptions = JSON.parse(JSON.stringify(options));
+    resolveOptions.allowMultiple = true;
+  } else {
+    resolveOptions = {allowMultiple: true};
+  }
+  return this.addFinder(elementTester(options)).shouldExist(resolveOptions);
 };
 
-Selector.prototype.click = function() {
-  return this.resolve().then(function($element) {
+Selector.prototype.click = function(options) {
+  return this.resolve(options).then(function($element) {
       return sendclick($element[0]);
   });
 };
 
-Selector.prototype.typeIn = function(text) {
-  return this.resolve().then(function($element) {
+Selector.prototype.typeIn = function(text, options) {
+  return this.resolve(options).then(function($element) {
     return sendkeys($element[0], text);
   });
 };
 
-Selector.prototype.typeInHtml = function(html) {
-  return this.resolve().then(function($element) {
+Selector.prototype.typeInHtml = function(html, options) {
+  return this.resolve(options).then(function($element) {
     return sendkeys.html($element[0], html);
   });
 };

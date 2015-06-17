@@ -28,6 +28,20 @@ describe('browser-monkey', function () {
     return promise;
   });
 
+  describe('shouldNotExist', function () {
+    it('should ensure that element never exists', function () {
+      var good = browser.find('.not-element').shouldNotExist();
+      var bad = browser.find('.element').shouldNotExist();
+
+      eventuallyInsertHtml('<div class="element"></div>');
+
+      return Promise.all([
+        good,
+        expect(bad).to.be.rejected
+      ]);
+    });
+  });
+
   it('should eventually click an element', function () {
     var promise = browser.find('.element').click();
     var clicked = false;
