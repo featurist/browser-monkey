@@ -20,12 +20,31 @@ describe('browser-monkey', function () {
     }, 200);
   }
 
-  it('should eventually find an element', function () {
-    var promise = browser.find('.element').shouldExist();
+  describe('find', function () {
+    it('should eventually find an element', function () {
+      var promise = browser.find('.element').shouldExist();
 
-    eventuallyInsertHtml('<div class="element"></div>');
+      eventuallyInsertHtml('<div class="element"></div>');
 
-    return promise;
+      return promise;
+    });
+  });
+
+  describe('is', function () {
+    it('should eventually find an element if it has a class', function () {
+      var good = browser.find('.element').is('.good').shouldExist();
+      var bad = browser.find('.element').is('.bad').shouldExist();
+
+      setTimeout(function () {
+        var element = $('<div class="element"></div>').appendTo(div);
+
+        setTimeout(function () {
+          element.addClass('good');
+        }, 100);
+      }, 200);
+
+      return Promise.all([good, expect(bad).to.be.rejected]);
+    });
   });
 
   describe('shouldNotExist', function () {

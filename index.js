@@ -148,6 +148,10 @@ Selector.prototype.find = function () {
   return this.addFinder(elementFinder.apply(null, arguments));
 };
 
+Selector.prototype.is = function (css) {
+  return this.addFinder(elementTester({css: css}));
+};
+
 Selector.prototype.scope = function (scope) {
   if (scope instanceof Selector) {
     return new this.constructor(scope.selector, scope.finders);

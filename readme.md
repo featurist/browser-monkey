@@ -91,6 +91,16 @@ Returns a new scope that matches `css`.
 * `css` - css to find in the scope
 * `options.text` - text to find in the scope.
 
+## is
+
+```js
+var scope = scope.is(css);
+```
+
+Returns a new scope that ensures that the element found matches the CSS. For example, `scope.find('li').is('.enabled')` ensures that the `<li>` has the class `enabled`.
+
+* `css` - css to match against the scope
+
 ## containing
 
 ```js
