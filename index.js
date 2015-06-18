@@ -77,6 +77,7 @@ function elementTester(options) {
   var predicate = optionsObject && options.hasOwnProperty('elements')? options.elements: undefined;
   var length = optionsObject && options.hasOwnProperty('length')? options.length: undefined;
   var value = optionsObject && options.hasOwnProperty('value')? options.value: undefined;
+  var html = optionsObject && options.hasOwnProperty('html')? options.html: undefined;
 
   if (typeof options === 'string') {
     css = options;
@@ -92,7 +93,10 @@ function elementTester(options) {
 
       if (css && !els.is(css)) {
         if (!els.is(css)) {
-          throw new Error(message || ('expected elements to have css ' + css));
+          var elements = els.toArray().map(function (el) {
+            return el.outerHTML.replace(el.innerHTML, '');
+          });
+          throw new Error(message || ('expected elements ' + elements.join(', ') + ' to have css ' + css));
         }
       }
 
@@ -102,6 +106,10 @@ function elementTester(options) {
 
       if (value) {
         assertElementProperties(els, value, function (e) { return e.val(); });
+      }
+
+      if (html) {
+        assertElementProperties(els, html, function (e) { return e.html(); });
       }
 
       if (length !== undefined) {
@@ -157,7 +165,7 @@ Selector.prototype.component = function (methods) {
     Selector.apply(this, arguments);
   }
 
-  Extension.prototype = new Selector();
+  Extension.prototype = this;
   Object.keys(methods).forEach(function (method) {
     Extension.prototype[method] = methods[method];
   });
@@ -278,6 +286,17 @@ Selector.prototype.shouldHave = function(options) {
     resolveOptions = {allowMultiple: true};
   }
   return this.addFinder(elementTester(options)).shouldExist(resolveOptions);
+};
+
+Selector.prototype.shouldNotHave = function(options) {
+  var resolveOptions;
+  if (typeof options === 'object') {
+    resolveOptions = JSON.parse(JSON.stringify(options));
+    resolveOptions.allowMultiple = true;
+  } else {
+    resolveOptions = {allowMultiple: true};
+  }
+  return this.addFinder(elementTester(options)).shouldNotExist(resolveOptions);
 };
 
 Selector.prototype.click = function(options) {

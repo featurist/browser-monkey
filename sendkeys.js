@@ -5,7 +5,7 @@ function dispatchEvent(el, type, char) {
   el.dispatchEvent(event);
 }
 
-sendkey = function sendkey(el, char) {
+function sendkey(el, char) {
   dispatchEvent(el, "keydown", char);
   dispatchEvent(el, "keyup", char);
   dispatchEvent(el, "keypress", char);

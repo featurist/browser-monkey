@@ -287,6 +287,31 @@ describe('browser-monkey', function () {
       return promise;
     });
 
+    it('can extend another component', function () {
+      var user = browser.component({
+        name: function () {
+          return this.find('.user-name');
+        },
+
+        address: function () {
+          return this.find('.user-address');
+        }
+      });
+
+      var bossUser = user.component({
+        secondAddress: function () {
+          return this.find('.user-second-address');
+        }
+      });
+
+      var name = bossUser.name().shouldExist();
+      var secondAddress = bossUser.secondAddress().shouldExist();
+
+      eventuallyInsertHtml('<div class="user"><div class="user-name">bob</div><div class="user-address">bob\'s address</div><div class="user-second-address">bob\'s second address</div></div>');
+
+      return Promise.all([name, secondAddress]);
+    });
+
     it('can return new scoped selectors', function () {
       var admin = browser.component({
         user: function () {
