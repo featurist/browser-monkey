@@ -119,7 +119,7 @@ function elementTester(options) {
       }
 
       if (predicate) {
-        if (!predicate(els)) {
+        if (!predicate(els.toArray())) {
           throw new Error(message || 'expected elements to pass predicate');
         }
       }
@@ -202,7 +202,7 @@ Selector.prototype.printFinders = function (finders) {
   return finders.map(function (f) { return f.toString(); }).join(' / ');
 };
 
-Selector.prototype.findElement = function (options) {
+Selector.prototype.findElements = function (options) {
   var self = this;
   var allowMultiple = options && options.hasOwnProperty('allowMultiple')? options.allowMultiple: false;
 
@@ -226,14 +226,14 @@ Selector.prototype.findElement = function (options) {
   if (!allowMultiple && elements.length !== 1) {
     throw new Error("expected to find exactly one element: " + self.printFinders(self.finders));
   }
-  return elements;
+  return elements.toArray();
 };
 
 Selector.prototype.resolve = function(options) {
   var self = this;
 
   return retry(options, function() {
-    return self.findElement(options);
+    return self.findElements(options);
   });
 };
 
@@ -243,7 +243,7 @@ Selector.prototype.notResolve = function(options) {
   return retry(options, function() {
     var found = false;
     try {
-      self.findElement({allowMultiple: true});
+      self.findElements({allowMultiple: true});
       found = true;
     } catch (e) {
     }
@@ -258,7 +258,7 @@ Selector.prototype.exists = function (options) {
 };
 
 Selector.prototype.shouldExist = function (options) {
-  return this.resolve(options);
+  return this.resolve(options).then(function () {});
 };
 
 Selector.prototype.shouldNotExist = function (options) {
@@ -270,7 +270,9 @@ Selector.prototype.elements = function (options) {
 };
 
 Selector.prototype.element = function (options) {
-  return this.resolve();
+  return this.resolve(options).then(function (elements) {
+    return elements[0];
+  });
 };
 
 Selector.prototype.has = function(options) {
@@ -300,20 +302,20 @@ Selector.prototype.shouldNotHave = function(options) {
 };
 
 Selector.prototype.click = function(options) {
-  return this.resolve(options).then(function($element) {
-      return sendclick($element[0]);
+  return this.element(options).then(function(element) {
+    return sendclick(element);
   });
 };
 
 Selector.prototype.typeIn = function(text, options) {
-  return this.resolve(options).then(function($element) {
-    return sendkeys($element[0], text);
+  return this.element(options).then(function(element) {
+    return sendkeys(element, text);
   });
 };
 
 Selector.prototype.typeInHtml = function(html, options) {
-  return this.resolve(options).then(function($element) {
-    return sendkeys.html($element[0], html);
+  return this.element(options).then(function(element) {
+    return sendkeys.html(element, html);
   });
 };
 

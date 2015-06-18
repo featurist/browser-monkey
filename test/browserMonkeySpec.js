@@ -160,13 +160,13 @@ describe('browser-monkey', function () {
 
     it('eventually finds an element and asserts that it passes a predicate', function () {
       var good1 = browser.find('.element').shouldHave({elements: function (elements) {
-        return elements.text() == 'a';
+        return $(elements).text() == 'a';
       }});
       var good2 = browser.find('.element').shouldHave(function (elements) {
-        return elements.text() == 'a';
+        return $(elements).text() == 'a';
       });
       var bad1 = browser.find('.element').shouldHave({elements: function (elements) {
-        return elements.text() == 'b';
+        return $(elements).text() == 'b';
       }, message: 'expected to have text b'});
 
       eventuallyInsertHtml('<div class="element"></div><div class="element">a</div>');
@@ -200,7 +200,7 @@ describe('browser-monkey', function () {
       }, 200);
 
       return promise.then(function (element) {
-        expect(element.is('.outer')).to.be.true;
+        expect($(element).is('.outer')).to.be.true;
       });
     });
 
@@ -245,10 +245,10 @@ describe('browser-monkey', function () {
       var red = $('<div><div class="element">red</div></div>').appendTo(div);
       var blue = $('<div><div class="element">blue</div></div>').appendTo(div);
 
-      return browser.scope(red).find('.element').shouldExist().then(function (element) {
+      return browser.scope(red).find('.element').element().then(function (element) {
         expect($(element).text()).to.equal('red');
       }).then(function () {
-        return browser.scope(blue).find('.element').shouldExist();
+        return browser.scope(blue).find('.element').element();
       }).then(function (element) {
         expect($(element).text()).to.equal('blue');
       });
@@ -258,10 +258,10 @@ describe('browser-monkey', function () {
       var red = $('<div class="red"><div class="element">red</div></div>').appendTo(div);
       var blue = $('<div class="blue"><div class="element">blue</div></div>').appendTo(div);
 
-      return browser.scope(browser.find('.red')).find('.element').shouldExist().then(function (element) {
+      return browser.scope(browser.find('.red')).find('.element').element().then(function (element) {
         expect($(element).text()).to.equal('red');
       }).then(function () {
-        return browser.scope(browser.find('.blue')).find('.element').shouldExist();
+        return browser.scope(browser.find('.blue')).find('.element').element();
       }).then(function (element) {
         expect($(element).text()).to.equal('blue');
       });

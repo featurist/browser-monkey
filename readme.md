@@ -212,17 +212,43 @@ Returns a promise that resolves when the element no longer exists, or is rejecte
 
 ## shouldHave
 
-Assert that a scope has certain properties
+Assert that a scope has certain properties.
 
 ```js
 var promise = scope.shouldHave([options]);
 ```
 
-* `options.timeout` - length of time to wait for the element (1000ms)
-* `options.interval` - time between testing the dom (10ms)
 * `options.text` - a string, expects the resolved scope to have the text. If an array of strings, expects the elements to have the same number of elements as there are strings in the array, and expects each string to be found in each respective element's text.
 * `options.css` - a CSS string. Expects the resolved element to be matched by the CSS selector. Note that it won't match if the element contains other elements that match the CSS selector. So if we have `{css: '.class'}` then we expect the resolved element to have a class `class`.
 * `options.value` - a string, expects the resolved element to be an input and have the value. An array expects the same number of inputs, each with the respective value.
 * `options.length` - a number, expects there to be this number of elements
 * `options.elements` - a function, which is passed the resolved elements, return truthy for a match, falsey for a failure.
 * `options.message` - the error message
+* `options.timeout` - length of time to wait for the element (1000ms)
+* `options.interval` - time between testing the dom (10ms)
+
+## elements
+
+Returns a promise resolving to the list of elements matched by the scope.
+
+```js
+scope.elements([options]).then(function (elements) {
+});
+```
+
+* `elements` - the HTML DOM elements matched by the scope.
+* `options.timeout` - length of time to wait for the element (1000ms)
+* `options.interval` - time between testing the dom (10ms)
+
+## element
+
+Returns a promise resolving to the single element matched by the scope, it will be rejected if there are multiple.
+
+```js
+scope.element([options]).then(function (element) {
+});
+```
+
+* `element` - the HTML DOM element matched by the scope.
+* `options.timeout` - length of time to wait for the element (1000ms)
+* `options.interval` - time between testing the dom (10ms)
