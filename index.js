@@ -324,14 +324,3 @@ Selector.prototype.typeInHtml = function(html, options) {
 };
 
 module.exports = new Selector();
-
-module.exports.hasText = function(text) {
-  return function(element) {
-    return expect(element.text()).to.equal(text);
-  };
-};
-module.exports.is = function(css) {
-  return function(element) {
-    return expect(element.is(css), css).to.be.true;
-  };
-};
