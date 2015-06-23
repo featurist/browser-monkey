@@ -197,7 +197,7 @@ Selector.prototype.containing = function () {
     },
 
     toString: function() {
-      finder.toString();
+      return 'containing: ' + finder.toString();
     }
   });
 };
