@@ -169,7 +169,7 @@ Selector.prototype.component = function (methods) {
     Selector.apply(this, arguments);
   }
 
-  Extension.prototype = this;
+  Extension.prototype = new this.constructor();
   Object.keys(methods).forEach(function (method) {
     Extension.prototype[method] = methods[method];
   });

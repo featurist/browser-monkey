@@ -306,6 +306,26 @@ describe('browser-monkey', function () {
       return promise;
     });
 
+    it('components are independent', function () {
+      var user = browser.component({
+        name: function () {
+          return this.find('.user-name');
+        }
+      });
+
+      var bah = browser.component({
+        name: function () {
+          return this.find('.bah-name');
+        }
+      });
+
+      var promise = user.name().shouldExist();
+
+      eventuallyInsertHtml('<div class="user"><div class="user-name">bob</div><div class="user-address">bob\'s address</div></div>');
+
+      return promise;
+    });
+
     it('can extend another component', function () {
       var user = browser.component({
         name: function () {
