@@ -226,7 +226,15 @@ Selector.prototype.findElements = function (options) {
     }
   };
 
-  var elements = findWithFinder($(this.selector || 'body'), 0);
+  function selector() {
+    if(self.selector instanceof Element && self.selector.tagName == 'IFRAME') {
+      return self.selector.contentDocument;
+    } else {
+      return self.selector || 'body';
+    }
+  }
+
+  var elements = findWithFinder($(selector()), 0);
   if (!allowMultiple && elements.length !== 1) {
     throw new Error("expected to find exactly one element: " + self.printFinders(self.finders));
   }

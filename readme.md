@@ -182,7 +182,7 @@ You can reset the starting point for the scope, the element from which all eleme
 var scopeUnderElement = scope.scope(element | selector | anotherScope);
 ```
 
-* `element` - an element
+* `element` - an element. This can be an `<iframe>` element, in which case the scope will be the contents of the iframe.
 * `selector` - a CSS selector string
 * `anotherScope` a scope to define where to start this scope. This is useful if you want to set the starting scope of a comonent. E.g.
 

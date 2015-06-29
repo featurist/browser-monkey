@@ -28,6 +28,18 @@ describe('browser-monkey', function () {
 
       return promise;
     });
+
+    it('should eventually find an element in an iframe', function(){
+      var iframe = document.createElement('iframe');
+      iframe.src = '/base/test/page1.html';
+      iframe.width = 700;
+      iframe.height = 1000;
+      div.appendChild(iframe);
+      var iframeScope = browser.scope(iframe);
+      return iframeScope.find('a', {text: 'page 2'}).click().then(function(){
+        return iframeScope.find('h1').shouldHave({text: 'Hello World'});
+      });
+    });
   });
 
   describe('is', function () {
