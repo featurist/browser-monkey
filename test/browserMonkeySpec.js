@@ -93,6 +93,21 @@ describe('browser-monkey', function () {
     });
   });
 
+  it('should eventually select an option element', function(){
+    var promise = browser.find('.element').select({text: 'Second'});
+    var selected = false;
+
+    eventuallyInsertHtml(
+      $('<select class="element"><option>First</option><option>Second</option></select>').change(function (e) {
+        selected = true;
+      })
+    );
+
+    return promise.then(function () {
+      expect(selected).to.equal(true);
+    });
+  });
+
   it('should eventually enter text into an element', function () {
     var promise = browser.find('.element').typeIn('haha');
     var clicked = false;
