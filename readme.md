@@ -238,6 +238,45 @@ var promise = scope.shouldHave([options]);
 * `options.timeout` - length of time to wait for the element (1000ms)
 * `options.interval` - time between testing the dom (10ms)
 
+## click
+
+Returns a promise that resolves once the element has been found and the click has been triggered
+
+```js
+scope.click().then(function () {
+});
+```
+
+## select
+
+Returns a promise that resolves once the element has been found and the matching item selected from the select box
+
+```js
+scope.select({text: 'Text of option'}).then(function () {
+});
+```
+
+Example:
+
+```html
+<select class="my-select">
+  <option>First</option>
+  <option>Second</option>
+</select>
+```
+
+```js
+var scope = browser.extend({
+  mySelect: function(){
+    return this.find('.my-select');
+  }
+})
+
+scope.mySelect().select({text: 'Second'}).then(function(){
+});
+```
+
+
 ## elements
 
 Returns a promise resolving to the list of elements matched by the scope.
