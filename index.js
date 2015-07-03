@@ -319,6 +319,26 @@ Selector.prototype.click = function(options) {
   });
 };
 
+Selector.prototype.select = function(options) {
+  return this.element(options).then(function(element) {
+
+    var optionList = element.options;
+    for (var optionIndex = 0; optionIndex < optionList.length; optionIndex++){
+      if (optionList[optionIndex].text == options.text){
+        optionList[optionIndex].selected = true;
+        var event = new MouseEvent('change', {
+          view: window,
+          bubbles: true,
+          cancelable: true
+        });
+
+        element.dispatchEvent(event);
+        break;
+      }
+    }
+  });
+};
+
 Selector.prototype.typeIn = function(text, options) {
   return this.element(options).then(function(element) {
     return sendkeys(element, text);
