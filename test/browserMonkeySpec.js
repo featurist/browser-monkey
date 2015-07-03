@@ -95,16 +95,17 @@ describe('browser-monkey', function () {
 
   it('should eventually select an option element', function(){
     var promise = browser.find('.element').select({text: 'Second'});
-    var selected = false;
+    var selectedItem = undefined;
 
     eventuallyInsertHtml(
       $('<select class="element"><option>First</option><option>Second</option></select>').change(function (e) {
-        selected = true;
+        var el = e.target;
+        selectedItem = el.options[el.selectedIndex].text;
       })
     );
 
     return promise.then(function () {
-      expect(selected).to.equal(true);
+      expect(selectedItem).to.equal('Second');
     });
   });
 
