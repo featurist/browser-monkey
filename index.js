@@ -203,6 +203,30 @@ Selector.prototype.containing = function () {
   });
 };
 
+Selector.prototype.containing = function () {
+  var finder = elementFinder.apply(null, arguments);
+
+  return this.addFinder({
+    find: function(elements) {
+      var els = elements.filter(function() {
+        try {
+          return finder.find(this);
+        } catch (e) {
+          return false;
+        }
+      });
+
+      if (els.length > 0) {
+        return els;
+      }
+    },
+
+    toString: function() {
+      return 'not containing: ' + finder.toString();
+    }
+  });
+};
+
 Selector.prototype.printFinders = function (finders) {
   return finders.map(function (f) { return f.toString(); }).join(' / ');
 };
@@ -314,8 +338,30 @@ Selector.prototype.shouldNotHave = function(options) {
   return this.addFinder(elementTester(options)).shouldNotExist(resolveOptions);
 };
 
+Selector.prototype.filter = function (filter, message) {
+  return this.addFinder({
+    find: function (elements) {
+      var filteredElements = elements.toArray().filter(filter);
+
+      if (filteredElements && filteredElements.length > 0) {
+        return $(filteredElements);
+      }
+    },
+
+    toString: function () {
+      return message || '[filter]';
+    }
+  });
+};
+
+Selector.prototype.enabled = function () {
+  return this.filter(function (element) {
+    return !((element.tagName == 'BUTTON' || element.tagName == 'INPUT') && element.disabled == true);
+  });
+};
+
 Selector.prototype.click = function(options) {
-  return this.element(options).then(function(element) {
+  return this.enabled().element(options).then(function(element) {
     debug('click', element);
     return sendclick(element);
   });

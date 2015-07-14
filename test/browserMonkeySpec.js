@@ -29,6 +29,30 @@ describe('browser-monkey', function () {
       return promise;
     });
 
+    it('should eventually find an element using a filter', function () {
+      var promise = browser.find('.element').filter(function (element) {
+        return element.classList.contains('correct');
+      }, 'has class "correct"').element();
+
+      $('<div class="element"></div>').appendTo(div);
+      eventuallyInsertHtml('<div class="element correct"></div>');
+
+      return promise.then(function (element) {
+        expect(element.className).to.equal('element correct');
+      });
+    });
+
+    it('filter fails with the right message', function () {
+      var promise = browser.find('.element').filter(function (element) {
+        return element.classList.contains('correct');
+      }, 'has class "correct"').element();
+
+      $('<div class="element"></div>').appendTo(div);
+      eventuallyInsertHtml('<div class="element"></div>');
+
+      return expect(promise).to.be.rejectedWith('has class "correct"');
+    });
+
     it('should eventually find an element in an iframe', function(){
       var iframe = document.createElement('iframe');
       iframe.src = '/base/test/page1.html';
@@ -78,18 +102,60 @@ describe('browser-monkey', function () {
     });
   });
 
-  it('should eventually click an element', function () {
-    var promise = browser.find('.element').click();
-    var clicked = false;
+  describe('clicking', function () {
+    it('should eventually click an element', function () {
+      var promise = browser.find('.element').click();
+      var clicked = false;
 
-    eventuallyInsertHtml(
-      $('<div class="element"></div>').click(function () {
-        clicked = true;
-      })
-    );
+      eventuallyInsertHtml(
+        $('<div class="element"></div>').click(function () {
+          clicked = true;
+        })
+      );
 
-    return promise.then(function () {
-      expect(clicked).to.equal(true);
+      return promise.then(function () {
+        expect(clicked).to.equal(true);
+      });
+    });
+
+    it('waits until checkbox is enabled before clicking', function () {
+      var promise = browser.find('input[type=checkbox]').click();
+      var clicked;
+      var buttonState = 'disabled';
+
+      var button = $('<input type=checkbox disabled></input>').appendTo(div);
+      button[0].addEventListener('click', function () {
+        clicked = buttonState;
+      });
+
+      setTimeout(function () {
+        button.prop('disabled', false);
+        buttonState = 'enabled'
+      }, 100);
+
+      return promise.then(function () {
+        expect(clicked).to.equal('enabled');
+      });
+    });
+
+    it('waits until button is enabled before clicking', function () {
+      var promise = browser.find('button', {text: 'a button'}).click();
+      var clicked;
+      var buttonState = 'disabled';
+
+      var button = $('<button disabled>a button</button>').appendTo(div);
+      button[0].addEventListener('click', function () {
+        clicked = buttonState;
+      });
+
+      setTimeout(function () {
+        button.prop('disabled', false);
+        buttonState = 'enabled'
+      }, 100);
+
+      return promise.then(function () {
+        expect(clicked).to.equal('enabled');
+      });
     });
   });
 

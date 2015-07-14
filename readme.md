@@ -158,6 +158,14 @@ For example, find the `li` that contains the `h2` with the text `Second`, and cl
 browser.find('ul li').containing('h2', {text: 'Second'}).find('a').click();
 ```
 
+## filter
+
+```js
+var scope = scope.filter(filter);
+```
+
+* `filter(element)` a function that takes a DOM element, and returns either truthy or falsey. If truthy, then the element will be considered as part of the scope, if falsey then it won't.
+
 ## component
 
 Represents a component on the page, with methods to access certain elements of the component.
