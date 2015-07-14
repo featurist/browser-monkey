@@ -4,6 +4,7 @@ var expect = chai.expect;
 var assert = chai.assert;
 var sendkeys = require('./sendkeys');
 var sendclick = require('./sendclick');
+var debug = require('debug')('browser-monkey');
 
 var $ =
   typeof $ === 'undefined'
@@ -56,7 +57,7 @@ function assertElementProperties(elements, expected, getProperty) {
       return getProperty($(item));
     });
 
-    expect(actualTexts.length, 'expected to have ' + expected.length + ' elements, but found ' + actualTexts.length).to.eql(expected.length);
+    expect(actualTexts.length, 'expected ' + JSON.stringify(actualTexts) + ' to respectively contain ' + JSON.stringify(expected)).to.eql(expected.length);
 
     expected.forEach(function (expected, index) {
       var actualText = actualTexts[index];
@@ -315,6 +316,7 @@ Selector.prototype.shouldNotHave = function(options) {
 
 Selector.prototype.click = function(options) {
   return this.element(options).then(function(element) {
+    debug('click', element);
     return sendclick(element);
   });
 };
@@ -332,6 +334,7 @@ Selector.prototype.select = function(options) {
           cancelable: true
         });
 
+        debug('select', element);
         element.dispatchEvent(event);
         break;
       }
@@ -341,12 +344,14 @@ Selector.prototype.select = function(options) {
 
 Selector.prototype.typeIn = function(text, options) {
   return this.element(options).then(function(element) {
+    debug('typeIn', element, text);
     return sendkeys(element, text);
   });
 };
 
 Selector.prototype.typeInHtml = function(html, options) {
   return this.element(options).then(function(element) {
+    debug('typeInHtml', element, html);
     return sendkeys.html(element, html);
   });
 };
