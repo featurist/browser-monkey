@@ -357,7 +357,7 @@ Selector.prototype.filter = function (filter, message) {
 Selector.prototype.enabled = function () {
   return this.filter(function (element) {
     return !((element.tagName == 'BUTTON' || element.tagName == 'INPUT') && element.disabled == true);
-  });
+  }, '[disabled=false]');
 };
 
 Selector.prototype.click = function(options) {
