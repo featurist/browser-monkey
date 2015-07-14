@@ -468,5 +468,26 @@ describe('browser-monkey', function () {
 
       return promise;
     });
+
+    it('components inherit scope', function () {
+      var adminArea = browser.find('.admin');
+
+      var admin = adminArea.component({
+        user: function () {
+          return this.find('.user');
+        }
+      });
+
+      var promise = admin.user().shouldHave({text: ['Jane']});
+
+      eventuallyInsertHtml(
+          '<div class="user">Bob</div>'
+        + '<div class="admin">'
+          + '<div class="user">Jane</div>'
+        + '</div>'
+      );
+
+      return promise;
+    });
   });
 });

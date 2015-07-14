@@ -88,16 +88,19 @@ function elementTester(options) {
     predicate = options;
   }
 
+  function elementsToString(els) {
+    return els.toArray().map(function (el) {
+      return el.outerHTML.replace(el.innerHTML, '');
+    }).join(', ');
+  }
+
   return {
     find: function(element) {
       var els = $(element);
 
       if (css && !els.is(css)) {
         if (!els.is(css)) {
-          var elements = els.toArray().map(function (el) {
-            return el.outerHTML.replace(el.innerHTML, '');
-          });
-          throw new Error(message || ('expected elements ' + elements.join(', ') + ' to have css ' + css));
+          throw new Error(message || ('expected elements ' + elementsToString(els) + ' to have css ' + css));
         }
       }
 
@@ -115,7 +118,7 @@ function elementTester(options) {
 
       if (length !== undefined) {
         if (els.length !== length) {
-          throw new Error(message || ('expected to find ' + length + ' elements but found ' + els.length));
+          throw new Error(message || ('expected ' + elementsToString(els) + ' to have ' + length + ' elements'));
         }
       }
 
@@ -166,17 +169,17 @@ Selector.prototype.extend = function (methods) {
 };
 
 Selector.prototype.component = function (methods) {
-  function Extension() {
+  function Component() {
     Selector.apply(this, arguments);
   }
 
-  Extension.prototype = new this.constructor();
+  Component.prototype = new this.constructor();
   Object.keys(methods).forEach(function (method) {
-    Extension.prototype[method] = methods[method];
+    Component.prototype[method] = methods[method];
   });
-  Extension.prototype.constructor = Extension;
+  Component.prototype.constructor = Component;
 
-  return new Extension();
+  return new Component().scope(this);
 };
 
 Selector.prototype.containing = function () {
