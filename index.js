@@ -137,15 +137,16 @@ function elementTester(options) {
   };
 }
 
-function Selector(selector, finders) {
+function Selector(selector, finders, selectionDelay) {
   this.selector = selector;
   this.finders = finders || [];
+  this.selectionDelay = selectionDelay || 0;
 }
 
 Selector.prototype.addFinder = function (finder) {
   var finders = this.finders && this.finders.slice() || [];
   finders.push(finder);
-  return new this.constructor(this.selector, finders);
+  return new this.constructor(this.selector, finders, this.selectionDelay);
 };
 
 Selector.prototype.find = function () {
@@ -158,9 +159,9 @@ Selector.prototype.is = function (css) {
 
 Selector.prototype.scope = function (scope) {
   if (scope instanceof Selector) {
-    return new this.constructor(scope.selector, scope.finders);
+    return new this.constructor(scope.selector, scope.finders, scope.selectionDelay);
   } else {
-    return new this.constructor(scope, this.finders);
+    return new this.constructor(scope, this.finders, this.selectionDelay);
   }
 };
 
@@ -364,9 +365,12 @@ Selector.prototype.enabled = function () {
 };
 
 Selector.prototype.click = function(options) {
+  var self = this;
   return this.enabled().element(options).then(function(element) {
-    debug('click', element);
-    return sendclick(element);
+    return self.withDelay(function(){
+      debug('click', element);
+      return sendclick(element);
+    });
   });
 };
 
@@ -403,6 +407,27 @@ Selector.prototype.typeInHtml = function(html, options) {
     debug('typeInHtml', element, html);
     return sendkeys.html(element, html);
   });
+};
+
+Selector.prototype.setSelectionDelay = function(delay) {
+  this.selectionDelay = delay;
+  return this;
+};
+
+Selector.prototype.withDelay = function(run){
+  var self = this;
+  if (this.selectionDelay == 0) {
+    return run();
+  }
+  else {
+    debug('withDelay', this.selectionDelay);
+    return new Promise(function(fullfil){
+      setTimeout(function(){
+        run();
+        fullfil();
+      }, self.selectionDelay);
+    });
+  }
 };
 
 module.exports = new Selector();
