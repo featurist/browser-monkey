@@ -307,6 +307,14 @@ scope.mySelect().select({text: 'Second'}).then(function(){
 });
 ```
 
+## selection delay
+You can slow down the speed at which actions take place (currently only click events) by calling `setSelectionDelay` with the number of milliseconds to wait before proceeding.
+
+```js
+scope.setSelectionDelay(1000);
+scope.click().then(function () {
+});
+```
 
 ## elements
 

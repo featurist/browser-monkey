@@ -159,6 +159,26 @@ describe('browser-monkey', function () {
     });
   });
 
+  describe('going slowly', function(){
+    it('waits before clicking', function(){
+      var delay = 200;
+      browser.setSelectionDelay(delay);
+
+      var clickedTime;
+
+      $('<div class="element"></div>').click(function () {
+          clickedTime = new Date();
+      }).appendTo(div);
+
+      var started = new Date();
+      var promise = browser.find('.element').click();
+
+      return promise.then(function () {
+        expect(clickedTime-started).to.be.at.least(delay);
+      });
+    });
+  });
+
   it('should eventually select an option element', function(){
     var promise = browser.find('.element').select({text: 'Second'});
     var selectedItem = undefined;
