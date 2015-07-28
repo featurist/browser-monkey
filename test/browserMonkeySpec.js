@@ -118,6 +118,22 @@ describe('browser-monkey', function () {
       });
     });
 
+    it('sends mousedown mouseup and click events', function () {
+      var events = [];
+
+      $('<div class="element"></div>').mousedown(function () {
+        events.push('mousedown');
+      }).mouseup(function () {
+        events.push('mouseup');
+      }).click(function () {
+        events.push('click');
+      }).appendTo(div);
+
+      return browser.find('.element').click().then(function () {
+        expect(events).to.eql(['mousedown', 'mouseup', 'click']);
+      });
+    });
+
     it('waits until checkbox is enabled before clicking', function () {
       var promise = browser.find('input[type=checkbox]').click();
       var clicked;

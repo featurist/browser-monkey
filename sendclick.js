@@ -1,9 +1,14 @@
 module.exports = function (el) {
-  var event = new MouseEvent('click', {
-    view: window,
-    bubbles: true,
-    cancelable: true
-  });
+  function sendEvent(eventName) {
+    var event = new MouseEvent(eventName, {
+      view: window,
+      bubbles: true,
+      cancelable: true
+    });
+    el.dispatchEvent(event);
+  }
 
-  el.dispatchEvent(event);
+  sendEvent('mousedown');
+  sendEvent('mouseup');
+  sendEvent('click');
 };
