@@ -216,7 +216,7 @@ describe('browser-monkey', function () {
 
     return Promise.all([
       good,
-      expect(bad).to.be.rejectedWith('28')
+      expect(bad).to.be.rejected
     ]);
   });
 

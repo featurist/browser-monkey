@@ -52,6 +52,12 @@ function assertElementProperties(elements, expected, getProperty, exact) {
   }
 }
 
+function elementsToString(els) {
+  return els.toArray().map(function (el) {
+    return el.outerHTML.replace(el.innerHTML, '');
+  }).join(', ');
+}
+
 function elementTester(options) {
   var optionsObject = typeof options === 'object';
   var validOptions = [];
@@ -87,12 +93,6 @@ function elementTester(options) {
 
   if (typeof options === 'function') {
     predicate = options;
-  }
-
-  function elementsToString(els) {
-    return els.toArray().map(function (el) {
-      return el.outerHTML.replace(el.innerHTML, '');
-    }).join(', ');
   }
 
   return {
@@ -168,10 +168,19 @@ Selector.prototype.addFinder = function (finder) {
 };
 
 Selector.prototype.find = function (selector, options) {
+  var message = JSON.stringify(options);
   var scope = this.addFinder(elementFinder(selector));
 
   if (options) {
-    return scope.addFinder(elementTester(options));
+    var tester = elementTester(options);
+
+    return scope.filter(function (element) {
+      try {
+        return tester.find(element);
+      } catch (error) {
+        return false;
+      }
+    }, message);
   } else {
     return scope;
   }
@@ -216,8 +225,13 @@ Selector.prototype.containing = function (selector, options) {
     finder = {
       find: function (elements) {
         var found = findElements.find(elements);
-        testElements.find(found);
-        return found;
+        return found.toArray().filter(function (element) {
+          try {
+            return testElements.find(element);
+          } catch (error) {
+            return false;
+          }
+        });
       }
     }
   } else {
@@ -279,7 +293,7 @@ Selector.prototype.findElements = function (options) {
 
   var elements = findWithFinder($(selector()), 0);
   if (!allowMultiple && elements.length !== 1) {
-    throw new Error("expected to find exactly one element: " + self.printFinders(self.finders));
+    throw new Error("expected to find exactly one element: " + self.printFinders(self.finders) + ', but found :' + elementsToString(elements));
   }
   return elements.toArray();
 };
