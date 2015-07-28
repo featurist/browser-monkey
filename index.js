@@ -11,45 +11,28 @@ var $ =
     ? require("jquery")
     : window.$;
 
-function cssWithText(css, options) {
-  var text = options && options.hasOwnProperty('text')? options.text: undefined;
-
-  if (text) {
-    return css + ":contains(" + JSON.stringify(text) + ")";
-  } else {
-    return css;
-  }
-}
-
-function elementFinder(css, options) {
-  var text = options && options.hasOwnProperty('text')? options.text: undefined;
-  var ensure = options && options.hasOwnProperty('ensure')? options.ensure: undefined;
-  var message = options && options.hasOwnProperty('message')? options.message: undefined;
-
-  var cssContains = cssWithText(css, {
-    text: text
-  });
-
+function elementFinder(css) {
   return {
     find: function(element) {
-      var els = $(element).find(cssContains);
+      var els = $(element).find(css);
       if (els.length > 0) {
-          if (ensure) {
-              ensure(els);
-          }
-          return els;
+        return els;
       }
     },
 
     toString: function() {
-      return message || cssContains;
+      return css;
     }
   };
 }
 
-function assertElementProperties(elements, expected, getProperty) {
+function assertElementProperties(elements, expected, getProperty, exact) {
   function assertion(actual, expected) {
-    expect(actual, 'expected element to have ' + JSON.stringify(expected) + ' but contained ' + JSON.stringify(actual)).to.contain(expected);
+    if (exact) {
+      expect(actual, 'expected element to have exact text ' + JSON.stringify(expected) + ' but contained ' + JSON.stringify(actual)).to.equal(expected);
+    } else {
+      expect(actual, 'expected element to contain ' + JSON.stringify(expected) + ' but contained ' + JSON.stringify(actual)).to.contain(expected);
+    }
   }
 
   if (expected instanceof Array) {
@@ -71,15 +54,32 @@ function assertElementProperties(elements, expected, getProperty) {
 
 function elementTester(options) {
   var optionsObject = typeof options === 'object';
+  var validOptions = [];
 
-  var css = optionsObject && options.hasOwnProperty('css')? options.css: undefined;
-  var text = optionsObject && options.hasOwnProperty('text')? options.text: undefined;
-  var message = optionsObject && options.hasOwnProperty('message')? options.message: undefined;
-  var predicate = optionsObject && options.hasOwnProperty('elements')? options.elements: undefined;
-  var length = optionsObject && options.hasOwnProperty('length')? options.length: undefined;
-  var value = optionsObject && options.hasOwnProperty('value')? options.value: undefined;
-  var checked = optionsObject && options.hasOwnProperty('checked')? options.checked: undefined;
-  var html = optionsObject && options.hasOwnProperty('html')? options.html: undefined;
+  function option(name) {
+    validOptions.push(name);
+    var value = optionsObject && options.hasOwnProperty(name)? options[name]: undefined;
+    delete options[name];
+    return value;
+  }
+
+  var css = option('css');
+  var text = option('text');
+  var exactText = option('exactText');
+  var message = option('message');
+  var predicate = option('elements');
+  var length = option('length');
+  var value = option('value');
+  var html = option('html');
+  var checked = option('checked');
+
+  if (optionsObject) {
+    var keys = Object.keys(options);
+
+    if (keys.length > 0) {
+      throw new Error('properties ' + keys.join(', ') + ' not recognised, try ' + validOptions.join(', '));
+    }
+  }
 
   if (typeof options === 'string') {
     css = options;
@@ -107,6 +107,10 @@ function elementTester(options) {
 
       if (text) {
         assertElementProperties(els, text, function (e) { return e.text(); });
+      }
+
+      if (exactText) {
+        assertElementProperties(els, exactText, function (e) { return e.text(); }, true);
       }
 
       if (value) {
@@ -163,8 +167,14 @@ Selector.prototype.addFinder = function (finder) {
   return new this.constructor(this.selector, finders);
 };
 
-Selector.prototype.find = function () {
-  return this.addFinder(elementFinder.apply(null, arguments));
+Selector.prototype.find = function (selector, options) {
+  var scope = this.addFinder(elementFinder(selector));
+
+  if (options) {
+    return scope.addFinder(elementTester(options));
+  } else {
+    return scope;
+  }
 };
 
 Selector.prototype.is = function (css) {
@@ -197,8 +207,22 @@ Selector.prototype.component = function (methods) {
   return new Component().scope(this);
 };
 
-Selector.prototype.containing = function () {
-  var finder = elementFinder.apply(null, arguments);
+Selector.prototype.containing = function (selector, options) {
+  var findElements = elementFinder(selector);
+  var finder;
+
+  if (options) {
+    var testElements = elementTester(options);
+    finder = {
+      find: function (elements) {
+        var found = findElements.find(elements);
+        testElements.find(found);
+        return found;
+      }
+    }
+  } else {
+    finder = findElements;
+  }
 
   return this.addFinder({
     find: function(elements) {
@@ -217,30 +241,6 @@ Selector.prototype.containing = function () {
 
     toString: function() {
       return 'containing: ' + finder.toString();
-    }
-  });
-};
-
-Selector.prototype.containing = function () {
-  var finder = elementFinder.apply(null, arguments);
-
-  return this.addFinder({
-    find: function(elements) {
-      var els = elements.filter(function() {
-        try {
-          return finder.find(this);
-        } catch (e) {
-          return false;
-        }
-      });
-
-      if (els.length > 0) {
-        return els;
-      }
-    },
-
-    toString: function() {
-      return 'not containing: ' + finder.toString();
     }
   });
 };

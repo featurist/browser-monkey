@@ -208,6 +208,18 @@ describe('browser-monkey', function () {
     return promise;
   });
 
+  it('eventually finds an element containing exactText', function () {
+    var good = browser.find('.a', {exactText: '8'}).shouldExist();
+    var bad = browser.find('.b', {exactText: '8'}).shouldExist();
+
+    eventuallyInsertHtml('<div><div class="a">8</div><div class="b">28</div></div>');
+
+    return Promise.all([
+      good,
+      expect(bad).to.be.rejectedWith('28')
+    ]);
+  });
+
   describe('shouldHave', function () {
     it('eventually finds an element and asserts that it has text', function () {
       var good = browser.find('.element').shouldHave({text: 'some t'});
