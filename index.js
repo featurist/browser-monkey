@@ -78,6 +78,7 @@ function elementTester(options) {
   var predicate = optionsObject && options.hasOwnProperty('elements')? options.elements: undefined;
   var length = optionsObject && options.hasOwnProperty('length')? options.length: undefined;
   var value = optionsObject && options.hasOwnProperty('value')? options.value: undefined;
+  var checked = optionsObject && options.hasOwnProperty('checked')? options.checked: undefined;
   var html = optionsObject && options.hasOwnProperty('html')? options.html: undefined;
 
   if (typeof options === 'string') {
@@ -110,6 +111,20 @@ function elementTester(options) {
 
       if (value) {
         assertElementProperties(els, value, function (e) { return e.val(); });
+      }
+
+      if (checked) {
+        var elements = els.toArray();
+
+        if (checked instanceof Array) {
+          var elementsChecked = elements.map(function (element) {
+            return !!element.checked;
+          });
+          expect(elementsChecked, 'expected ' + elementsToString(els) + ' to have checked states ' + JSON.stringify(checked)).to.eql(checked);
+        } else {
+          var elementsNotMatching = elements.filter(function (element) { return element.checked != checked; });
+          expect(elementsNotMatching.length, 'expected ' + elementsToString(els) + ' to be ' + (checked? 'checked': 'unchecked')).to.equal(0);
+        }
       }
 
       if (html) {
