@@ -225,13 +225,18 @@ Selector.prototype.containing = function (selector, options) {
     finder = {
       find: function (elements) {
         var found = findElements.find(elements);
-        return found.toArray().filter(function (element) {
+        var tested = found.toArray().filter(function (element) {
           try {
-            return testElements.find(element);
+            testElements.find(element);
+            return true;
           } catch (error) {
             return false;
           }
         });
+
+        if (tested.length > 0) {
+          return tested;
+        }
       }
     }
   } else {
