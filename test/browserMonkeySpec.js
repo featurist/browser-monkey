@@ -217,6 +217,61 @@ describe('browser-monkey', function () {
       ]);
     });
 
+    describe('checkboxes', function () {
+      it('eventually finds a checked checkbox', function () {
+        var good = browser.find('.checkbox').shouldHave({checked: true});
+
+        var checkbox = $('<input class="checkbox" type=checkbox />').appendTo(div);
+        setTimeout(function () {
+          checkbox.prop('checked', true);
+        }, 20);
+
+        return Promise.all([
+          good
+        ]);
+      });
+
+      it('fails if only one of many checkboxes is checked', function () {
+        var good = browser.find('.checkbox').shouldHave({checked: true});
+
+        var checkbox = $('<input class="checkbox" type=checkbox /><input class="checkbox" type=checkbox />').appendTo(div);
+        setTimeout(function () {
+          checkbox[0].checked = true;
+        }, 20);
+
+        return Promise.all([
+          expect(good).to.be.rejected
+        ]);
+      });
+
+      it('ensures that each checkbox in the scope is either checked or unchecked', function () {
+        var good = browser.find('.checkbox').shouldHave({checked: [true, false]});
+        var bad = browser.find('.checkbox').shouldHave({checked: [false, true]});
+
+        var checkbox = $('<input class="checkbox" type=checkbox /><input class="checkbox" type=checkbox />').appendTo(div);
+        setTimeout(function () {
+          checkbox[0].checked = true;
+        }, 20);
+
+        return Promise.all([
+          good,
+          expect(bad).to.be.rejected
+        ]);
+      });
+
+      it('fails to find a checked checkbox', function () {
+        var good = browser.find('.checkbox').shouldHave({checked: false});
+        var bad = browser.find('.checkbox').shouldHave({checked: true});
+
+        var checkbox = $('<input class="checkbox" type=checkbox />').appendTo(div);
+
+        return Promise.all([
+          good,
+          expect(bad).to.be.rejected
+        ]);
+      });
+    });
+
     it('eventually finds elements and asserts that they each have text', function () {
       var good = browser.find('.element div').shouldHave({text: ['one', 2]});
       var bad1 = browser.find('.element div').shouldHave({text: ['one']});
