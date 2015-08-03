@@ -64,6 +64,16 @@ describe('browser-monkey', function () {
         return iframeScope.find('h1').shouldHave({text: 'Hello World'});
       });
     });
+
+    it('calls a function for each element found', function(){
+      var promise = browser.find('span').elements();
+
+      eventuallyInsertHtml('<div><span>a</span><span>b</span></div>');
+
+      return promise.then(function(elements){
+        expect(elements.length).to.equal(2);
+      });
+    });
   });
 
   describe('is', function () {
@@ -99,6 +109,18 @@ describe('browser-monkey', function () {
         good,
         expect(bad).to.be.rejected
       ]);
+    });
+
+    it('allows trytryagain parameters to be used', function () {
+      var elementToRemove = $('<div class="removing"></div>').appendTo(div);
+
+      var promise = browser.find('.removing').shouldNotExist({timeout: 500, interval: 100});
+
+      setTimeout(function () {
+        elementToRemove.remove();
+      }, 50);
+
+      return promise;
     });
   });
 
@@ -223,6 +245,18 @@ describe('browser-monkey', function () {
   describe('shouldHave', function () {
     it('eventually finds an element and asserts that it has text', function () {
       var good = browser.find('.element').shouldHave({text: 'some t'});
+      var bad = browser.find('.element').shouldHave({text: 'sme t'});
+
+      eventuallyInsertHtml('<div class="element"><div>some text</div></div>');
+
+      return Promise.all([
+        good,
+        expect(bad).to.be.rejected
+      ]);
+    });
+
+    it('allows trytryagain parameters to be used', function () {
+      var good = browser.find('.element').shouldHave({text: 'some t', timeout: 400, interval: 100});
       var bad = browser.find('.element').shouldHave({text: 'sme t'});
 
       eventuallyInsertHtml('<div class="element"><div>some text</div></div>');
@@ -372,6 +406,24 @@ describe('browser-monkey', function () {
         good2,
         expect(bad1).to.be.rejectedWith('expected to have text b')
       ]);
+    });
+  });
+
+  describe('shouldNotHave', function () {
+    it('eventually finds an element and asserts that it does not have text', function () {
+      var promise = browser.find('.element').shouldNotHave({text: 'sme t'});
+
+      eventuallyInsertHtml('<div class="element"><div>some text</div></div>');
+
+      return promise;
+    });
+
+    it('allows trytryagain parameters to be used', function () {
+      var promise = browser.find('.element').shouldNotHave({text: 'sme t', timeout: 400, interval: 100});
+
+      eventuallyInsertHtml('<div class="element"><div>some text</div></div>');
+
+      return promise;
     });
   });
 

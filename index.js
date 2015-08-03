@@ -6,6 +6,56 @@ var sendkeys = require('./sendkeys');
 var sendclick = require('./sendclick');
 var debug = require('debug')('browser-monkey');
 
+function Options(options){
+  this.options = options;
+  this.isOptionsObject = typeof options === 'object';
+  this.validOptions = [];
+}
+
+Options.remove = function(options, propertyNames){
+  var newOptions = {};
+
+  if (typeof options === 'object') {
+    propertyNames.forEach(function(propertyName){
+      newOptions[propertyName] = options[propertyName];
+      delete options[propertyName];
+    });
+  }
+
+  return newOptions;
+}
+
+Options.default = function(options, defaults){
+  var newOptions = typeof options === 'object' ? options : {};
+
+  Object.keys(defaults).forEach(function(key){
+    if (!newOptions.hasOwnProperty(key)) {
+      newOptions[key] = defaults[key]
+    }
+  });
+
+  return newOptions;
+}
+
+Options.prototype.option = function(name) {
+  this.validOptions.push(name);
+  if (this.isOptionsObject) {
+    var value = this.options.hasOwnProperty(name)? this.options[name]: undefined;
+    delete this.options[name];
+    return value;
+  }
+}
+
+Options.prototype.validate = function(){
+  if (this.isOptionsObject) {
+    var keys = Object.keys(this.options);
+
+    if (keys.length > 0) {
+      throw new Error('properties ' + keys.join(', ') + ' not recognised, try ' + this.validOptions.join(', '));
+    }
+  }
+}
+
 var $ =
   typeof $ === 'undefined'
     ? require("jquery")
@@ -59,33 +109,19 @@ function elementsToString(els) {
 }
 
 function elementTester(options) {
-  var optionsObject = typeof options === 'object';
-  var validOptions = [];
+  var options = new Options(options);
 
-  function option(name) {
-    validOptions.push(name);
-    var value = optionsObject && options.hasOwnProperty(name)? options[name]: undefined;
-    delete options[name];
-    return value;
-  }
+  var css = options.option('css');
+  var text = options.option('text');
+  var exactText = options.option('exactText');
+  var message = options.option('message');
+  var predicate = options.option('elements');
+  var length = options.option('length');
+  var value = options.option('value');
+  var html = options.option('html');
+  var checked = options.option('checked');
 
-  var css = option('css');
-  var text = option('text');
-  var exactText = option('exactText');
-  var message = option('message');
-  var predicate = option('elements');
-  var length = option('length');
-  var value = option('value');
-  var html = option('html');
-  var checked = option('checked');
-
-  if (optionsObject) {
-    var keys = Object.keys(options);
-
-    if (keys.length > 0) {
-      throw new Error('properties ' + keys.join(', ') + ' not recognised, try ' + validOptions.join(', '));
-    }
-  }
+  options.validate();
 
   if (typeof options === 'string') {
     css = options;
@@ -305,8 +341,9 @@ Selector.prototype.findElements = function (options) {
 
 Selector.prototype.resolve = function(options) {
   var self = this;
+  var retryOptions = Options.remove(options, ['timeout', 'interval']);
 
-  return retry(options, function() {
+  return retry(retryOptions, function() {
     return self.findElements(options);
   });
 };
@@ -340,7 +377,8 @@ Selector.prototype.shouldNotExist = function (options) {
 };
 
 Selector.prototype.elements = function (options) {
-  return this.resolve({allowMultiple: true});
+  options = Options.default(options, {allowMultiple: true});
+  return this.resolve(options);
 };
 
 Selector.prototype.element = function (options) {
@@ -354,24 +392,16 @@ Selector.prototype.has = function(options) {
 };
 
 Selector.prototype.shouldHave = function(options) {
-  var resolveOptions;
-  if (typeof options === 'object') {
-    resolveOptions = JSON.parse(JSON.stringify(options));
-    resolveOptions.allowMultiple = true;
-  } else {
-    resolveOptions = {allowMultiple: true};
-  }
+  var resolveOptions = Options.remove(options, ['timeout', 'interval']);
+  resolveOptions.allowMultiple = true;
+
   return this.addFinder(elementTester(options)).shouldExist(resolveOptions);
 };
 
 Selector.prototype.shouldNotHave = function(options) {
-  var resolveOptions;
-  if (typeof options === 'object') {
-    resolveOptions = JSON.parse(JSON.stringify(options));
-    resolveOptions.allowMultiple = true;
-  } else {
-    resolveOptions = {allowMultiple: true};
-  }
+  var resolveOptions = Options.remove(options, ['timeout', 'interval']);
+  resolveOptions.allowMultiple = true;
+
   return this.addFinder(elementTester(options)).shouldNotExist(resolveOptions);
 };
 
@@ -405,11 +435,13 @@ Selector.prototype.click = function(options) {
 };
 
 Selector.prototype.select = function(options) {
+  var selectOptions = Options.remove(options, ['text']);
+
   return this.element(options).then(function(element) {
 
     var optionList = element.options;
     for (var optionIndex = 0; optionIndex < optionList.length; optionIndex++){
-      if (optionList[optionIndex].text == options.text){
+      if (optionList[optionIndex].text == selectOptions.text){
         optionList[optionIndex].selected = true;
         var event = new MouseEvent('change', {
           view: window,
