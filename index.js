@@ -253,6 +253,7 @@ Selector.prototype.component = function (methods) {
 };
 
 Selector.prototype.containing = function (selector, options) {
+  var message = options && JSON.stringify(options);
   var findElements = elementFinder(selector);
   var finder;
 
@@ -273,6 +274,10 @@ Selector.prototype.containing = function (selector, options) {
         if (tested.length > 0) {
           return tested;
         }
+      },
+
+      toString: function () {
+        return selector + (message? ' ' + message: '');
       }
     }
   } else {
