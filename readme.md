@@ -19,7 +19,7 @@ Browser Monkey is a DOM assertion library. It helps you write framework agnostic
 ```js
 describe('admin', function () {
   // describes the admin panel, with a search box, results and a user editor
-  var adminPanel = browser.extend({
+  var adminPanel = browser.component({
     searchUsers: function () {
       return this.find('.search');
     },
@@ -29,15 +29,12 @@ describe('admin', function () {
     }
     userEditor: function () {
       // return the user editor, scoped to the .user-editor div.
-      return userEditor.scope(this.find('.user-editor'));
+      return this.find('.user-editor').component({
+        name: function () { this.find('.name'); },
+        email: function () { this.find('.email'); },
+        save: function () { this.find('.save'); }
+      });
     }
-  });
-
-  // describes the user editor, with inputs for name and email, and a save button.
-  var userEditor = browser.extend({
-    name: function () { this.find('.name'); },
-    email: function () { this.find('.email'); },
-    save: function () { this.find('.save'); },
   });
 
   it('can search for, edit and save a user', function () {
@@ -53,7 +50,7 @@ describe('admin', function () {
       });
     }).then(function () {
       // verify that the user was saved
-      // use mockjax-router!
+      // use mock-xhr-router!
     });
   });
 });
@@ -101,7 +98,7 @@ var email = details.find('.email');     // finds .details .email
 
 The API starts with the browser scope, which contains everything on the page.
 
-You can also create DSLs for components on the page using `scope.extend(methods)`. By extending a scope, you can add methods that represent elements of the component at a higher level than mere CSS selectors. It's probably worth noting that these methods should normally just return scopes and not perform actions or assertions.
+You can also create DSLs for components on the page using `scope.component(methods)`. By extending a scope, you can add methods that represent elements of the component at a higher level than mere CSS selectors. It's probably worth noting that these methods should normally just return scopes and not perform actions or assertions.
 
 ## find
 
@@ -299,7 +296,7 @@ Example:
 ```
 
 ```js
-var scope = browser.extend({
+var scope = browser.component({
   mySelect: function(){
     return this.find('.my-select');
   }
