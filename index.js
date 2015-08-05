@@ -438,11 +438,12 @@ Selector.prototype.select = function(options) {
   var selectOptions = Options.remove(options, ['text']);
 
   return this.element(options).then(function(element) {
-
+    var selectedOption;
     var optionList = element.options;
     for (var optionIndex = 0; optionIndex < optionList.length; optionIndex++){
       if (optionList[optionIndex].text == selectOptions.text){
-        optionList[optionIndex].selected = true;
+        selectedOption = optionList[optionIndex];
+        selectedOption.selected = true;
         var event = new MouseEvent('change', {
           view: window,
           bubbles: true,
@@ -453,6 +454,10 @@ Selector.prototype.select = function(options) {
         element.dispatchEvent(event);
         break;
       }
+    }
+
+    if (!selectedOption){
+      throw new Error('No option found for "'+selectOptions.text+'" in select.');
     }
   });
 };

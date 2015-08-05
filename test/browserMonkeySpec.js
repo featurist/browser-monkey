@@ -197,19 +197,31 @@ describe('browser-monkey', function () {
     });
   });
 
-  it('should eventually select an option element', function(){
-    var promise = browser.find('.element').select({text: 'Second'});
-    var selectedItem = undefined;
+  describe('select', function(){
+    it('should eventually select an option element', function(){
+      var promise = browser.find('.element').select({text: 'Second'});
+      var selectedItem = undefined;
 
-    eventuallyInsertHtml(
-      $('<select class="element"><option>First</option><option>Second</option></select>').change(function (e) {
-        var el = e.target;
-        selectedItem = el.options[el.selectedIndex].text;
-      })
-    );
+      eventuallyInsertHtml(
+        $('<select class="element"><option>First</option><option>Second</option></select>').change(function (e) {
+          var el = e.target;
+          selectedItem = el.options[el.selectedIndex].text;
+        })
+      );
 
-    return promise.then(function () {
-      expect(selectedItem).to.equal('Second');
+      return promise.then(function () {
+        expect(selectedItem).to.equal('Second');
+      });
+    });
+
+    it('should error when the specified option does not exist', function(){
+      var promise = browser.find('.element').select({text: 'Does not exist'});
+
+      eventuallyInsertHtml($('<select class="element"><option>First</option><option>Second</option></select>'));
+
+      return Promise.all([
+        expect(promise).to.be.rejected
+      ]);
     });
   });
 
