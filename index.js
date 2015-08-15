@@ -446,7 +446,7 @@ Selector.prototype.select = function(options) {
     var selectedOption;
     var optionList = element.options;
     for (var optionIndex = 0; optionIndex < optionList.length; optionIndex++){
-      if (optionList[optionIndex].text == selectOptions.text){
+      if (optionList[optionIndex].text.indexOf(selectOptions.text) !== -1){
         selectedOption = optionList[optionIndex];
         selectedOption.selected = true;
         var event = new MouseEvent('change', {

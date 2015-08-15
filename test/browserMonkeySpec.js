@@ -198,8 +198,24 @@ describe('browser-monkey', function () {
   });
 
   describe('select', function(){
-    it('should eventually select an option element', function(){
+    it('should eventually select an option element using the text', function(){
       var promise = browser.find('.element').select({text: 'Second'});
+      var selectedItem = undefined;
+
+      eventuallyInsertHtml(
+        $('<select class="element"><option>First</option><option>Second</option></select>').change(function (e) {
+          var el = e.target;
+          selectedItem = el.options[el.selectedIndex].text;
+        })
+      );
+
+      return promise.then(function () {
+        expect(selectedItem).to.equal('Second');
+      });
+    });
+
+    it('should eventually select an option element using a partial match', function(){
+      var promise = browser.find('.element').select({text: 'Seco'});
       var selectedItem = undefined;
 
       eventuallyInsertHtml(

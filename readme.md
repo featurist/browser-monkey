@@ -306,6 +306,11 @@ scope.mySelect().select({text: 'Second'}).then(function(){
 });
 ```
 
+```js
+scope.select([options]);
+```
+
+* `options.text` - a string, text to match against the options text, this will also match partial text
 
 ## elements
 
