@@ -256,8 +256,10 @@ describe('browser-monkey', function () {
         expect($(div).find('input.element').val()).to.equal('haha');
       });
     });
+  });
 
-    it('should fire the blur event on previously typed in element', function () {
+  describe('events', function(){
+    it('typeIn element should fire blur event on input', function(){
       var blurred = false;
 
       insertHtml('<input type="text" class="one"><input type="text" class="two">');
@@ -275,7 +277,45 @@ describe('browser-monkey', function () {
         expect(blurred).to.be.true
       });
     });
-  });
+
+    it('click element should fire blur event on input', function(){
+      var blurred = false;
+
+      insertHtml('<input type="text" class="input"><button>button</button>');
+
+
+      $(div).find('.input').on('blur', function(e){
+        if (e.target.className === 'input') {
+          blurred = true;
+        }
+      })
+
+      return browser.find('.input').typeIn('first').then(function(){
+        return browser.find('button').click();
+      }).then(function(){
+        expect(blurred).to.be.true
+      });
+    });
+
+    it('select element should fire blur event on input', function(){
+      var blurred = false;
+
+      insertHtml('<input type="text" class="input"><select><option>one</option></select>');
+
+
+      $(div).find('.input').on('blur', function(e){
+        if (e.target.className === 'input') {
+          blurred = true;
+        }
+      })
+
+      return browser.find('.input').typeIn('first').then(function(){
+        return browser.find('select').select({text: 'one'});
+      }).then(function(){
+        expect(blurred).to.be.true
+      });
+    });
+  })
 
   it('eventually finds an element containing text', function () {
     var promise = browser.find('.element', {text: 'some t'}).shouldExist();

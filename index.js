@@ -7,6 +7,17 @@ var sendclick = require('./sendclick');
 var debug = require('debug')('browser-monkey');
 var dispatchEvent = require('./dispatchEvent');
 
+function blurActiveElement() {
+  var activeElement;
+  try {
+    activeElement = document.activeElement;
+  } catch ( err ) { }
+
+  if (activeElement) {
+    dispatchEvent(activeElement, 'blur');
+  }
+}
+
 function Options(options){
   this.options = options;
   this.isOptionsObject = typeof options === 'object';
@@ -436,6 +447,7 @@ Selector.prototype.enabled = function () {
 Selector.prototype.click = function(options) {
   return this.enabled().element(options).then(function(element) {
     debug('click', element);
+    blurActiveElement();
     return sendclick(element);
   });
 };
@@ -452,6 +464,7 @@ Selector.prototype.select = function(options) {
         selectedOption.selected = true;
 
         debug('select', element);
+        blurActiveElement();
         dispatchEvent(element, 'change');
         break;
       }
@@ -463,20 +476,10 @@ Selector.prototype.select = function(options) {
   });
 };
 
-function safeActiveElement() {
-  try {
-    return document.activeElement;
-  } catch ( err ) { }
-}
-
 Selector.prototype.typeIn = function(text, options) {
   return this.element(options).then(function(element) {
     debug('typeIn', element, text);
-    var activeElement = safeActiveElement();
-
-    if (activeElement) {
-      dispatchEvent(activeElement, 'blur');
-    }
+    blurActiveElement();
 
     return sendkeys(element, text);
   });
