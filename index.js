@@ -5,6 +5,7 @@ var assert = chai.assert;
 var sendkeys = require('./sendkeys');
 var sendclick = require('./sendclick');
 var debug = require('debug')('browser-monkey');
+var dispatchEvent = require('./dispatchEvent');
 
 function Options(options){
   this.options = options;
@@ -449,14 +450,9 @@ Selector.prototype.select = function(options) {
       if (optionList[optionIndex].text.indexOf(selectOptions.text) !== -1){
         selectedOption = optionList[optionIndex];
         selectedOption.selected = true;
-        var event = new MouseEvent('change', {
-          view: window,
-          bubbles: true,
-          cancelable: true
-        });
 
         debug('select', element);
-        element.dispatchEvent(event);
+        dispatchEvent(element, 'change');
         break;
       }
     }

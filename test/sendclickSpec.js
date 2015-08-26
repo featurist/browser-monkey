@@ -30,12 +30,17 @@ describe('sendclick', function() {
     var clicked = false;
 
     div.onclick = function(ev) {
-        clicked = true;
-        return ev.preventDefault();
+      clicked = true;
+      ev.preventDefault();
     };
+
+    var hash = window.location.hash;
+
+    // IE returns a pound even when there is no value after it
+    if (hash === '#') hash = '';
 
     sendclick(a);
     expect(clicked).to.be.true;
-    expect(window.location.hash).to.equal("");
+    expect(hash).to.equal("");
   });
 });

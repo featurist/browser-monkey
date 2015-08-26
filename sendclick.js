@@ -1,14 +1,7 @@
-module.exports = function (el) {
-  function sendEvent(eventName) {
-    var event = new MouseEvent(eventName, {
-      view: window,
-      bubbles: true,
-      cancelable: true
-    });
-    el.dispatchEvent(event);
-  }
+var dispatchEvent = require('./dispatchEvent');
 
-  sendEvent('mousedown');
-  sendEvent('mouseup');
-  sendEvent('click');
+module.exports = function (el) {
+  dispatchEvent(el, 'mousedown');
+  dispatchEvent(el, 'mouseup');
+  dispatchEvent(el, 'click');
 };

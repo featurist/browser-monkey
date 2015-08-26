@@ -1,3 +1,4 @@
+require('lie/polyfill');
 var browser = require('..');
 var chai = require("chai");
 var expect = chai.expect;
