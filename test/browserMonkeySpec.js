@@ -15,9 +15,13 @@ describe('browser-monkey', function () {
     div = createTestDiv();
   });
 
+  function insertHtml(html){
+    $(html).appendTo(div);
+  }
+
   function eventuallyInsertHtml(html) {
     setTimeout(function () {
-      $(html).appendTo(div);
+      insertHtml(html);
     }, 200);
   }
 
@@ -242,14 +246,34 @@ describe('browser-monkey', function () {
     });
   });
 
-  it('should eventually enter text into an element', function () {
-    var promise = browser.find('.element').typeIn('haha');
-    var clicked = false;
+  describe('typeIn', function(){
+    it('should eventually enter text into an element', function () {
+      var promise = browser.find('.element').typeIn('haha');
 
-    eventuallyInsertHtml('<input type="text" class="element"></input>');
+      eventuallyInsertHtml('<input type="text" class="element"></input>');
 
-    return promise.then(function () {
-      expect($(div).find('input.element').val()).to.equal('haha');
+      return promise.then(function () {
+        expect($(div).find('input.element').val()).to.equal('haha');
+      });
+    });
+
+    it('should fire the blur event on previously typed in element', function () {
+      var blurred = false;
+
+      insertHtml('<input type="text" class="one"><input type="text" class="two">');
+
+
+      $(div).find('.one').on('blur', function(e){
+        if (e.target.className === 'one') {
+          blurred = true;
+        }
+      })
+
+      return browser.find('.one').typeIn('first').then(function(){
+        return browser.find('.two').typeIn('second');
+      }).then(function(){
+        expect(blurred).to.be.true
+      });
     });
   });
 

@@ -463,9 +463,21 @@ Selector.prototype.select = function(options) {
   });
 };
 
+function safeActiveElement() {
+  try {
+    return document.activeElement;
+  } catch ( err ) { }
+}
+
 Selector.prototype.typeIn = function(text, options) {
   return this.element(options).then(function(element) {
     debug('typeIn', element, text);
+    var activeElement = safeActiveElement();
+
+    if (activeElement) {
+      dispatchEvent(activeElement, 'blur');
+    }
+
     return sendkeys(element, text);
   });
 };

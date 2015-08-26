@@ -13,6 +13,9 @@ function sendkey(el, char) {
 
 function sendkeys(el, text) {
   el.focus();
+  if (el.setActive) {
+    el.setActive();
+  }
 
   for (var n = 0; n < text.length; ++n) {
     var char = text[n];
