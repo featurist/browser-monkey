@@ -20,10 +20,15 @@ function sendkeys(el, text) {
 
   var originalValue = el.value;
 
-  for (var n = 0; n < text.length; ++n) {
-    var char = text[n];
-    el.value = text.substring(0, n + 1);
-    sendkey(el, char);
+  if (text.length === 0) {
+    sendkey(el, '');
+    el.value = '';
+  } else {
+    for (var n = 0; n < text.length; ++n) {
+      var char = text[n];
+      el.value = text.substring(0, n + 1);
+      sendkey(el, char);
+    }
   }
 
   if (originalValue !== text){

@@ -256,6 +256,17 @@ describe('browser-monkey', function () {
         expect($(div).find('input.element').val()).to.equal('haha');
       });
     });
+
+    it('typing empty text blanks out existing text', function () {
+      var firedEvents = [];
+      insertHtml('<input type="text" class="element" value="good bye">')
+        .on('input', function(){ firedEvents.push('input'); });
+
+      return browser.find('.element').typeIn('').then(function () {
+        expect($(div).find('input.element').val()).to.equal('');
+        expect(firedEvents).to.eql(['input'])
+      });
+    });
   });
 
   describe('events', function(){
@@ -272,6 +283,23 @@ describe('browser-monkey', function () {
       return browser.find('.input').typeIn('first').then(function(){
         expect(firedEvents).to.eql([
           'change'
+        ])
+      });
+    });
+
+    it('typeIn element should fire input on each character', function(){
+      var firedEvents = [];
+
+      insertHtml('<input type="text" class="input">')
+        .on('input', function(){
+          firedEvents.push('input');
+        });
+
+      return browser.find('.input').typeIn('123').then(function(){
+        expect(firedEvents).to.eql([
+          'input',
+          'input',
+          'input'
         ])
       });
     });
