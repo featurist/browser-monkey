@@ -16,7 +16,7 @@ describe('browser-monkey', function () {
   });
 
   function insertHtml(html){
-    $(html).appendTo(div);
+    return $(html).appendTo(div);
   }
 
   function eventuallyInsertHtml(html) {
@@ -259,22 +259,42 @@ describe('browser-monkey', function () {
   });
 
   describe('events', function(){
-    it('typeIn element should fire blur event on input', function(){
-      var blurred = false;
+    it('typeIn element should fire change', function(){
+      var firedEvents = [];
 
-      insertHtml('<input type="text" class="one"><input type="text" class="two">');
+      insertHtml('<input type="text" class="input">')
+        .on('blur', function(){
+          firedEvents.push('blur');
+        }).on('change', function(){
+          firedEvents.push('change');
+        })
 
+      return browser.find('.input').typeIn('first').then(function(){
+        expect(firedEvents).to.eql([
+          'change'
+        ])
+      });
+    });
 
-      $(div).find('.one').on('blur', function(e){
-        if (e.target.className === 'one') {
-          blurred = true;
-        }
-      })
+    it('typeIn element should fire change and then blur event on input', function(){
+      var firedEvents = [];
 
-      return browser.find('.one').typeIn('first').then(function(){
-        return browser.find('.two').typeIn('second');
+      insertHtml('<input type="text" class="input"><input type="text" class="change">');
+
+      $(div).find('.input')
+        .on('blur', function(){
+          firedEvents.push('blur');
+        }).on('change', function(){
+          firedEvents.push('change');
+        })
+
+      return browser.find('.input').typeIn('first').then(function(){
+        return browser.find('.change').typeIn('second');
       }).then(function(){
-        expect(blurred).to.be.true
+        expect(firedEvents).to.eql([
+          'change',
+          'blur'
+        ])
       });
     });
 
