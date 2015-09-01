@@ -235,6 +235,24 @@ describe('browser-monkey', function () {
       });
     });
 
+    it('should select an option that eventually appears', function(){
+      var promise = browser.find('.element').select({text: 'Second'});
+      var selectedItem = undefined;
+
+      var select = $('<select class="element"></select>').appendTo(div).change(function (e) {
+        var el = e.target;
+        selectedItem = el.options[el.selectedIndex].text;
+      });
+
+      setTimeout(function () {
+        $('<option>First</option><option>Second</option>').appendTo(select);
+      }, 20);
+
+      return promise.then(function () {
+        expect(selectedItem).to.equal('Second');
+      });
+    });
+
     it('should error when the specified option does not exist', function(){
       var promise = browser.find('.element').select({text: 'Does not exist'});
 
@@ -309,16 +327,15 @@ describe('browser-monkey', function () {
 
       insertHtml('<input type="text" class="input"><input type="text" class="change">');
 
-      $(div).find('.input')
-        .on('blur', function(){
-          firedEvents.push('blur');
-        }).on('change', function(){
-          firedEvents.push('change');
-        })
+      $(div).find('.input').one('blur', function(e){
+        firedEvents.push('blur');
+      }).one('change', function(){
+        firedEvents.push('change');
+      });
 
       return browser.find('.input').typeIn('first').then(function(){
         return browser.find('.change').typeIn('second');
-      }).then(function(){
+      }).then(function () {
         expect(firedEvents).to.eql([
           'change',
           'blur'

@@ -455,24 +455,13 @@ Selector.prototype.click = function(options) {
 Selector.prototype.select = function(options) {
   var selectOptions = Options.remove(options, ['text']);
 
-  return this.element(options).then(function(element) {
-    var selectedOption;
-    var optionList = element.options;
-    for (var optionIndex = 0; optionIndex < optionList.length; optionIndex++){
-      if (optionList[optionIndex].text.indexOf(selectOptions.text) !== -1){
-        selectedOption = optionList[optionIndex];
-        selectedOption.selected = true;
+  return this.find('option', {text: selectOptions.text}).element().then(function(optionElement) {
+    optionElement.selected = true;
+    var selectElement = optionElement.parentNode;
 
-        debug('select', element);
-        blurActiveElement();
-        dispatchEvent(element, 'change');
-        break;
-      }
-    }
-
-    if (!selectedOption){
-      throw new Error('No option found for "'+selectOptions.text+'" in select.');
-    }
+    debug('select', selectElement);
+    blurActiveElement();
+    dispatchEvent(selectElement, 'change');
   });
 };
 
@@ -480,7 +469,6 @@ Selector.prototype.typeIn = function(text, options) {
   return this.element(options).then(function(element) {
     debug('typeIn', element, text);
     blurActiveElement();
-
     return sendkeys(element, text);
   });
 };

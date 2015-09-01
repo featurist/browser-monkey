@@ -1,4 +1,3 @@
-
 module.exports = function dispatchEvent(el, type){
   var e;
   if (document.createEvent){
