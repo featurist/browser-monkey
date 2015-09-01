@@ -153,15 +153,15 @@ function elementTester(options) {
         }
       }
 
-      if (text) {
+      if (text !== undefined) {
         assertElementProperties(els, text, function (e) { return e.text(); });
       }
 
-      if (exactText) {
-        assertElementProperties(els, exactText, function (e) { return e.text(); }, true);
+      if (exactText !== undefined) {
+        assertElementProperties(els, exactText.toString(), function (e) { return e.text(); }, true);
       }
 
-      if (value) {
+      if (value !== undefined) {
         assertElementProperties(els, value, function (e) { return e.val(); });
       }
 

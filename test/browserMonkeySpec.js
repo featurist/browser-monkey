@@ -203,79 +203,113 @@ describe('browser-monkey', function () {
   });
 
   describe('select', function(){
-    it('should eventually select an option element using the text', function(){
-      var promise = browser.find('.element').select({text: 'Second'});
-      var selectedItem = undefined;
+    describe('text', function(){
+      it('should eventually select an option element using the text', function(){
+        var promise = browser.find('.element').select({text: 'Second'});
+        var selectedItem = undefined;
 
-      eventuallyInsertHtml(
-        $('<select class="element"><option>First</option><option>Second</option></select>').change(function (e) {
+        eventuallyInsertHtml(
+          $('<select class="element"><option>First</option><option>Second</option></select>').change(function (e) {
+            var el = e.target;
+            selectedItem = el.options[el.selectedIndex].text;
+          })
+        );
+
+        return promise.then(function () {
+          expect(selectedItem).to.equal('Second');
+        });
+      });
+
+      it('should eventually select an option element using a partial match', function(){
+        var promise = browser.find('.element').select({text: 'Seco'});
+        var selectedItem = undefined;
+
+        eventuallyInsertHtml(
+          $('<select class="element"><option>First</option><option>Second</option></select>').change(function (e) {
+            var el = e.target;
+            selectedItem = el.options[el.selectedIndex].text;
+          })
+        );
+
+        return promise.then(function () {
+          expect(selectedItem).to.equal('Second');
+        });
+      });
+
+      it('should select an option that eventually appears', function(){
+        var promise = browser.find('.element').select({text: 'Second'});
+        var selectedItem = undefined;
+
+        var select = $('<select class="element"></select>').appendTo(div).change(function (e) {
           var el = e.target;
           selectedItem = el.options[el.selectedIndex].text;
-        })
-      );
+        });
 
-      return promise.then(function () {
-        expect(selectedItem).to.equal('Second');
+        setTimeout(function () {
+          $('<option>First</option><option>Second</option>').appendTo(select);
+        }, 20);
+
+        return promise.then(function () {
+          expect(selectedItem).to.equal('Second');
+        });
       });
-    });
 
-    it('should eventually select an option element using a partial match', function(){
-      var promise = browser.find('.element').select({text: 'Seco'});
-      var selectedItem = undefined;
+      it('should error when the specified option does not exist', function(){
+        var promise = browser.find('.element').select({text: 'Does not exist'});
 
-      eventuallyInsertHtml(
-        $('<select class="element"><option>First</option><option>Second</option></select>').change(function (e) {
-          var el = e.target;
+        eventuallyInsertHtml($('<select class="element"><option>First</option><option>Second</option></select>'));
+
+        return Promise.all([
+          expect(promise).to.be.rejected
+        ]);
+      });
+
+      it('should select an option using text that is falsy', function(){
+        var promise = browser.find('.element').select({text: 0});
+        var selectedItem = undefined;
+
+        var select = $('<select class="element"><option>0</option><option>1</option></select>').appendTo(div).change(function (e) {
+          var el = e.currentTarget;
           selectedItem = el.options[el.selectedIndex].text;
-        })
-      );
+        });
 
-      return promise.then(function () {
-        expect(selectedItem).to.equal('Second');
+
+        return promise.then(function () {
+          expect(selectedItem).to.equal('0');
+        });
       });
     });
 
-    it('should select an option that eventually appears', function(){
-      var promise = browser.find('.element').select({text: 'Second'});
-      var selectedItem = undefined;
+    describe('exactText', function(){
+      it('should select an option using exact text that would otherwise match multiple options', function(){
+        var promise = browser.find('.element').select({exactText: 'Mr'});
+        var selectedItem = undefined;
 
-      var select = $('<select class="element"></select>').appendTo(div).change(function (e) {
-        var el = e.target;
-        selectedItem = el.options[el.selectedIndex].text;
+        var select = $('<select class="element"><option>Mr</option><option>Mrs</option></select>').appendTo(div).change(function (e) {
+          var el = e.currentTarget;
+          selectedItem = el.options[el.selectedIndex].text;
+        });
+
+
+        return promise.then(function () {
+          expect(selectedItem).to.equal('Mr');
+        });
       });
 
-      setTimeout(function () {
-        $('<option>First</option><option>Second</option>').appendTo(select);
-      }, 20);
+      it('should select an option using exact text that is falsy', function(){
+        var promise = browser.find('.element').select({exactText: 0});
+        var selectedItem = undefined;
 
-      return promise.then(function () {
-        expect(selectedItem).to.equal('Second');
+        var select = $('<select class="element"><option>0</option><option>1</option></select>').appendTo(div).change(function (e) {
+          var el = e.currentTarget;
+          selectedItem = el.options[el.selectedIndex].text;
+        });
+
+
+        return promise.then(function () {
+          expect(selectedItem).to.equal('0');
+        });
       });
-    });
-
-    it('should select an option using exact text', function(){
-      var promise = browser.find('.element').select({exactText: 'Mr'});
-      var selectedItem = undefined;
-
-      var select = $('<select class="element"><option>Mr</option><option>Mrs</option></select>').appendTo(div).change(function (e) {
-        var el = e.currentTarget;
-        selectedItem = el.options[el.selectedIndex].text;
-      });
-
-
-      return promise.then(function () {
-        expect(selectedItem).to.equal('Mr');
-      });
-    });
-
-    it('should error when the specified option does not exist', function(){
-      var promise = browser.find('.element').select({text: 'Does not exist'});
-
-      eventuallyInsertHtml($('<select class="element"><option>First</option><option>Second</option></select>'));
-
-      return Promise.all([
-        expect(promise).to.be.rejected
-      ]);
     });
   });
 
@@ -441,13 +475,16 @@ describe('browser-monkey', function () {
     });
 
     it('eventually finds an element and asserts that it has value', function () {
-      var good = browser.find('.element input').shouldHave({value: 'some t'});
-      var bad = browser.find('.element input').shouldHave({value: 'sme t'});
+      var good1 = browser.find('.element1 input').shouldHave({value: 'some t'});
+      var good2 = browser.find('.element2 input').shouldHave({value: 0});
+      var bad = browser.find('.element1 input').shouldHave({value: 'sme t'});
 
-      eventuallyInsertHtml('<div class="element"><input type=text value="some text" /></div>');
+      eventuallyInsertHtml('<div class="element1"><input type=text value="some text" /></div>');
+      eventuallyInsertHtml('<div class="element2"><input type=text value="0" /></div>');
 
       return Promise.all([
-        good,
+        good1,
+        good2,
         expect(bad).to.be.rejected
       ]);
     });
@@ -522,11 +559,11 @@ describe('browser-monkey', function () {
     });
 
     it('eventually finds elements and asserts that they each have value', function () {
-      var good = browser.find('.element input').shouldHave({value: ['one', 2]});
+      var good = browser.find('.element input').shouldHave({value: ['one', 2, 0]});
       var bad1 = browser.find('.element input').shouldHave({value: ['one']});
       var bad2 = browser.find('.element input').shouldHave({value: ['one', 'three']});
 
-      eventuallyInsertHtml('<div class="element"><input type=text value="first one"></input><input type=text value="number 2"></input></div>');
+      eventuallyInsertHtml('<div class="element"><input type=text value="first one"><input type=text value="number 2"><input type="text" value="0"></div>');
 
       return Promise.all([
         good,
