@@ -253,6 +253,21 @@ describe('browser-monkey', function () {
       });
     });
 
+    it('should select an option using exact text', function(){
+      var promise = browser.find('.element').select({exactText: 'Mr'});
+      var selectedItem = undefined;
+
+      var select = $('<select class="element"><option>Mr</option><option>Mrs</option></select>').appendTo(div).change(function (e) {
+        var el = e.currentTarget;
+        selectedItem = el.options[el.selectedIndex].text;
+      });
+
+
+      return promise.then(function () {
+        expect(selectedItem).to.equal('Mr');
+      });
+    });
+
     it('should error when the specified option does not exist', function(){
       var promise = browser.find('.element').select({text: 'Does not exist'});
 

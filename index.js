@@ -453,9 +453,9 @@ Selector.prototype.click = function(options) {
 };
 
 Selector.prototype.select = function(options) {
-  var selectOptions = Options.remove(options, ['text']);
+  var selectOptions = Options.remove(options, ['text', 'exactText']);
 
-  return this.find('option', {text: selectOptions.text}).element().then(function(optionElement) {
+  return this.find('option', selectOptions).element().then(function(optionElement) {
     optionElement.selected = true;
     var selectElement = optionElement.parentNode;
 
