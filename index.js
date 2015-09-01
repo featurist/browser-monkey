@@ -91,7 +91,7 @@ function elementFinder(css) {
 function assertElementProperties(elements, expected, getProperty, exact) {
   function assertion(actual, expected) {
     if (exact) {
-      expect(actual, 'expected element to have exact text ' + JSON.stringify(expected) + ' but contained ' + JSON.stringify(actual)).to.equal(expected);
+      expect(actual, 'expected element to have exact text ' + JSON.stringify(expected) + ' but contained ' + JSON.stringify(actual)).to.equal(expected.toString());
     } else {
       expect(actual, 'expected element to contain ' + JSON.stringify(expected) + ' but contained ' + JSON.stringify(actual)).to.contain(expected);
     }
@@ -158,7 +158,7 @@ function elementTester(options) {
       }
 
       if (exactText !== undefined) {
-        assertElementProperties(els, exactText.toString(), function (e) { return e.text(); }, true);
+        assertElementProperties(els, exactText, function (e) { return e.text(); }, true);
       }
 
       if (value !== undefined) {

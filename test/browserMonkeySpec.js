@@ -489,6 +489,16 @@ describe('browser-monkey', function () {
       ]);
     });
 
+    describe('exactText', function(){
+      it('eventually finds elements that have the exact array of text', function(){
+        var promise = browser.find('.element option').shouldHave({exactText: ['', 'Mr', 'Mrs']});
+
+        eventuallyInsertHtml('<select class="element"><option></option><option>Mr</option><option>Mrs</option></select>');
+
+        return promise;
+      });
+    });
+
     describe('checkboxes', function () {
       it('eventually finds a checked checkbox', function () {
         var good = browser.find('.checkbox').shouldHave({checked: true});
