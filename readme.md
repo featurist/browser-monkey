@@ -337,3 +337,19 @@ scope.element([options]).then(function (element) {
 * `element` - the HTML DOM element matched by the scope.
 * `options.timeout` - length of time to wait for the element (1000ms)
 * `options.interval` - time between testing the dom (10ms)
+
+## on
+
+You can receive an event whenever an interaction is made on the DOM, such as a click or text entry. The event will have the element that is interacted with, the event type and other properties depending on the event type.
+
+```js
+var scopeWithEvents = scope.on(function (event) {
+  // handle event
+});
+```
+
+* `event.type` is one of `'click'`, `'typing'`, `'typing html'`, `'select option'`.
+* `event.element` is the element that received the interaction, i.e. the button or input.
+* `event.optionElement` is the option element selected, in the case of type `'select option'`.
+* `event.text` is the text entered, in the case of type `'typing'`.
+* `event.html` is the html entered, in the case of type `'typing html'`.
