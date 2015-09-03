@@ -204,15 +204,45 @@ function elementTester(options) {
   };
 }
 
-function Selector(selector, finders) {
+function Selector(selector, finders, options) {
   this.selector = selector;
   this.finders = finders || [];
+  this.handlers = [];
 }
+
+Selector.prototype.clone = function (extension) {
+  var clone = new this.constructor();
+  var self = this;
+
+  Object.keys(self).forEach(function (key) {
+    clone[key] = self[key];
+  });
+
+  Object.keys(extension).forEach(function (key) {
+    clone[key] = extension[key];
+  });
+
+  return clone;
+};
+
+Selector.prototype.on = function (handler) {
+  var handlers = this.handlers.slice();
+  handlers.push(handler);
+  return this.clone({handlers: handlers});
+};
+
+Selector.prototype.handleEvent = function () {
+  var args = arguments;
+
+  this.handlers.forEach(function (handler) {
+    handler.apply(undefined, args);
+  });
+};
 
 Selector.prototype.addFinder = function (finder) {
   var finders = this.finders && this.finders.slice() || [];
   finders.push(finder);
-  return new this.constructor(this.selector, finders);
+  return this.clone({finders: finders});
 };
 
 Selector.prototype.find = function (selector, options) {
@@ -240,9 +270,9 @@ Selector.prototype.is = function (css) {
 
 Selector.prototype.scope = function (scope) {
   if (scope instanceof Selector) {
-    return new this.constructor(scope.selector, scope.finders);
+    return this.clone(scope);
   } else {
-    return new this.constructor(scope, this.finders);
+    return this.clone({selector: scope});
   }
 };
 
@@ -445,8 +475,11 @@ Selector.prototype.enabled = function () {
 };
 
 Selector.prototype.click = function(options) {
+  var self = this;
+
   return this.enabled().element(options).then(function(element) {
     debug('click', element);
+    self.handleEvent({type: 'click', element: element});
     blurActiveElement();
     return sendclick(element);
   });
@@ -454,28 +487,42 @@ Selector.prototype.click = function(options) {
 
 Selector.prototype.select = function(options) {
   var selectOptions = Options.remove(options, ['text', 'exactText']);
+  var self = this;
 
   return this.find('option', selectOptions).element().then(function(optionElement) {
     optionElement.selected = true;
     var selectElement = optionElement.parentNode;
 
     debug('select', selectElement);
+    self.handleEvent({
+      type: 'select option',
+      value: optionElement.value,
+      element: selectElement,
+      optionElement: optionElement
+    });
+
     blurActiveElement();
     dispatchEvent(selectElement, 'change');
   });
 };
 
 Selector.prototype.typeIn = function(text, options) {
+  var self = this;
+
   return this.element(options).then(function(element) {
     debug('typeIn', element, text);
+    self.handleEvent({type: 'typing', text: text, element: element});
     blurActiveElement();
     return sendkeys(element, text);
   });
 };
 
 Selector.prototype.typeInHtml = function(html, options) {
+  var self = this;
+
   return this.element(options).then(function(element) {
     debug('typeInHtml', element, html);
+    self.handleEvent({type: 'typing html', html: html, element: element});
     return sendkeys.html(element, html);
   });
 };

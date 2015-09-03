@@ -845,4 +845,66 @@ describe('browser-monkey', function () {
       return promise;
     });
   });
+
+  describe('callbacks on interaction', function () {
+    it('fires events on clicks', function () {
+      var button = $('<button>a button</button>').appendTo(div)[0];
+
+      var event;
+
+      return browser.on(function (e) {
+        event = e;
+      }).find('button').click().then(function () {
+        expect(event, 'expected event to fire').to.not.be.undefined;
+        expect(event.type).to.equal('click');
+        expect(event.element).to.equal(button);
+      });
+    });
+
+    it('fires events on typeIn', function () {
+      var input = $('<input></input>').appendTo(div)[0];
+
+      var event;
+
+      return browser.on(function (e) {
+        event = e;
+      }).find('input').typeIn('some text').then(function () {
+        expect(event, 'expected event to fire').to.not.be.undefined;
+        expect(event.type).to.equal('typing');
+        expect(event.text).to.equal('some text');
+        expect(event.element).to.equal(input);
+      });
+    });
+
+    it('fires events on typeIn', function () {
+      var editorDiv = $('<div class="editor"></div>').appendTo(div)[0];
+
+      var event;
+
+      return browser.on(function (e) {
+        event = e;
+      }).find('div.editor').typeInHtml('some <b>html</b>').then(function () {
+        expect(event, 'expected event to fire').to.not.be.undefined;
+        expect(event.type).to.equal('typing html');
+        expect(event.html).to.equal('some <b>html</b>');
+        expect(event.element).to.equal(editorDiv);
+      });
+    });
+
+    it('fires events on select', function () {
+      var select = $('<select><option>one</option></select>').appendTo(div)[0];
+
+      var event;
+
+      return browser.on(function (e) {
+        event = e;
+      }).find('select').select('one').then(function () {
+        expect(event, 'expected event to fire').to.not.be.undefined;
+        expect(event.type).to.equal('select option');
+        expect(event.value).to.equal('one');
+        expect(event.optionElement).to.equal(select.firstChild);
+        expect(event.element).to.equal(select);
+      });
+    });
+  });
 });
