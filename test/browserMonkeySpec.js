@@ -609,22 +609,29 @@ describe('browser-monkey', function () {
     });
 
     it('eventually finds an element and asserts that it passes a predicate', function () {
-      var good1 = browser.find('.element').shouldHave({elements: function (elements) {
-        return $(elements).text() == 'a';
-      }});
-      var good2 = browser.find('.element').shouldHave(function (elements) {
-        return $(elements).text() == 'a';
+      var good1 = browser.find('.element').shouldHaveElement(function (element) {
+        expect(element.innerText).to.equal('a');
       });
-      var bad1 = browser.find('.element').shouldHave({elements: function (elements) {
-        return $(elements).text() == 'b';
-      }, message: 'expected to have text b'});
 
-      eventuallyInsertHtml('<div class="element"></div><div class="element">a</div>');
+      var bad1 = browser.find('.multi').shouldHaveElement(function (element) {
+        expect(element.innerText).to.equal('b');
+      });
+
+      var bad2 = browser.find('.element').shouldHaveElement(function (element) {
+        expect(element.innerText).to.equal('b');
+      });
+
+      var element = $('<div class="element"></div>').appendTo(div);
+      eventuallyInsertHtml('<div class="multi"></div><div class="multi">b</div>');
+
+      setTimeout(function () {
+        element.text('a');
+      }, 30);
 
       return Promise.all([
         good1,
-        good2,
-        expect(bad1).to.be.rejectedWith('expected to have text b')
+        expect(bad1).to.be.rejectedWith('expected to find exactly one element'),
+        expect(bad2).to.be.rejectedWith("expected 'a' to equal 'b'")
       ]);
     });
   });

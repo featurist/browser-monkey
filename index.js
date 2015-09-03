@@ -380,11 +380,16 @@ Selector.prototype.findElements = function (options) {
   }
 
   var elements = findWithFinder($(selector()), 0);
-  if (!allowMultiple && elements.length !== 1) {
-    throw new Error("expected to find exactly one element: " + self.printFinders(self.finders) + ', but found :' + elementsToString(elements));
+  if (!allowMultiple) {
+    expectOneElement(self, elements);
   }
   return elements.toArray();
 };
+
+function expectOneElement(scope, elements) {
+  var msg = "expected to find exactly one element: " + scope.printFinders(scope.finders) + ', but found :' + elementsToString(elements);
+  expect(elements.length, msg).to.equal(1);
+}
 
 Selector.prototype.resolve = function(options) {
   var self = this;
@@ -443,6 +448,18 @@ Selector.prototype.shouldHave = function(options) {
   resolveOptions.allowMultiple = true;
 
   return this.addFinder(elementTester(options)).shouldExist(resolveOptions);
+};
+
+Selector.prototype.shouldHaveElement = function(fn, options) {
+  var self = this;
+
+  return this.addFinder({
+    find: function (elements) {
+      expectOneElement(self, elements);
+      elements.toArray().forEach(fn);
+      return elements;
+    }
+  }).shouldExist(options);
 };
 
 Selector.prototype.shouldNotHave = function(options) {

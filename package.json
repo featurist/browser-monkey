@@ -9,7 +9,6 @@
   "author": "Tim Macfarlane <timmacfarlane@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "chai": "2.2.0",
     "chai-as-promised": "5.1.0",
     "karma": "0.12.31",
     "karma-browserify": "4.0.0",
@@ -21,7 +20,7 @@
     "mocha": "2.2.1"
   },
   "dependencies": {
-    "chai": "3.0.0",
+    "chai": "dereke/chai",
     "debug": "2.2.0",
     "jquery": "2.1.3",
     "trytryagain": "1.1.0"
