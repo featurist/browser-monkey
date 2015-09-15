@@ -914,4 +914,52 @@ describe('browser-monkey', function () {
       });
     });
   });
+
+  describe('fill', function(){
+    it('fills a component with the supplied values', function(){
+      var component = browser.component({
+        title: function(){
+          return this.find('.title');
+        },
+        name: function(){
+          return this.find('.name');
+        }
+      });
+      eventuallyInsertHtml('<select class="title"><option>Mrs</option><option>Mr</option></select><input type="text" class="name"></input>');
+
+      return component.fill([
+        { name: 'title', action: 'select', options: {exactText: 'Mr'}},
+        { name: 'name', action: 'typeIn', options: {text: 'Joe'}}
+      ]).then(function(){
+        console.log('done')
+        expect($(div).find('.title').val()).to.equal('Mr');
+        expect($(div).find('.name').val()).to.equal('Joe');
+      })
+    });
+
+    it('can fill using shortcut syntax', function(){
+      var component = browser.component({
+        title: function(){
+          return this.find('.title');
+        },
+        name: function(){
+          return this.find('.name');
+        },
+        agree: function(){
+          return this.find('.agree');
+        }
+      });
+      eventuallyInsertHtml('<select class="title"><option>Mrs</option><option>Mr</option></select><input type="text" class="name"></input><label class="agree"><input type="checkbox"></label>');
+
+      return component.fill([
+        { select: 'title', text: 'Mrs'},
+        { typeIn: 'name', text: 'Joe'},
+        { click: 'agree' }
+      ]).then(function(){
+        expect($(div).find('.title').val()).to.equal('Mrs');
+        expect($(div).find('.name').val()).to.equal('Joe');
+        expect($(div).find('.agree input').prop('checked')).to.equal(true);
+      })
+    });
+  });
 });

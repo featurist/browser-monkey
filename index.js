@@ -524,6 +524,9 @@ Selector.prototype.select = function(options) {
 };
 
 Selector.prototype.typeIn = function(text, options) {
+  if (typeof text === 'object'){
+    text = text.text;
+  }
   var self = this;
 
   return this.element(options).then(function(element) {
@@ -542,6 +545,48 @@ Selector.prototype.typeInHtml = function(html, options) {
     self.handleEvent({type: 'typing html', html: html, element: element});
     return sendkeys.html(element, html);
   });
+};
+
+Selector.prototype.fill = function(field){
+  var isArray = Object.prototype.toString.call(field) === '[object Array]';
+  var component = this;
+  if (isArray) {
+    var fields = field;
+    return new Promise(function(success){
+      function fillField(){
+        var field = fields.shift();
+        if (field) {
+          return component.fill(field).then(fillField);
+        } else {
+          success();
+        }
+      }
+
+      fillField();
+    });
+  } else {
+    if (!field.name) {      
+      var possibleActions = Object.keys(Selector.prototype);
+
+      for (var i=0; i<possibleActions.length; i++){
+        var action = possibleActions[i];
+        if (field[action]){
+          var newField = {
+            name: field[action],
+            action: action,
+            options: field
+          };
+          delete field[action];
+          
+          field = newField;
+          break;
+        }
+      };
+    }
+
+    var finder = component[field.name]()
+    return component[field.name]()[field.action](field.options);
+  }
 };
 
 module.exports = new Selector();
