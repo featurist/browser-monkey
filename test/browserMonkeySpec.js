@@ -437,6 +437,20 @@ describe('browser-monkey', function () {
     return promise;
   });
 
+  it('eventually finds an element containing text as it appears on the page', function () {
+    var promise = browser.find('.element', {text: 'This is some text that is all on one line.\nAnd some more on another line'}).shouldExist();
+    eventuallyInsertHtml('<div class="element"><div>\
+    This\
+    is\
+    some\
+    text\
+    that is all on one line.\
+    <br/>\
+    And some more on another line.\
+  </div></div>');
+    return promise;
+  });
+
   it('eventually finds an element containing exactText', function () {
     var good = browser.find('.a', {exactText: '8'}).shouldExist();
     var bad = browser.find('.b', {exactText: '8'}).shouldExist();

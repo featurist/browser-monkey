@@ -143,6 +143,10 @@ function elementTester(options) {
     predicate = options;
   }
 
+  function getNormalisedText(el) {
+    return el[0].innerText.replace(/ +/g,' ').replace(/ *\n */g,"\n");
+  }
+
   return {
     find: function(element) {
       var els = $(element);
@@ -154,11 +158,11 @@ function elementTester(options) {
       }
 
       if (text !== undefined) {
-        assertElementProperties(els, text, function (e) { return e.text(); });
+        assertElementProperties(els, text, function (e) { return getNormalisedText(e); });
       }
 
       if (exactText !== undefined) {
-        assertElementProperties(els, exactText, function (e) { return e.text(); }, true);
+        assertElementProperties(els, exactText, function (e) { return getNormalisedText(e); }, true);
       }
 
       if (value !== undefined) {
