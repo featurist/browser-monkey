@@ -547,12 +547,34 @@ Selector.prototype.typeInHtml = function(html, options) {
   });
 };
 
+function inferField(component, field){
+  for (var action in component) {
+    if (field[action] && action !== 'constructor'){
+      var newField = {
+        name: field[action],
+        action: action,
+        options: field
+      };
+      delete field[action];
+
+      if (typeof component[newField.name] !== 'function'){
+        throw new Error("Field '"+newField.name+"' does not exist");
+      }
+
+      return newField;
+    }
+  };
+  if (!field.name) {
+    throw new Error('No action found for field: '+JSON.stringify(field));
+  }
+}
+
 Selector.prototype.fill = function(field){
   var isArray = Object.prototype.toString.call(field) === '[object Array]';
   var component = this;
   if (isArray) {
     var fields = field;
-    return new Promise(function(success){
+    return new Promise(function(success, failure){
       function fillField(){
         var field = fields.shift();
         if (field) {
@@ -565,23 +587,8 @@ Selector.prototype.fill = function(field){
       fillField();
     });
   } else {
-    if (!field.name) {      
-      var possibleActions = Object.keys(Selector.prototype);
-
-      for (var i=0; i<possibleActions.length; i++){
-        var action = possibleActions[i];
-        if (field[action]){
-          var newField = {
-            name: field[action],
-            action: action,
-            options: field
-          };
-          delete field[action];
-          
-          field = newField;
-          break;
-        }
-      };
+    if (!field.name) {
+      field = inferField(component, field);
     }
 
     var finder = component[field.name]()
