@@ -928,4 +928,100 @@ describe('browser-monkey', function () {
       });
     });
   });
+
+  describe('fill', function(){
+    it('fills a component with the supplied values', function(){
+      var component = browser.component({
+        title: function(){
+          return this.find('.title');
+        },
+        name: function(){
+          return this.find('.name');
+        }
+      });
+      eventuallyInsertHtml('<select class="title"><option>Mrs</option><option>Mr</option></select><input type="text" class="name"></input>');
+
+      return component.fill([
+        { name: 'title', action: 'select', options: {exactText: 'Mr'}},
+        { name: 'name', action: 'typeIn', options: {text: 'Joe'}}
+      ]).then(function(){
+        expect($(div).find('.title').val()).to.equal('Mr');
+        expect($(div).find('.name').val()).to.equal('Joe');
+      });
+    });
+
+    it('can fill using shortcut syntax', function(){
+      var component = browser.component({
+        title: function(){
+          return this.find('.title');
+        },
+        name: function(){
+          return this.find('.name');
+        },
+        agree: function(){
+          return this.find('.agree');
+        }
+      });
+      eventuallyInsertHtml('<select class="title"><option>Mrs</option><option>Mr</option></select><input type="text" class="name"></input><label class="agree"><input type="checkbox"></label>');
+
+      return component.fill([
+        { select: 'title', text: 'Mrs'},
+        { typeIn: 'name', text: 'Joe'},
+        { click: 'agree' }
+      ]).then(function(){
+        expect($(div).find('.title').val()).to.equal('Mrs');
+        expect($(div).find('.name').val()).to.equal('Joe');
+        expect($(div).find('.agree input').prop('checked')).to.equal(true);
+      });
+    });
+
+    it('can execute actions on a component', function(){
+      var myActionRan = false;
+      var component = browser.component({
+        myAction: function(){
+          myActionRan = true;
+          return new Promise(function(success){
+            success();
+          });
+        }
+      }).component({
+        title: function(){
+          return this.find('.title');
+        },
+      });
+      eventuallyInsertHtml('<select class="title"><option>Mrs</option></select>');
+
+      return component.fill([
+        { myAction: 'title' }
+      ]).then(function(){
+        expect(myActionRan).to.be.true;
+      });
+    });
+
+    it('throws an error if the action cannot be found', function(){
+      var component = browser.component({});
+      var error;
+
+      return component.fill([
+        { actionDoesNotExist: 'name'}
+      ]).then(null, function(e){
+        error = e;
+      }).then(function(){
+        expect(error.message).to.contain('actionDoesNotExist')
+      });
+    });
+
+    it('throws an error when trying to call an action on a field which does not exist', function(){
+      var component = browser.component({});
+      var error;
+
+      return component.fill([
+        { typeIn: 'name'}
+      ]).then(null, function(e){
+        error = e;
+      }).then(function(){
+        expect(error.message).to.contain("Field 'name' does not exist");
+      });
+    });
+  });
 });

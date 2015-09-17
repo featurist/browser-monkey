@@ -324,6 +324,48 @@ scope.select([options]);
 
 * `options.text` - a string, text to match against the options text, this will also match partial text
 
+## fill
+It can be tedious to fill out forms using `typeIn`, `select`, etc.
+Fill lets you easily specify fields and actions to run:
+
+```
+var address = browser.component({
+  street: function(){return this.find('.street');},
+  city: function(){return this.find('.city');},
+  country: function(){return this.find('.country');},
+});
+
+address.fill([
+  {name: 'street',  action: 'typeIn', options: {text: 'Monkey St'}},
+  {name: 'city',    action: 'typeIn', options: {text: 'Browserville'}},
+  {name: 'country', action: 'select', options: {text: 'Monkey Island'}},
+]);
+```
+
+This is exectuted as if you wrote this:
+
+```
+address.street().typeIn({text: 'Monkey St'}).then(function(){
+  return address.city().typeIn({text: 'Browserville'});
+}).then(function(){
+  return address.country().select({text: 'Monkey Island'});
+});
+```
+
+* name - the name of any element on the component
+* action - an action to perform, eg. `select`, `typeIn`
+* options - a hash of options that is passed to the action
+
+or if this syntax is still too long for you try the abridged version:
+
+```
+address.fill([
+  {typeIn: 'street',  text: 'Monkey St'},
+  {typeIn: 'city',    text: 'Browserville'},
+  {select: 'country', text: 'Monkey Island'},
+]);
+```
+
 ## elements
 
 Returns a promise resolving to the list of elements matched by the scope.
