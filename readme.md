@@ -14,6 +14,8 @@ Browser Monkey is a DOM assertion library. It helps you write framework agnostic
 * can simulate text entry and clicks. (please let us know if you need more!)
 * returns promises that resolve when the elements are found.
 
+[@dereke](https://github.com/dereke) has made an excellent [video](https://www.youtube.com/watch?v=WQZ2eIfmfEs) of a TDD session using browser-monkey.
+
 # example
 
 ```js
