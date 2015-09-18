@@ -131,6 +131,7 @@ function elementTester(options) {
   var predicate = options.option('elements');
   var length = options.option('length');
   var value = options.option('value');
+  var exactValue = options.option('exactValue');
   var html = options.option('html');
   var checked = options.option('checked');
 
@@ -168,6 +169,10 @@ function elementTester(options) {
 
       if (value !== undefined) {
         assertElementProperties(els, value, function (e) { return e.val(); });
+      }
+
+      if (exactValue !== undefined) {
+        assertElementProperties(els, exactValue, function (e) { return e.val(); }, true);
       }
 
       if (checked) {

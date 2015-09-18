@@ -47,6 +47,17 @@ describe('browser-monkey', function () {
       });
     });
 
+    it('should eventually find an element with the right text', function () {
+      var promise = browser.find('.element', {text: 'green'}).element();
+
+      $('<div class="element"></div>').appendTo(div);
+      eventuallyInsertHtml('<div class="element">red</div><div class="element">blue</div><div class="element">green</div>');
+
+      return promise.then(function (element) {
+        expect(element.innerText).to.equal('green');
+      });
+    });
+
     it('filter fails with the right message', function () {
       var promise = browser.find('.element').filter(function (element) {
         return element.classList.contains('correct');
@@ -499,6 +510,18 @@ describe('browser-monkey', function () {
       return Promise.all([
         good1,
         good2,
+        expect(bad).to.be.rejected
+      ]);
+    });
+
+    it('finds an element with exact value', function () {
+      var bad = browser.find('.element1 input').shouldHave({exactValue: 'some t'});
+      var good = browser.find('.element1 input').shouldHave({exactValue: 'some text'});
+
+      eventuallyInsertHtml('<div class="element1"><input type=text value="some text" /></div>');
+
+      return Promise.all([
+        good,
         expect(bad).to.be.rejected
       ]);
     });
