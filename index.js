@@ -6,6 +6,7 @@ var sendkeys = require('./sendkeys');
 var sendclick = require('./sendclick');
 var debug = require('debug')('browser-monkey');
 var dispatchEvent = require('./dispatchEvent');
+var trace = require('./trace');
 
 function blurActiveElement() {
   var activeElement;
@@ -399,9 +400,9 @@ Selector.prototype.resolve = function(options) {
   var self = this;
   var retryOptions = Options.remove(options, ['timeout', 'interval']);
 
-  return retry(retryOptions, function() {
+  return trace(retry(retryOptions, function() {
     return self.findElements(options);
-  });
+  }));
 };
 
 Selector.prototype.notResolve = function(options) {
