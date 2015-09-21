@@ -567,6 +567,10 @@ function inferField(component, field){
       };
       delete field[action];
 
+      if (field.options) {
+        newField.options = field.options;
+      }
+
       if (typeof component[newField.name] !== 'function'){
         throw new Error("Field '"+newField.name+"' does not exist");
       }

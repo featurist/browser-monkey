@@ -989,7 +989,7 @@ describe('browser-monkey', function () {
 
       return component.fill([
         { select: 'title', text: 'Mrs'},
-        { typeIn: 'name', text: 'Joe'},
+        { typeIn: 'name', options: {text: 'Joe'}},
         { click: 'agree' }
       ]).then(function(){
         expect($(div).find('.title').val()).to.equal('Mrs');
