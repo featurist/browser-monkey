@@ -526,6 +526,17 @@ describe('browser-monkey', function () {
       ]);
     });
 
+    it("treats selects with no value as empty string", function(){
+      insertHtml('<select></select>');
+
+      var select = browser.find('select');
+
+      return Promise.all([
+        select.shouldHave({value: ''}),
+        select.shouldHave({exactValue: ''}),
+      ]);
+    });
+
     describe('exactText', function(){
       it('eventually finds elements that have the exact array of text', function(){
         var promise = browser.find('.element option').shouldHave({exactText: ['', 'Mr', 'Mrs']});

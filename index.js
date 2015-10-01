@@ -168,11 +168,11 @@ function elementTester(options) {
       }
 
       if (value !== undefined) {
-        assertElementProperties(els, value, function (e) { return e.val(); });
+        assertElementProperties(els, value, function (e) { return e.val() || ''; });
       }
 
       if (exactValue !== undefined) {
-        assertElementProperties(els, exactValue, function (e) { return e.val(); }, true);
+        assertElementProperties(els, exactValue, function (e) { return e.val() || ''; }, true);
       }
 
       if (checked) {
