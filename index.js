@@ -547,6 +547,17 @@ Selector.prototype.typeIn = function(text, options) {
   });
 };
 
+Selector.prototype.submit = function(options) {
+  var self = this;
+
+  return this.element(options).then(function(element) {
+    debug('submit', element);
+    self.handleEvent({type: 'submit', element: element});
+    blurActiveElement();
+    return $(element).submit();
+  });
+};
+
 Selector.prototype.typeInHtml = function(html, options) {
   var self = this;
 

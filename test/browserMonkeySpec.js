@@ -324,6 +324,22 @@ describe('browser-monkey', function () {
     });
   });
 
+  describe('submit', function () {
+    it('should submit the form', function () {
+      var submitted;
+      var promise = browser.find('input').submit();
+
+      $('<form><input type=text></form>').appendTo(div).submit(function (ev) {
+        submitted = true;
+        ev.preventDefault();
+      });
+
+      return promise.then(function () {
+        expect(submitted).to.be.true;
+      });
+    });
+  });
+
   describe('typeIn', function(){
     it('should eventually enter text into an element', function () {
       var promise = browser.find('.element').typeIn('haha');
