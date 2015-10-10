@@ -294,6 +294,26 @@ scope.click().then(function () {
 });
 ```
 
+## typeIn
+
+Returns a promise that resolves once the element has been found and the text has been entered.
+
+```js
+scope.typeIn(text).then(function () {
+});
+```
+
+* `text` the text to type into the input.
+
+## submit
+
+Returns a promise that resolves once the element has been found and the submit event has been triggered
+
+```js
+scope.submit().then(function () {
+});
+```
+
 ## select
 
 Returns a promise that resolves once the element has been found and the matching item selected from the select box
