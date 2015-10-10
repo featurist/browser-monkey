@@ -577,6 +577,21 @@ describe('browser-monkey', function () {
         ]);
       });
 
+      it('can check a checkbox by clicking it', function () {
+        var checkbox = $('<input class="checkbox" type=checkbox>').appendTo(div);
+
+        expect(checkbox.prop('checked')).to.be.false;
+
+        var clicked = browser.find('.checkbox').click();
+        return clicked.then(function () {
+          expect(checkbox.prop('checked')).to.be.true;
+        }).then(function () {
+          return browser.find('.checkbox').click();
+        }).then(function () {
+          expect(checkbox.prop('checked')).to.be.false;
+        });
+      });
+
       it('fails if only one of many checkboxes is checked', function () {
         var good = browser.find('.checkbox').shouldHave({checked: true});
 
