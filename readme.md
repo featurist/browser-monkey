@@ -285,6 +285,18 @@ var promise = scope.shouldHaveElement(fn, [options]);
 * `options.timeout` the timeout given for the element to pass the expectations, default 1000ms.
 * `options.interval` - time between testing the dom (10ms)
 
+## shouldHaveElements
+
+Assert that the elements found in the scope pass an expectation.
+
+```js
+var promise = scope.shouldHaveElements(fn, [options]);
+```
+
+* `fn` a function that tests the elements. The function is repeatedly called until it doesn't throw an exception, or until the timeout.
+* `options.timeout` the timeout given for the element to pass the expectations, default 1000ms.
+* `options.interval` - time between testing the dom (10ms)
+
 ## click
 
 Returns a promise that resolves once the element has been found and the click has been triggered

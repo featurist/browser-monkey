@@ -687,7 +687,7 @@ describe('browser-monkey', function () {
       ]);
     });
 
-    it('eventually finds an element and asserts that it passes a predicate', function () {
+    it('eventually finds an element and asserts that it passes an assertion', function () {
       var good1 = browser.find('.element').shouldHaveElement(function (element) {
         expect(element.innerText).to.equal('a');
       });
@@ -711,6 +711,31 @@ describe('browser-monkey', function () {
         good1,
         expect(bad1).to.be.rejectedWith('expected to find exactly one element'),
         expect(bad2).to.be.rejectedWith("expected 'a' to equal 'b'")
+      ]);
+    });
+
+    it('eventually finds elements and asserts that they pass an assertion', function () {
+      var good1 = browser.find('.element').shouldHaveElements(function (elements) {
+        var xs = elements.map(function (element) {
+          return element.dataset.x;
+        });
+
+        expect(xs).to.eql(['one', 'two', 'three']);
+      });
+
+      var bad1 = browser.find('.element').shouldHaveElements(function (elements) {
+        var xs = elements.map(function (element) {
+          return element.dataset.x;
+        });
+
+        expect(xs).to.eql(['one', 'two']);
+      });
+
+      eventuallyInsertHtml('<div class="element" data-x="one"></div><div class="element" data-x="two"></div><div class="element" data-x="three"></div>');
+
+      return Promise.all([
+        good1,
+        expect(bad1).to.be.rejectedWith("expected [ 'one', 'two', 'three' ]")
       ]);
     });
   });

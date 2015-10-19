@@ -403,11 +403,18 @@ function expectOneElement(scope, elements) {
 
 Selector.prototype.resolve = function(options) {
   var self = this;
-  var retryOptions = Options.remove(options, ['timeout', 'interval']);
+  var retryOptions = Options.remove(options, ['timeout', 'interval', 'trace']);
+  var traceOption = retryOptions.hasOwnProperty('trace')? retryOptions.trace: true;
 
-  return trace(retry(retryOptions, function() {
+  var result = retry(retryOptions, function() {
     return self.findElements(options);
-  }));
+  });
+
+  if (traceOption) {
+    return trace(result);
+  } else {
+    return result;
+  }
 };
 
 Selector.prototype.notResolve = function(options) {
@@ -467,6 +474,17 @@ Selector.prototype.shouldHaveElement = function(fn, options) {
     find: function (elements) {
       expectOneElement(self, elements);
       elements.toArray().forEach(fn);
+      return elements;
+    }
+  }).shouldExist(options);
+};
+
+Selector.prototype.shouldHaveElements = function(fn, options) {
+  options = Options.default(options, {allowMultiple: true, trace: false});
+
+  return this.addFinder({
+    find: function (elements) {
+      fn(elements.toArray());
       return elements;
     }
   }).shouldExist(options);
