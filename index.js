@@ -561,7 +561,7 @@ Selector.prototype.typeIn = function(text, options) {
     debug('typeIn', element, text);
     self.handleEvent({type: 'typing', text: text, element: element});
     blurActiveElement();
-    return sendkeys(element, text);
+    return sendkeys(element, text, Options.remove(options, ['mode']));
   });
 };
 
