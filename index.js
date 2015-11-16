@@ -74,20 +74,6 @@ var $ =
     ? require("jquery")
     : window.$;
 
-function elementFinder(css) {
-  return {
-    find: function(element) {
-      var els = $(element).find(css);
-      if (els.length > 0) {
-        return els;
-      }
-    },
-
-    toString: function() {
-      return css;
-    }
-  };
-}
 
 function assertElementProperties(elements, expected, getProperty, exact) {
   function assertion(actual, expected) {
@@ -220,6 +206,30 @@ function Selector(selector, finders, options) {
   this.handlers = [];
 }
 
+function filterInvisible(index){
+  var el = this[index] || this;
+  var ignoreVisibilityOfTags = ['OPTION'];
+  if (el && ignoreVisibilityOfTags.indexOf(el.tagName) !== -1) {
+    el = el.parentNode;
+  }
+  return $(el).is(':visible');
+}
+
+Selector.prototype.elementFinder = function(css) {
+  return {
+    find: function(element) {
+      var els = $(element).find(css).filter(filterInvisible);
+      if (els.length > 0) {
+        return els;
+      }
+    },
+
+    toString: function() {
+      return css;
+    }
+  };
+}
+
 Selector.prototype.clone = function (extension) {
   var clone = new this.constructor();
   var self = this;
@@ -257,7 +267,7 @@ Selector.prototype.addFinder = function (finder) {
 
 Selector.prototype.find = function (selector, options) {
   var message = JSON.stringify(options);
-  var scope = this.addFinder(elementFinder(selector));
+  var scope = this.addFinder(this.elementFinder(selector));
 
   if (options) {
     var tester = elementTester(options);
@@ -306,7 +316,7 @@ Selector.prototype.component = function (methods) {
 
 Selector.prototype.containing = function (selector, options) {
   var message = options && JSON.stringify(options);
-  var findElements = elementFinder(selector);
+  var findElements = this.elementFinder(selector);
   var finder;
 
   if (options) {
