@@ -34,17 +34,6 @@ describe('browser-monkey', function () {
       return promise;
     });
 
-    it('should not find an element that is visually hidden', function(){
-      insertHtml('<div class="element">hello <span style="display:none;">world</span></div>');
-
-      return browser.find('.element > span').shouldNotExist();
-    });
-
-    it('should find elements that are visually hidden because of how html renders them', function(){
-      insertHtml('<select><option>First</option><option>Second</option></select>');
-      return browser.find('select option').shouldHave({text: ['First', 'Second']});
-    });
-
     it('should eventually find an element using a filter', function () {
       var promise = browser.find('.element').filter(function (element) {
         return element.classList.contains('correct');
@@ -100,6 +89,34 @@ describe('browser-monkey', function () {
       return promise.then(function(elements){
         expect(elements.length).to.equal(2);
       });
+    });
+
+    describe('visibility', function(){
+      it('should not find an element that is visually hidden', function(){
+        insertHtml('<div class="element">hello <span style="display:none;">world</span></div>');
+
+        return browser.find('.element > span').shouldNotExist();
+      });
+
+      it('should find an element that is visually hidden when visibleOnly = false', function(){
+        insertHtml('<div class="element">hello <span style="display:none;">world</span></div>');
+
+        return browser.set({visibleOnly: false}).find('.element > span').shouldExist();
+      });
+
+      it('should find elements that are visually hidden because of how html renders them', function(){
+        insertHtml('<select><option>First</option><option>Second</option></select>');
+        return browser.find('select option').shouldHave({text: ['First', 'Second']});
+      });
+    });
+  });
+
+  describe('set option', function(){
+    it('can set an option that is inerhited by components', function(){
+      var parentComponent = browser.find('div').component({});
+      parentComponent.set({myOption: 'abc'});
+      var childComponent = parentComponent.find('div').component({});
+      expect(childComponent.get('myOption')).to.equal('abc');
     });
   });
 

@@ -203,7 +203,20 @@ function elementTester(options) {
 function Selector(selector, finders, options) {
   this.selector = selector;
   this.finders = finders || [];
+  this.options = options || { visibleOnly: true };
   this.handlers = [];
+}
+
+Selector.prototype.set = function(options){
+  var self = this;
+  Object.keys(options).forEach(function(key){
+    self.options[key] = options[key];
+  });
+  return this;
+}
+
+Selector.prototype.get = function(key){
+  return this.options[key];
 }
 
 function filterInvisible(index){
@@ -216,9 +229,13 @@ function filterInvisible(index){
 }
 
 Selector.prototype.elementFinder = function(css) {
+  var self = this;
   return {
     find: function(element) {
-      var els = $(element).find(css).filter(filterInvisible);
+      var els = $(element).find(css);
+      if (self.get('visibleOnly')) {
+        els = els.filter(filterInvisible);
+      }
       if (els.length > 0) {
         return els;
       }
@@ -597,8 +614,9 @@ Selector.prototype.typeInHtml = function(html, options) {
 };
 
 function inferField(component, field){
+  var ignoreActions = ['constructor', 'options'];
   for (var action in component) {
-    if (field[action] && action !== 'constructor'){
+    if (field[action] && ignoreActions.indexOf(action) === -1){
       var newField = {
         name: field[action],
         action: action,
