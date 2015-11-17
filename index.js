@@ -614,9 +614,9 @@ Selector.prototype.typeInHtml = function(html, options) {
 };
 
 function inferField(component, field){
-  var ignoreActions = ['constructor', 'options'];
+  var ignoreActions = {constructor: true, options: true};
   for (var action in component) {
-    if (field[action] && ignoreActions.indexOf(action) === -1){
+    if (field[action] && !ignoreActions[action]){
       var newField = {
         name: field[action],
         action: action,
