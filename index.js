@@ -201,22 +201,22 @@ function elementTester(options) {
 }
 
 function Selector(selector, finders, options) {
-  this.selector = selector;
-  this.finders = finders || [];
-  this.options = options || { visibleOnly: true };
-  this.handlers = [];
+  this._selector = selector;
+  this._finders = finders || [];
+  this._options = options || { visibleOnly: true };
+  this._handlers = [];
 }
 
 Selector.prototype.set = function(options){
   var self = this;
   Object.keys(options).forEach(function(key){
-    self.options[key] = options[key];
+    self._options[key] = options[key];
   });
   return this;
 }
 
 Selector.prototype.get = function(key){
-  return this.options[key];
+  return this._options[key];
 }
 
 function filterInvisible(index){
@@ -263,23 +263,23 @@ Selector.prototype.clone = function (extension) {
 };
 
 Selector.prototype.on = function (handler) {
-  var handlers = this.handlers.slice();
+  var handlers = this._handlers.slice();
   handlers.push(handler);
-  return this.clone({handlers: handlers});
+  return this.clone({_handlers: handlers});
 };
 
 Selector.prototype.handleEvent = function () {
   var args = arguments;
 
-  this.handlers.forEach(function (handler) {
+  this._handlers.forEach(function (handler) {
     handler.apply(undefined, args);
   });
 };
 
 Selector.prototype.addFinder = function (finder) {
-  var finders = this.finders && this.finders.slice() || [];
+  var finders = this._finders && this._finders.slice() || [];
   finders.push(finder);
-  return this.clone({finders: finders});
+  return this.clone({_finders: finders});
 };
 
 Selector.prototype.find = function (selector, options) {
@@ -309,7 +309,7 @@ Selector.prototype.scope = function (scope) {
   if (scope instanceof Selector) {
     return this.clone(scope);
   } else {
-    return this.clone({selector: scope});
+    return this.clone({_selector: scope});
   }
 };
 
@@ -393,13 +393,13 @@ Selector.prototype.findElements = function (options) {
   var allowMultiple = options && options.hasOwnProperty('allowMultiple')? options.allowMultiple: false;
 
   function findWithFinder(el, finderIndex) {
-    var finder = self.finders[finderIndex];
+    var finder = self._finders[finderIndex];
 
     if (finder) {
       var found = finder.find(el);
 
       if (!found) {
-        throw new Error("expected to find: " + self.printFinders(self.finders.slice(0, finderIndex + 1)));
+        throw new Error("expected to find: " + self.printFinders(self._finders.slice(0, finderIndex + 1)));
       }
 
       return findWithFinder(found, finderIndex + 1);
@@ -409,10 +409,10 @@ Selector.prototype.findElements = function (options) {
   };
 
   function selector() {
-    if(self.selector instanceof Element && self.selector.tagName == 'IFRAME') {
-      return self.selector.contentDocument;
+    if(self._selector instanceof Element && self._selector.tagName == 'IFRAME') {
+      return self._selector.contentDocument;
     } else {
-      return self.selector || 'body';
+      return self._selector || 'body';
     }
   }
 
@@ -424,7 +424,7 @@ Selector.prototype.findElements = function (options) {
 };
 
 function expectOneElement(scope, elements) {
-  var msg = "expected to find exactly one element: " + scope.printFinders(scope.finders) + ', but found :' + elementsToString(elements);
+  var msg = "expected to find exactly one element: " + scope.printFinders(scope._finders) + ', but found :' + elementsToString(elements);
   expect(elements.length, msg).to.equal(1);
 }
 
@@ -455,7 +455,7 @@ Selector.prototype.notResolve = function(options) {
     } catch (e) {
     }
     if (found) {
-      throw new Error("didn't expect to find element: " + self.printFinders(self.finders));
+      throw new Error("didn't expect to find element: " + self.printFinders(self._finders));
     }
   });
 };
@@ -614,7 +614,7 @@ Selector.prototype.typeInHtml = function(html, options) {
 };
 
 function inferField(component, field){
-  var ignoreActions = {constructor: true, options: true};
+  var ignoreActions = {constructor: true, _options: true};
   for (var action in component) {
     if (field[action] && !ignoreActions[action]){
       var newField = {
