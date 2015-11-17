@@ -104,6 +104,19 @@ The API starts with the browser scope, which contains everything on the page.
 
 You can also create DSLs for components on the page using `scope.component(methods)`. By extending a scope, you can add methods that represent elements of the component at a higher level than mere CSS selectors. It's probably worth noting that these methods should normally just return scopes and not perform actions or assertions.
 
+## options
+
+There are some options you can set, which are inherited by inner scopes.
+
+```js
+scope.set({visibleOnly: false});
+var innerScope = scope.find('input');
+
+innerScope.get(); // {visibleOnly: false};
+```
+
+* `visibleOnly` if true, then only visible elements will be found, if false, then all elements are considered. Visible is determined by the element's computed CSS, see [jQuery's :visible selector](https://api.jquery.com/visible-selector/). Default is true.
+
 ## find
 
 ```js
