@@ -263,9 +263,8 @@ Selector.prototype.clone = function (extension) {
 };
 
 Selector.prototype.on = function (handler) {
-  var handlers = this._handlers.slice();
-  handlers.push(handler);
-  return this.clone({_handlers: handlers});
+  this._handlers.push(handler);
+  return this;
 };
 
 Selector.prototype.handleEvent = function () {
