@@ -41,4 +41,10 @@ sendkeys.html = function(el, html) {
   dispatchEvent(el, "input");
 };
 
+sendkeys.submit = function(el, html) {
+  console.log('submitting');
+  el.dispatchEvent(new Event('submit'));
+  // dispatchEvent(el, "submit");
+};
+
 module.exports = sendkeys;
