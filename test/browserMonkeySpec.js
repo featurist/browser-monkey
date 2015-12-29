@@ -389,6 +389,26 @@ describe('browser-monkey', function () {
         expect(firedEvents).to.eql(['input'])
       });
     });
+
+    it('appends to existing text', function () {
+      insertHtml('<input type="text" value="hello ">');
+
+      return browser.find('input').typeIn('world', {mode: 'append'}).then(function () {
+        expect($(div).find('input').val()).to.equal('hello world');
+      });
+    });
+
+    it('types some text then appends some more', function () {
+      var input = browser.find('input');
+
+      insertHtml('<input type="text">');
+
+      return input.typeIn('hello ').then(function(){
+        return input.typeIn('world', {mode: 'append'});
+      }).then(function () {
+        expect($(div).find('input').val()).to.equal('hello world');
+      });
+    });
   });
 
   describe('events', function(){
@@ -444,6 +464,29 @@ describe('browser-monkey', function () {
           'change',
           'blur'
         ])
+      });
+    });
+
+    it('typeIn sends the key codes', function(){
+      var pressed = [];
+      insertHtml('<input type="text">').on('keypress', function(e){
+        pressed.push(String.fromCharCode(e.charCode || e.keyCode));
+      });
+      return browser.find('input').typeIn('hello').then(function(){
+        expect(pressed.join('')).to.equal('hello');
+      });
+    });
+
+    it('typeIn can prevent default on a keypress', function(){
+      var pressed = [];
+      insertHtml('<input type="text">').on('keypress', function(e){
+        var char = String.fromCharCode(e.charCode || e.keyCode);
+        if (char === 'a') {
+          e.preventDefault();
+        }
+      });
+      return browser.find('input').typeIn('iata awaoarakaead').then(function(){
+        return browser.find('input').shouldHave({value: 'it worked'});
       });
     });
 
