@@ -1098,6 +1098,7 @@ describe('browser-monkey', function () {
       var component = browser.component({
         myAction: function(){
           myActionRan = true;
+
           return new Promise(function(success){
             success();
           });
@@ -1120,26 +1121,21 @@ describe('browser-monkey', function () {
       var component = browser.component({});
       var error;
 
-      return component.fill([
+      var promise = component.fill([
         { actionDoesNotExist: 'name'}
-      ]).then(null, function(e){
-        error = e;
-      }).then(function(){
-        expect(error.message).to.contain('actionDoesNotExist')
-      });
+      ]);
+
+      return expect(promise).to.be.rejectedWith('actionDoesNotExist');
     });
 
     it('throws an error when trying to call an action on a field which does not exist', function(){
       var component = browser.component({});
-      var error;
-
-      return component.fill([
+      
+      var promise = component.fill([
         { typeIn: 'name'}
-      ]).then(null, function(e){
-        error = e;
-      }).then(function(){
-        expect(error.message).to.contain("Field 'name' does not exist");
-      });
+      ]);
+
+      return expect(promise).to.be.rejectedWith("Field 'name' does not exist");
     });
   });
 });

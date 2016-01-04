@@ -648,7 +648,7 @@ Selector.prototype.fill = function(field){
       function fillField(){
         var field = fields.shift();
         if (field) {
-          return component.fill(field).then(fillField);
+          return component.fill(field).then(fillField).catch(failure);
         } else {
           success();
         }
