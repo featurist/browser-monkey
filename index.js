@@ -642,28 +642,37 @@ function inferField(component, field){
 Selector.prototype.fill = function(field){
   var isArray = Object.prototype.toString.call(field) === '[object Array]';
   var component = this;
-  if (isArray) {
-    var fields = field;
-    return new Promise(function(success, failure){
-      function fillField(){
-        var field = fields.shift();
-        if (field) {
-          return component.fill(field).then(fillField).catch(failure);
-        } else {
-          success();
+  return new Promise(function(success, failure){
+    if (isArray) {
+      var fields = field;
+        function fillField(){
+          var field = fields.shift();
+          if (field) {
+            return component.fill(field).then(fillField).catch(failure);
+          } else {
+            success();
+          }
+        }
+
+        fillField();
+    } else {
+      if (!field.name) {
+        try {
+          field = inferField(component, field);
+        } catch(e) {
+          failure(e.message);
+          return;
         }
       }
 
-      fillField();
-    });
-  } else {
-    if (!field.name) {
-      field = inferField(component, field);
+      if (typeof component[field.name] === 'function') {
+        var finder = component[field.name]()
+        success(component[field.name]()[field.action](field.options));
+      } else {
+        failure("No field '"+field.name+"' exists on this component");
+      }
     }
-
-    var finder = component[field.name]()
-    return component[field.name]()[field.action](field.options);
-  }
+  });
 };
 
 module.exports = new Selector();

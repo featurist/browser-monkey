@@ -1130,12 +1130,22 @@ describe('browser-monkey', function () {
 
     it('throws an error when trying to call an action on a field which does not exist', function(){
       var component = browser.component({});
-      
+
       var promise = component.fill([
         { typeIn: 'name'}
       ]);
 
       return expect(promise).to.be.rejectedWith("Field 'name' does not exist");
+    });
+
+    it('throws an error if the field does not exist', function(){
+      var component = browser.component({});
+
+      var promise = component.fill(
+        { name: 'address', action: 'blah' }
+      );
+
+      return expect(promise).to.be.rejectedWith("No field 'address' exists on this component");
     });
   });
 });
