@@ -1,6 +1,6 @@
 var chai = require('chai');
 var expect = chai.expect;
-var $ = require('./jquery');
+var $ = require('jquery');
 
 var Options = require('./options');
 var elementsToString = require('./elementsToString');

@@ -3,7 +3,7 @@ var trace = require('./trace');
 var Options = require('./options');
 var elementTester = require('./elementTester');
 var expectOneElement = require('./expectOneElement');
-var $ = require('./jquery');
+var $ = require('jquery');
 
 
 function filterInvisible(index){

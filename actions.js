@@ -3,7 +3,7 @@ var dispatchEvent = require('./dispatchEvent');
 var sendkeys = require('./sendkeys');
 var sendclick = require('./sendclick');
 var Options = require('./options');
-var $ = require('./jquery');
+var $ = require('jquery');
 
 function blurActiveElement() {
   var activeElement;
