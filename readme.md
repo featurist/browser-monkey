@@ -271,6 +271,32 @@ Assert that a scope has certain properties.
 
 ```js
 var promise = scope.shouldHave([options]);
+
+//e.g.:
+var promise = browser.find('#topMonkey').shouldHave(text: 'Olive Baboon');
+```
+
+would match:
+
+```html
+<div id="topMonkey">OliveBaboon</div>
+```
+
+or if checking multiple elements:
+```
+var promise = browser.find('#top5 .monkey-species').shouldHave(text: ['Olive Baboon','Patas Monkey','Proboscis Monkey','Pygmy Marmoset','Red-Handed Tamarin']);
+```
+
+would match:
+
+```html
+<ul id="top5">
+  <li class="monkey-species">Olive Baboon</li>
+  <li class="monkey-species">Patas Monkey</li>
+  <li class="monkey-species">Proboscis Monkey</li>
+  <li class="monkey-species">Pygmy Marmoset</li>
+  <li class="monkey-species">Red-Handed Tamarin</li>
+</ul>
 ```
 
 * `options.text` - a string, expects the resolved scope to contain the text. If an array of strings, expects the elements to have the same number of elements as there are strings in the array, and expects each string to be found in each respective element's text.
