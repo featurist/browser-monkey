@@ -273,7 +273,7 @@ Assert that a scope has certain properties.
 var promise = scope.shouldHave([options]);
 
 //e.g.:
-var promise = browser.find('#topMonkey').shouldHave(text: 'Olive Baboon');
+var promise = browser.find('#topMonkey').shouldHave({ text: 'Olive Baboon' });
 ```
 
 would match:
@@ -284,7 +284,13 @@ would match:
 
 or if checking multiple elements:
 ```
-var promise = browser.find('#top5 .monkey-species').shouldHave(text: ['Olive Baboon','Patas Monkey','Proboscis Monkey','Pygmy Marmoset','Red-Handed Tamarin']);
+var promise = browser.find('#top5 .monkey-species').shouldHave({ text: [
+  'Olive Baboon',
+  'Patas Monkey',
+  'Proboscis Monkey',
+  'Pygmy Marmoset',
+  'Red-Handed Tamarin']
+});
 ```
 
 would match:
