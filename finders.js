@@ -60,6 +60,59 @@ module.exports = {
     }
   },
 
+  containing: function (selector, options) {
+    var message = options && JSON.stringify(options);
+    var findElements = this.elementFinder(selector);
+    var finder;
+
+    if (options) {
+      var testElements = elementTester(options);
+      finder = {
+        find: function (elements) {
+          var found = findElements.find(elements);
+          var tested = found.toArray().filter(function (element) {
+            try {
+              testElements.find(element);
+              return true;
+            } catch (error) {
+              return false;
+            }
+          });
+
+          if (tested.length > 0) {
+            return tested;
+          }
+        },
+
+        toString: function () {
+          return selector + (message? ' ' + message: '');
+        }
+      }
+    } else {
+      finder = findElements;
+    }
+
+    return this.addFinder({
+      find: function(elements) {
+        var els = elements.filter(function() {
+          try {
+            return finder.find(this);
+          } catch (e) {
+            return false;
+          }
+        });
+
+        if (els.length > 0) {
+          return els;
+        }
+      },
+
+      toString: function() {
+        return 'containing: ' + finder.toString();
+      }
+    });
+  },
+
   elements: function (options) {
     options = Options.default(options, {allowMultiple: true});
     return this.resolve(options);

@@ -1,4 +1,4 @@
-var finders = require('./find');
+var finders = require('./finders');
 var actions = require('./actions');
 var assertions = require('./assertions');
 
