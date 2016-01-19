@@ -582,17 +582,20 @@ describe('browser-monkey', function () {
     });
 
     it('recurses through a tree of assertions', function(){
-      insertHtml('<div class="airport">LHR<span class="date">Aug 2055</span></div>');
+      insertHtml('<div class="airport"><span class="date">Aug 2055</span><span class="text">LHR</span><span class="blank"></span></div>');
       return browser.component({
         airport: function(){
           return this.find('.airport').component({
-            date: function(){ return this.find('.date'); }
+            date: function(){ return this.find('.date'); },
+            text: function(){ return this.find('.text'); },
+            blank: function(){ return this.find('.blank'); }
           });
         }
       }).shouldHave({
         airport: {
-          text: 'LHR',
-          date: { exactText: 'Aug 2055' }
+          date: { exactText: 'Aug 2055' },
+          text: { text: 'LHR' },
+          blank: { text: undefined }
         }
       });
     });

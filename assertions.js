@@ -29,9 +29,8 @@ module.exports = {
     var resolveOptions = Options.remove(options, ['timeout', 'interval']);
     resolveOptions.allowMultiple = true;
 
-    var componentKeys = Object.keys(options);
-    var additionalAssertions = componentKeys.filter(function(finderMethodName){
-      return typeof self[finderMethodName] === 'function';
+    var additionalAssertions = Object.keys(options).filter(function(finderMethodName){
+      return options[finderMethodName] && options[finderMethodName].constructor === Object;
     });
 
     var additionalOptions = Options.remove(options, additionalAssertions);
