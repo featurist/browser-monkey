@@ -24,10 +24,24 @@ module.exports = {
   },
 
   shouldHave: function(options) {
+    var self = this;
+
     var resolveOptions = Options.remove(options, ['timeout', 'interval']);
     resolveOptions.allowMultiple = true;
 
-    return this.addFinder(elementTester(options)).shouldExist(resolveOptions);
+    var componentKeys = Object.keys(options);
+    var additionalAssertions = componentKeys.filter(function(finderMethodName){
+      return typeof self[finderMethodName] === 'function';
+    });
+
+    var additionalOptions = Options.remove(options, additionalAssertions);
+
+    var assertions = additionalAssertions.map(function(finderMethodName){
+      return self[finderMethodName]().shouldHave(additionalOptions[finderMethodName]);
+    });
+
+    assertions.push(this.addFinder(elementTester(options)).shouldExist(resolveOptions));
+    return Promise.all(assertions);
   },
 
   shouldHaveElement: function(fn, options) {

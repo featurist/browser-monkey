@@ -581,6 +581,22 @@ describe('browser-monkey', function () {
       ]);
     });
 
+    it('recurses through a tree of assertions', function(){
+      insertHtml('<div class="airport">LHR<span class="date">Aug 2055</span></div>');
+      return browser.component({
+        airport: function(){
+          return this.find('.airport').component({
+            date: function(){ return this.find('.date'); }
+          });
+        }
+      }).shouldHave({
+        airport: {
+          text: 'LHR',
+          date: { exactText: 'Aug 2055' }
+        }
+      });
+    });
+
     describe('exactText', function(){
       it('eventually finds elements that have the exact array of text', function(){
         var promise = browser.find('.element option').shouldHave({exactText: ['', 'Mr', 'Mrs']});
