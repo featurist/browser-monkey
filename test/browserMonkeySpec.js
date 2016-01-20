@@ -2,34 +2,24 @@ require('lie/polyfill');
 var browser = require('..');
 var chai = require("chai");
 var expect = chai.expect;
-var createTestDiv = require('./createTestDiv');
+var createTestDom = require('./createTestDom');
 var $ = require('jquery');
 var chaiAsPromised = require("chai-as-promised");
 
 chai.use(chaiAsPromised);
 
 describe('browser-monkey', function () {
-  var div;
+  var dom;
 
-  beforeEach(function () {
-    div = createTestDiv();
+  beforeEach(function(){
+    dom = createTestDom();
   });
-
-  function insertHtml(html){
-    return $(html).appendTo(div);
-  }
-
-  function eventuallyInsertHtml(html) {
-    setTimeout(function () {
-      insertHtml(html);
-    }, 200);
-  }
 
   describe('find', function () {
     it('should eventually find an element', function () {
       var promise = browser.find('.element').shouldExist();
 
-      eventuallyInsertHtml('<div class="element"></div>');
+      dom.eventuallyInsert('<div class="element"></div>');
 
       return promise;
     });
@@ -39,8 +29,8 @@ describe('browser-monkey', function () {
         return element.classList.contains('correct');
       }, 'has class "correct"').element();
 
-      $('<div class="element"></div>').appendTo(div);
-      eventuallyInsertHtml('<div class="element correct"></div>');
+      dom.insert('<div class="element"></div>');
+      dom.eventuallyInsert('<div class="element correct"></div>');
 
       return promise.then(function (element) {
         expect(element.className).to.equal('element correct');
@@ -50,8 +40,8 @@ describe('browser-monkey', function () {
     it('should eventually find an element with the right text', function () {
       var promise = browser.find('.element', {text: 'green'}).element();
 
-      $('<div class="element"></div>').appendTo(div);
-      eventuallyInsertHtml('<div class="element">red</div><div class="element">blue</div><div class="element">green</div>');
+      dom.insert('<div class="element"></div>');
+      dom.eventuallyInsert('<div class="element">red</div><div class="element">blue</div><div class="element">green</div>');
 
       return promise.then(function (element) {
         expect(element.innerText).to.equal('green');
@@ -63,8 +53,8 @@ describe('browser-monkey', function () {
         return element.classList.contains('correct');
       }, 'has class "correct"').element();
 
-      $('<div class="element"></div>').appendTo(div);
-      eventuallyInsertHtml('<div class="element"></div>');
+      dom.insert('<div class="element"></div>');
+      dom.eventuallyInsert('<div class="element"></div>');
 
       return expect(promise).to.be.rejectedWith('has class "correct"');
     });
@@ -74,7 +64,7 @@ describe('browser-monkey', function () {
       iframe.src = '/base/test/page1.html';
       iframe.width = 700;
       iframe.height = 1000;
-      div.appendChild(iframe);
+      dom.el.append(iframe);
       var iframeScope = browser.scope(iframe);
       return iframeScope.find('a', {text: 'page 2'}).click().then(function(){
         return iframeScope.find('h1').shouldHave({text: 'Hello World'});
@@ -84,7 +74,7 @@ describe('browser-monkey', function () {
     it('calls a function for each element found', function(){
       var promise = browser.find('span').elements();
 
-      eventuallyInsertHtml('<div><span>a</span><span>b</span></div>');
+      dom.eventuallyInsert('<div><span>a</span><span>b</span></div>');
 
       return promise.then(function(elements){
         expect(elements.length).to.equal(2);
@@ -93,19 +83,19 @@ describe('browser-monkey', function () {
 
     describe('visibility', function(){
       it('should not find an element that is visually hidden', function(){
-        insertHtml('<div class="element">hello <span style="display:none;">world</span></div>');
+        dom.insert('<div class="element">hello <span style="display:none;">world</span></div>');
 
         return browser.find('.element > span').shouldNotExist();
       });
 
       it('should find an element that is visually hidden when visibleOnly = false', function(){
-        insertHtml('<div class="element">hello <span style="display:none;">world</span></div>');
+        dom.insert('<div class="element">hello <span style="display:none;">world</span></div>');
 
         return browser.set({visibleOnly: false}).find('.element > span').shouldExist();
       });
 
       it('should find elements that are visually hidden because of how html renders them', function(){
-        insertHtml('<select><option>First</option><option>Second</option></select>');
+        dom.insert('<select><option>First</option><option>Second</option></select>');
         return browser.find('select option').shouldHave({text: ['First', 'Second']});
       });
     });
@@ -126,7 +116,7 @@ describe('browser-monkey', function () {
       var bad = browser.find('.element').is('.bad').shouldExist();
 
       setTimeout(function () {
-        var element = $('<div class="element"></div>').appendTo(div);
+        var element = dom.insert('<div class="element"></div>');
 
         setTimeout(function () {
           element.addClass('good');
@@ -139,8 +129,8 @@ describe('browser-monkey', function () {
 
   describe('shouldNotExist', function () {
     it("should ensure that element eventually doesn't exists", function () {
-      var elementToRemove = $('<div class="removing"></div>').appendTo(div);
-      var elementToStay = $('<div class="staying"></div>').appendTo(div);
+      var elementToRemove = dom.insert('<div class="removing"></div>');
+      var elementToStay = dom.insert('<div class="staying"></div>');
 
       var good = browser.find('.removing').shouldNotExist();
       var bad = browser.find('.staying').shouldNotExist();
@@ -156,7 +146,7 @@ describe('browser-monkey', function () {
     });
 
     it('allows trytryagain parameters to be used', function () {
-      var elementToRemove = $('<div class="removing"></div>').appendTo(div);
+      var elementToRemove = dom.insert('<div class="removing"></div>');
 
       var promise = browser.find('.removing').shouldNotExist({timeout: 500, interval: 100});
 
@@ -173,7 +163,7 @@ describe('browser-monkey', function () {
       var promise = browser.find('.element').click();
       var clicked = false;
 
-      eventuallyInsertHtml(
+      dom.eventuallyInsert(
         $('<div class="element"></div>').click(function () {
           clicked = true;
         })
@@ -187,13 +177,13 @@ describe('browser-monkey', function () {
     it('sends mousedown mouseup and click events', function () {
       var events = [];
 
-      $('<div class="element"></div>').mousedown(function () {
+      dom.insert('<div class="element"></div>').mousedown(function () {
         events.push('mousedown');
       }).mouseup(function () {
         events.push('mouseup');
       }).click(function () {
         events.push('click');
-      }).appendTo(div);
+      });
 
       return browser.find('.element').click().then(function () {
         expect(events).to.eql(['mousedown', 'mouseup', 'click']);
@@ -205,7 +195,7 @@ describe('browser-monkey', function () {
       var clicked;
       var buttonState = 'disabled';
 
-      var button = $('<input type=checkbox disabled></input>').appendTo(div);
+      var button = dom.insert('<input type=checkbox disabled></input>');
       button[0].addEventListener('click', function () {
         clicked = buttonState;
       });
@@ -225,7 +215,7 @@ describe('browser-monkey', function () {
       var clicked;
       var buttonState = 'disabled';
 
-      var button = $('<button disabled>a button</button>').appendTo(div);
+      var button = dom.insert('<button disabled>a button</button>');
       button[0].addEventListener('click', function () {
         clicked = buttonState;
       });
@@ -247,7 +237,7 @@ describe('browser-monkey', function () {
         var promise = browser.find('.element').select({text: 'Second'});
         var selectedItem = undefined;
 
-        eventuallyInsertHtml(
+        dom.eventuallyInsert(
           $('<select class="element"><option>First</option><option>Second</option></select>').change(function (e) {
             var el = e.target;
             selectedItem = el.options[el.selectedIndex].text;
@@ -263,7 +253,7 @@ describe('browser-monkey', function () {
         var promise = browser.find('.element').select({text: 'Seco'});
         var selectedItem = undefined;
 
-        eventuallyInsertHtml(
+        dom.eventuallyInsert(
           $('<select class="element"><option>First</option><option>Second</option></select>').change(function (e) {
             var el = e.target;
             selectedItem = el.options[el.selectedIndex].text;
@@ -279,7 +269,7 @@ describe('browser-monkey', function () {
         var promise = browser.find('.element').select({text: 'Second'});
         var selectedItem = undefined;
 
-        var select = $('<select class="element"></select>').appendTo(div).change(function (e) {
+        var select = dom.insert('<select class="element"></select>').change(function (e) {
           var el = e.target;
           selectedItem = el.options[el.selectedIndex].text;
         });
@@ -296,7 +286,7 @@ describe('browser-monkey', function () {
       it('should error when the specified option does not exist', function(){
         var promise = browser.find('.element').select({text: 'Does not exist'});
 
-        eventuallyInsertHtml($('<select class="element"><option>First</option><option>Second</option></select>'));
+        dom.eventuallyInsert('<select class="element"><option>First</option><option>Second</option></select>');
 
         return Promise.all([
           expect(promise).to.be.rejected
@@ -307,7 +297,7 @@ describe('browser-monkey', function () {
         var promise = browser.find('.element').select({text: 0});
         var selectedItem = undefined;
 
-        var select = $('<select class="element"><option>0</option><option>1</option></select>').appendTo(div).change(function (e) {
+        var select = dom.insert('<select class="element"><option>0</option><option>1</option></select>').change(function (e) {
           var el = e.currentTarget;
           selectedItem = el.options[el.selectedIndex].text;
         });
@@ -324,7 +314,7 @@ describe('browser-monkey', function () {
         var promise = browser.find('.element').select({exactText: 'Mr'});
         var selectedItem = undefined;
 
-        var select = $('<select class="element"><option>Mr</option><option>Mrs</option></select>').appendTo(div).change(function (e) {
+        var select = dom.insert('<select class="element"><option>Mr</option><option>Mrs</option></select>').change(function (e) {
           var el = e.currentTarget;
           selectedItem = el.options[el.selectedIndex].text;
         });
@@ -339,7 +329,7 @@ describe('browser-monkey', function () {
         var promise = browser.find('.element').select({exactText: 0});
         var selectedItem = undefined;
 
-        var select = $('<select class="element"><option>0</option><option>1</option></select>').appendTo(div).change(function (e) {
+        var select = dom.insert('<select class="element"><option>0</option><option>1</option></select>').change(function (e) {
           var el = e.currentTarget;
           selectedItem = el.options[el.selectedIndex].text;
         });
@@ -357,7 +347,7 @@ describe('browser-monkey', function () {
       var submitted;
       var promise = browser.find('input').submit();
 
-      $('<form><input type=text></form>').appendTo(div).submit(function (ev) {
+      dom.insert('<form><input type=text></form>').submit(function (ev) {
         submitted = true;
         ev.preventDefault();
       });
@@ -372,20 +362,20 @@ describe('browser-monkey', function () {
     it('should eventually enter text into an element', function () {
       var promise = browser.find('.element').typeIn('haha');
 
-      eventuallyInsertHtml('<input type="text" class="element"></input>');
+      dom.eventuallyInsert('<input type="text" class="element"></input>');
 
       return promise.then(function () {
-        expect($(div).find('input.element').val()).to.equal('haha');
+        expect(dom.el.find('input.element').val()).to.equal('haha');
       });
     });
 
     it('typing empty text blanks out existing text', function () {
       var firedEvents = [];
-      insertHtml('<input type="text" class="element" value="good bye">')
+      dom.insert('<input type="text" class="element" value="good bye">')
         .on('input', function(){ firedEvents.push('input'); });
 
       return browser.find('.element').typeIn('').then(function () {
-        expect($(div).find('input.element').val()).to.equal('');
+        expect(dom.el.find('input.element').val()).to.equal('');
         expect(firedEvents).to.eql(['input'])
       });
     });
@@ -395,7 +385,7 @@ describe('browser-monkey', function () {
     it('typeIn element should fire change', function(){
       var firedEvents = [];
 
-      insertHtml('<input type="text" class="input">')
+      dom.insert('<input type="text" class="input">')
         .on('blur', function(){
           firedEvents.push('blur');
         }).on('change', function(){
@@ -412,7 +402,7 @@ describe('browser-monkey', function () {
     it('typeIn element should fire input on each character', function(){
       var firedEvents = [];
 
-      insertHtml('<input type="text" class="input">')
+      dom.insert('<input type="text" class="input">')
         .on('input', function(){
           firedEvents.push('input');
         });
@@ -429,9 +419,9 @@ describe('browser-monkey', function () {
     it('typeIn element should fire change and then blur event on input', function(){
       var firedEvents = [];
 
-      insertHtml('<input type="text" class="input"><input type="text" class="change">');
+      dom.insert('<input type="text" class="input"><input type="text" class="change">');
 
-      $(div).find('.input').one('blur', function(e){
+      dom.el.find('.input').one('blur', function(e){
         firedEvents.push('blur');
       }).one('change', function(){
         firedEvents.push('change');
@@ -450,10 +440,10 @@ describe('browser-monkey', function () {
     it('click element should fire blur event on input', function(){
       var blurred = false;
 
-      insertHtml('<input type="text" class="input"><button>button</button>');
+      dom.insert('<input type="text" class="input"><button>button</button>');
 
 
-      $(div).find('.input').on('blur', function(e){
+      dom.el.find('.input').on('blur', function(e){
         if (e.target.className === 'input') {
           blurred = true;
         }
@@ -469,10 +459,10 @@ describe('browser-monkey', function () {
     it('select element should fire blur event on input', function(){
       var blurred = false;
 
-      insertHtml('<input type="text" class="input"><select><option>one</option></select>');
+      dom.insert('<input type="text" class="input"><select><option>one</option></select>');
 
 
-      $(div).find('.input').on('blur', function(e){
+      dom.el.find('.input').on('blur', function(e){
         if (e.target.className === 'input') {
           blurred = true;
         }
@@ -488,13 +478,13 @@ describe('browser-monkey', function () {
 
   it('eventually finds an element containing text', function () {
     var promise = browser.find('.element', {text: 'some t'}).shouldExist();
-    eventuallyInsertHtml('<div class="element"><div>some text</div></div>');
+    dom.eventuallyInsert('<div class="element"><div>some text</div></div>');
     return promise;
   });
 
   it('eventually finds an element containing text as it appears on the page', function () {
     var promise = browser.find('.element', {text: 'This is some text that is all on one line.\nAnd some more on another line'}).shouldExist();
-    eventuallyInsertHtml('<div class="element"><div>\
+    dom.eventuallyInsert('<div class="element"><div>\
     This\
     is\
     some\
@@ -510,7 +500,7 @@ describe('browser-monkey', function () {
     var good = browser.find('.a', {exactText: '8'}).shouldExist();
     var bad = browser.find('.b', {exactText: '8'}).shouldExist();
 
-    eventuallyInsertHtml('<div><div class="a">8</div><div class="b">28</div></div>');
+    dom.eventuallyInsert('<div><div class="a">8</div><div class="b">28</div></div>');
 
     return Promise.all([
       good,
@@ -523,7 +513,7 @@ describe('browser-monkey', function () {
       var good = browser.find('.element').shouldHave({text: 'some t'});
       var bad = browser.find('.element').shouldHave({text: 'sme t'});
 
-      eventuallyInsertHtml('<div class="element"><div>some text</div></div>');
+      dom.eventuallyInsert('<div class="element"><div>some text</div></div>');
 
       return Promise.all([
         good,
@@ -535,7 +525,7 @@ describe('browser-monkey', function () {
       var good = browser.find('.element').shouldHave({text: 'some t', timeout: 400, interval: 100});
       var bad = browser.find('.element').shouldHave({text: 'sme t'});
 
-      eventuallyInsertHtml('<div class="element"><div>some text</div></div>');
+      dom.eventuallyInsert('<div class="element"><div>some text</div></div>');
 
       return Promise.all([
         good,
@@ -548,8 +538,8 @@ describe('browser-monkey', function () {
       var good2 = browser.find('.element2 input').shouldHave({value: 0});
       var bad = browser.find('.element1 input').shouldHave({value: 'sme t'});
 
-      eventuallyInsertHtml('<div class="element1"><input type=text value="some text" /></div>');
-      eventuallyInsertHtml('<div class="element2"><input type=text value="0" /></div>');
+      dom.eventuallyInsert('<div class="element1"><input type=text value="some text" /></div>');
+      dom.eventuallyInsert('<div class="element2"><input type=text value="0" /></div>');
 
       return Promise.all([
         good1,
@@ -562,7 +552,7 @@ describe('browser-monkey', function () {
       var bad = browser.find('.element1 input').shouldHave({exactValue: 'some t'});
       var good = browser.find('.element1 input').shouldHave({exactValue: 'some text'});
 
-      eventuallyInsertHtml('<div class="element1"><input type=text value="some text" /></div>');
+      dom.eventuallyInsert('<div class="element1"><input type=text value="some text" /></div>');
 
       return Promise.all([
         good,
@@ -571,7 +561,7 @@ describe('browser-monkey', function () {
     });
 
     it("treats selects with no value as empty string", function(){
-      insertHtml('<select></select>');
+      dom.insert('<select></select>');
 
       var select = browser.find('select');
 
@@ -582,7 +572,7 @@ describe('browser-monkey', function () {
     });
 
     it('recurses through a tree of assertions', function(){
-      insertHtml('<div class="airport"><span class="date">Aug 2055</span><span class="text">LHR</span><span class="blank"></span></div>');
+      dom.insert('<div class="airport"><span class="date">Aug 2055</span><span class="text">LHR</span><span class="blank"></span></div>');
       return browser.component({
         airport: function(){
           return this.find('.airport').component({
@@ -604,7 +594,7 @@ describe('browser-monkey', function () {
       it('eventually finds elements that have the exact array of text', function(){
         var promise = browser.find('.element option').shouldHave({exactText: ['', 'Mr', 'Mrs']});
 
-        eventuallyInsertHtml('<select class="element"><option></option><option>Mr</option><option>Mrs</option></select>');
+        dom.eventuallyInsert('<select class="element"><option></option><option>Mr</option><option>Mrs</option></select>');
 
         return promise;
       });
@@ -614,7 +604,7 @@ describe('browser-monkey', function () {
       it('eventually finds a checked checkbox', function () {
         var good = browser.find('.checkbox').shouldHave({checked: true});
 
-        var checkbox = $('<input class="checkbox" type=checkbox />').appendTo(div);
+        var checkbox = dom.insert('<input class="checkbox" type=checkbox />');
         setTimeout(function () {
           checkbox.prop('checked', true);
         }, 20);
@@ -625,7 +615,7 @@ describe('browser-monkey', function () {
       });
 
       it('can check a checkbox by clicking it', function () {
-        var checkbox = $('<input class="checkbox" type=checkbox>').appendTo(div);
+        var checkbox = dom.insert('<input class="checkbox" type=checkbox>');
 
         expect(checkbox.prop('checked')).to.be.false;
 
@@ -642,7 +632,7 @@ describe('browser-monkey', function () {
       it('fails if only one of many checkboxes is checked', function () {
         var good = browser.find('.checkbox').shouldHave({checked: true});
 
-        var checkbox = $('<input class="checkbox" type=checkbox /><input class="checkbox" type=checkbox />').appendTo(div);
+        var checkbox = dom.insert('<input class="checkbox" type=checkbox /><input class="checkbox" type=checkbox />');
         setTimeout(function () {
           checkbox[0].checked = true;
         }, 20);
@@ -656,7 +646,7 @@ describe('browser-monkey', function () {
         var good = browser.find('.checkbox').shouldHave({checked: [true, false]});
         var bad = browser.find('.checkbox').shouldHave({checked: [false, true]});
 
-        var checkbox = $('<input class="checkbox" type=checkbox /><input class="checkbox" type=checkbox />').appendTo(div);
+        var checkbox = dom.insert('<input class="checkbox" type=checkbox /><input class="checkbox" type=checkbox />');
         setTimeout(function () {
           checkbox[0].checked = true;
         }, 20);
@@ -671,7 +661,7 @@ describe('browser-monkey', function () {
         var good = browser.find('.checkbox').shouldHave({checked: false});
         var bad = browser.find('.checkbox').shouldHave({checked: true});
 
-        var checkbox = $('<input class="checkbox" type=checkbox />').appendTo(div);
+        var checkbox = dom.insert('<input class="checkbox" type=checkbox />');
 
         return Promise.all([
           good,
@@ -685,7 +675,7 @@ describe('browser-monkey', function () {
       var bad1 = browser.find('.element div').shouldHave({text: ['one']});
       var bad2 = browser.find('.element div').shouldHave({text: ['one', 'three']});
 
-      eventuallyInsertHtml('<div class="element"><div>\nfirst one</div><div>number 2\n</div></div>');
+      dom.eventuallyInsert('<div class="element"><div>\nfirst one</div><div>number 2\n</div></div>');
 
       return Promise.all([
         good,
@@ -699,7 +689,7 @@ describe('browser-monkey', function () {
       var bad1 = browser.find('.element input').shouldHave({value: ['one']});
       var bad2 = browser.find('.element input').shouldHave({value: ['one', 'three']});
 
-      eventuallyInsertHtml('<div class="element"><input type=text value="first one"><input type=text value="number 2"><input type="text" value="0"></div>');
+      dom.eventuallyInsert('<div class="element"><input type=text value="first one"><input type=text value="number 2"><input type="text" value="0"></div>');
 
       return Promise.all([
         good,
@@ -713,7 +703,7 @@ describe('browser-monkey', function () {
       var bad1 = browser.find('.element').shouldHave({css: '.not-the-class'});
       var bad2 = browser.find('.element').shouldHave({css: '.not-found'});
 
-      eventuallyInsertHtml('<div class="element the-class"><div class="not-the-class">some text</div></div>');
+      dom.eventuallyInsert('<div class="element the-class"><div class="not-the-class">some text</div></div>');
 
       return Promise.all([
         good,
@@ -726,7 +716,7 @@ describe('browser-monkey', function () {
       var good = browser.find('.element').shouldHave({length: 2});
       var bad1 = browser.find('.element').shouldHave({length: 1});
 
-      eventuallyInsertHtml('<div class="element"></div><div class="element"></div>');
+      dom.eventuallyInsert('<div class="element"></div><div class="element"></div>');
 
       return Promise.all([
         good,
@@ -747,8 +737,8 @@ describe('browser-monkey', function () {
         expect(element.innerText).to.equal('b');
       });
 
-      var element = $('<div class="element"></div>').appendTo(div);
-      eventuallyInsertHtml('<div class="multi"></div><div class="multi">b</div>');
+      var element = dom.insert('<div class="element"></div>');
+      dom.eventuallyInsert('<div class="multi"></div><div class="multi">b</div>');
 
       setTimeout(function () {
         element.text('a');
@@ -778,7 +768,7 @@ describe('browser-monkey', function () {
         expect(xs).to.eql(['one', 'two']);
       });
 
-      eventuallyInsertHtml('<div class="element" data-x="one"></div><div class="element" data-x="two"></div><div class="element" data-x="three"></div>');
+      dom.eventuallyInsert('<div class="element" data-x="one"></div><div class="element" data-x="two"></div><div class="element" data-x="three"></div>');
 
       return Promise.all([
         good1,
@@ -791,7 +781,7 @@ describe('browser-monkey', function () {
     it('eventually finds an element and asserts that it does not have text', function () {
       var promise = browser.find('.element').shouldNotHave({text: 'sme t'});
 
-      eventuallyInsertHtml('<div class="element"><div>some text</div></div>');
+      dom.eventuallyInsert('<div class="element"><div>some text</div></div>');
 
       return promise;
     });
@@ -799,7 +789,7 @@ describe('browser-monkey', function () {
     it('allows trytryagain parameters to be used', function () {
       var promise = browser.find('.element').shouldNotHave({text: 'sme t', timeout: 400, interval: 100});
 
-      eventuallyInsertHtml('<div class="element"><div>some text</div></div>');
+      dom.eventuallyInsert('<div class="element"><div>some text</div></div>');
 
       return promise;
     });
@@ -810,8 +800,8 @@ describe('browser-monkey', function () {
       var promise = browser.find('.outer').containing('.inner').shouldExist();
 
       setTimeout(function () {
-        $('<div class="outer"><div>bad</div></div>').appendTo(div);
-        $('<div class="outer"><div class="inner">good</div></div>').appendTo(div);
+        dom.insert('<div class="outer"><div>bad</div></div>');
+        dom.insert('<div class="outer"><div class="inner">good</div></div>');
       }, 200);
 
       return promise;
@@ -821,8 +811,8 @@ describe('browser-monkey', function () {
       var promise = browser.find('.outer').containing('.inner').element();
 
       setTimeout(function () {
-        $('<div class="outer"><div>bad</div></div>').appendTo(div);
-        $('<div class="outer"><div class="inner">good</div></div>').appendTo(div);
+        dom.insert('<div class="outer"><div>bad</div></div>');
+        dom.insert('<div class="outer"><div class="inner">good</div></div>');
       }, 200);
 
       return promise.then(function (element) {
@@ -834,7 +824,7 @@ describe('browser-monkey', function () {
       var promise = browser.find('.outer').containing('.inner').shouldExist();
 
       setTimeout(function () {
-        $('<div class="outer"><div>bad</div></div>').appendTo(div);
+        dom.insert('<div class="outer"><div>bad</div></div>');
       }, 200);
 
       return expect(promise).to.be.rejected;
@@ -846,9 +836,9 @@ describe('browser-monkey', function () {
       var promise = browser.find('.outer').find('.inner').shouldExist();
 
       setTimeout(function () {
-        var outer = $('<div class="outer"></div>').appendTo(div);
+        var outer = dom.insert('<div class="outer"></div>');
         setTimeout(function () {
-          $('<div class="inner">good</div>').appendTo(outer);
+          outer.append('<div class="inner">good</div>');
         }, 200);
       }, 200);
 
@@ -859,7 +849,7 @@ describe('browser-monkey', function () {
       var promise = browser.find('.outer').find('.inner').shouldExist();
 
       setTimeout(function () {
-        var outer = $('<div class="outer"></div>').appendTo(div);
+        var outer = dom.insert('<div class="outer"></div>');
       }, 200);
 
       return expect(promise).to.be.rejected;
@@ -868,8 +858,8 @@ describe('browser-monkey', function () {
 
   describe('scope', function () {
     it('can scope with an element', function () {
-      var red = $('<div><div class="element">red</div></div>').appendTo(div);
-      var blue = $('<div><div class="element">blue</div></div>').appendTo(div);
+      var red = dom.insert('<div><div class="element">red</div></div>');
+      var blue = dom.insert('<div><div class="element">blue</div></div>');
 
       return browser.scope(red).find('.element').element().then(function (element) {
         expect($(element).text()).to.equal('red');
@@ -881,8 +871,8 @@ describe('browser-monkey', function () {
     });
 
     it('can scope with another finder', function () {
-      var red = $('<div class="red"><div class="element">red</div></div>').appendTo(div);
-      var blue = $('<div class="blue"><div class="element">blue</div></div>').appendTo(div);
+      var red = dom.insert('<div class="red"><div class="element">red</div></div>');
+      var blue = dom.insert('<div class="blue"><div class="element">blue</div></div>');
 
       return browser.scope(browser.find('.red')).find('.element').element().then(function (element) {
         expect($(element).text()).to.equal('red');
@@ -908,7 +898,7 @@ describe('browser-monkey', function () {
 
       var promise = user.name().shouldExist();
 
-      eventuallyInsertHtml('<div class="user"><div class="user-name">bob</div><div class="user-address">bob\'s address</div></div>');
+      dom.eventuallyInsert('<div class="user"><div class="user-name">bob</div><div class="user-address">bob\'s address</div></div>');
 
       return promise;
     });
@@ -928,7 +918,7 @@ describe('browser-monkey', function () {
 
       var promise = user.name().shouldExist();
 
-      eventuallyInsertHtml('<div class="user"><div class="user-name">bob</div><div class="user-address">bob\'s address</div></div>');
+      dom.eventuallyInsert('<div class="user"><div class="user-name">bob</div><div class="user-address">bob\'s address</div></div>');
 
       return promise;
     });
@@ -953,7 +943,7 @@ describe('browser-monkey', function () {
       var name = bossUser.name().shouldExist();
       var secondAddress = bossUser.secondAddress().shouldExist();
 
-      eventuallyInsertHtml('<div class="user"><div class="user-name">bob</div><div class="user-address">bob\'s address</div><div class="user-second-address">bob\'s second address</div></div>');
+      dom.eventuallyInsert('<div class="user"><div class="user-name">bob</div><div class="user-address">bob\'s address</div><div class="user-second-address">bob\'s second address</div></div>');
 
       return Promise.all([name, secondAddress]);
     });
@@ -977,7 +967,7 @@ describe('browser-monkey', function () {
 
       var promise = admin.user().name().shouldExist();
 
-      eventuallyInsertHtml('<div class="user"><div class="user-name">bob</div><div class="user-address">bob\'s address</div></div>');
+      dom.eventuallyInsert('<div class="user"><div class="user-name">bob</div><div class="user-address">bob\'s address</div></div>');
 
       return promise;
     });
@@ -993,7 +983,7 @@ describe('browser-monkey', function () {
 
       var promise = admin.user().shouldHave({text: ['Jane']});
 
-      eventuallyInsertHtml(
+      dom.eventuallyInsert(
           '<div class="user">Bob</div>'
         + '<div class="admin">'
           + '<div class="user">Jane</div>'
@@ -1006,7 +996,7 @@ describe('browser-monkey', function () {
 
   describe('callbacks on interaction', function () {
     it('fires events on clicks', function () {
-      var button = $('<button>a button</button>').appendTo(div)[0];
+      var button = dom.insert('<button>a button</button>')[0];
 
       var event;
 
@@ -1020,7 +1010,7 @@ describe('browser-monkey', function () {
     });
 
     it('fires events on typeIn', function () {
-      var input = $('<input></input>').appendTo(div)[0];
+      var input = dom.insert('<input></input>')[0];
 
       var event;
 
@@ -1035,7 +1025,7 @@ describe('browser-monkey', function () {
     });
 
     it('fires events on typeIn', function () {
-      var editorDiv = $('<div class="editor"></div>').appendTo(div)[0];
+      var editorDiv = dom.insert('<div class="editor"></div>')[0];
 
       var event;
 
@@ -1050,7 +1040,7 @@ describe('browser-monkey', function () {
     });
 
     it('fires events on select', function () {
-      var select = $('<select><option>one</option></select>').appendTo(div)[0];
+      var select = dom.insert('<select><option>one</option></select>')[0];
 
       var event;
 
@@ -1076,14 +1066,14 @@ describe('browser-monkey', function () {
           return this.find('.name');
         }
       });
-      eventuallyInsertHtml('<select class="title"><option>Mrs</option><option>Mr</option></select><input type="text" class="name"></input>');
+      dom.eventuallyInsert('<select class="title"><option>Mrs</option><option>Mr</option></select><input type="text" class="name"></input>');
 
       return component.fill([
         { name: 'title', action: 'select', options: {exactText: 'Mr'}},
         { name: 'name', action: 'typeIn', options: {text: 'Joe'}}
       ]).then(function(){
-        expect($(div).find('.title').val()).to.equal('Mr');
-        expect($(div).find('.name').val()).to.equal('Joe');
+        expect(dom.el.find('.title').val()).to.equal('Mr');
+        expect(dom.el.find('.name').val()).to.equal('Joe');
       });
     });
 
@@ -1099,16 +1089,16 @@ describe('browser-monkey', function () {
           return this.find('.agree');
         }
       });
-      eventuallyInsertHtml('<select class="title"><option>Mrs</option><option>Mr</option></select><input type="text" class="name"></input><label class="agree"><input type="checkbox"></label>');
+      dom.eventuallyInsert('<select class="title"><option>Mrs</option><option>Mr</option></select><input type="text" class="name"></input><label class="agree"><input type="checkbox"></label>');
 
       return component.fill([
         { select: 'title', text: 'Mrs'},
         { typeIn: 'name', options: {text: 'Joe'}},
         { click: 'agree' }
       ]).then(function(){
-        expect($(div).find('.title').val()).to.equal('Mrs');
-        expect($(div).find('.name').val()).to.equal('Joe');
-        expect($(div).find('.agree input').prop('checked')).to.equal(true);
+        expect(dom.el.find('.title').val()).to.equal('Mrs');
+        expect(dom.el.find('.name').val()).to.equal('Joe');
+        expect(dom.el.find('.agree input').prop('checked')).to.equal(true);
       });
     });
 
@@ -1127,7 +1117,7 @@ describe('browser-monkey', function () {
           return this.find('.title');
         },
       });
-      eventuallyInsertHtml('<select class="title"><option>Mrs</option></select>');
+      dom.eventuallyInsert('<select class="title"><option>Mrs</option></select>');
 
       return component.fill([
         { myAction: 'title' }
