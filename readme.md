@@ -305,6 +305,35 @@ would match:
 </ul>
 ```
 
+You can also match child components:
+
+```js
+var component = browser.component({
+  airport: function(){
+    return this.find('.airport').component({
+      date: function(){ return this.find('.date'); }
+    });
+  }
+});
+
+component.shouldHave({
+  airport: {
+    text: 'LHR',
+    date: { exactText: 'Aug 2055' }
+  }
+});
+```
+
+would match:
+
+```html
+
+<div class="airport">
+  LHR
+  <span class="date">Aug 2055</span>
+</div>
+```
+
 * `options.text` - a string, expects the resolved scope to contain the text. If an array of strings, expects the elements to have the same number of elements as there are strings in the array, and expects each string to be found in each respective element's text.
 * `options.exactText` - a string, expects the resolved scope to have the exact text. If an array of strings, expects the elements to have the same number of elements as there are strings in the array, and expects each string to equal each respective element's text.
 * `options.css` - a CSS string. Expects the resolved element to be matched by the CSS selector. Note that it won't match if the element contains other elements that match the CSS selector. So if we have `{css: '.class'}` then we expect the resolved element to have a class `class`.

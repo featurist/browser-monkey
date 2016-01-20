@@ -581,6 +581,25 @@ describe('browser-monkey', function () {
       ]);
     });
 
+    it('recurses through a tree of assertions', function(){
+      insertHtml('<div class="airport"><span class="date">Aug 2055</span><span class="text">LHR</span><span class="blank"></span></div>');
+      return browser.component({
+        airport: function(){
+          return this.find('.airport').component({
+            date: function(){ return this.find('.date'); },
+            text: function(){ return this.find('.text'); },
+            blank: function(){ return this.find('.blank'); }
+          });
+        }
+      }).shouldHave({
+        airport: {
+          date: { exactText: 'Aug 2055' },
+          text: { text: 'LHR' },
+          blank: { text: undefined }
+        }
+      });
+    });
+
     describe('exactText', function(){
       it('eventually finds elements that have the exact array of text', function(){
         var promise = browser.find('.element option').shouldHave({exactText: ['', 'Mr', 'Mrs']});
