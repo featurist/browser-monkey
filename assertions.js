@@ -31,7 +31,7 @@ module.exports = {
     resolveOptions.allowMultiple = true;
 
     var additionalAssertions = Object.keys(options).filter(function(finderMethodName){
-      return options[finderMethodName] && options[finderMethodName].constructor === Object;
+      return options[finderMethodName] && options[finderMethodName].constructor === Object && typeof self[finderMethodName] === 'function';
     });
 
     var additionalOptions = Options.remove(options, additionalAssertions);

@@ -78,5 +78,15 @@ module.exports = {
   },
   exactValue: function($el, message, exactValue) {
     assertElementProperties(this.get('$'), $el, exactValue, function (e) { return e.val() || ''; }, true);
+  },
+  attributes: function($el, message, attributes) {
+    var $ = this.get('$');
+    var elements = $el.toArray();
+
+    elements.forEach(function(el){
+      Object.keys(attributes).forEach(function(attributeKey){
+        expect($(el).attr(attributeKey)).to.equal(attributes[attributeKey]);
+      });
+    });
   }
 };
