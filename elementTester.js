@@ -45,6 +45,7 @@ module.exports = function elementTester(options) {
   var exactValue = options.option('exactValue');
   var html = options.option('html');
   var checked = options.option('checked');
+  var attributes = options.option('attributes');
 
   options.validate();
 
@@ -98,6 +99,16 @@ module.exports = function elementTester(options) {
           var elementsNotMatching = elements.filter(function (element) { return element.checked != checked; });
           expect(elementsNotMatching.length, 'expected ' + elementsToString(els) + ' to be ' + (checked? 'checked': 'unchecked')).to.equal(0);
         }
+      }
+
+      if (attributes) {
+        var elements = els.toArray();
+
+        elements.forEach(function(el){
+          Object.keys(attributes).forEach(function(attributeKey){
+            expect($(el).attr(attributeKey)).to.equal(attributes[attributeKey]);
+          });
+        });
       }
 
       if (html) {
