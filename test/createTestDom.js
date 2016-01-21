@@ -1,3 +1,5 @@
+var $ = require('jquery');
+
 module.exports = function() {
   var oldDivs = document.querySelectorAll("body > div.test");
 
@@ -12,5 +14,18 @@ module.exports = function() {
 
   document.body.appendChild(div);
 
-  return div;
+  return {
+    el: $(div),
+    insert: function(html){
+      var append = $(html);
+      this.el.append(append);
+      return append;
+    },
+    eventuallyInsert: function(html) {
+      var self = this;
+      setTimeout(function () {
+        self.insert(html);
+      }, 200);
+    }
+  };
 };

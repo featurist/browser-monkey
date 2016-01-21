@@ -1,17 +1,19 @@
-var createTestDiv = require('./createTestDiv');
+var createTestDom = require('./createTestDom');
 var $ = require('jquery');
 var expect = require('chai').expect;
 var sendclick = require("../sendclick");
 
 describe('sendclick', function() {
+  var dom;
+  beforeEach(function(){
+    dom = createTestDom();
+  });
   it('can navigate to an anchor href', function() {
-    var div = createTestDiv();
-
     var a = document.createElement("a");
     window.location = "#";
 
     a.href = "#/haha";
-    div.appendChild(a);
+    dom.insert(a);
 
     sendclick(a);
 
@@ -19,20 +21,19 @@ describe('sendclick', function() {
   });
 
   it('can click on an anchor which prevents default', function() {
-    var div = createTestDiv();
     var a = document.createElement("a");
 
     window.location = "#";
 
     a.href = "#/haha";
-    div.appendChild(a);
+    dom.insert(a);
 
     var clicked = false;
 
-    div.onclick = function(ev) {
+    dom.el.on('click',function(ev) {
       clicked = true;
       ev.preventDefault();
-    };
+    });
 
     var hash = window.location.hash;
 
