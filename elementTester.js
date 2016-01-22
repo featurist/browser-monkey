@@ -1,38 +1,37 @@
 var chai = require('chai');
 var expect = chai.expect;
-var $ = require('jquery');
 
 var Options = require('./options');
 var elementsToString = require('./elementsToString');
 
-function assertElementProperties(elements, expected, getProperty, exact) {
-  function assertion(actual, expected) {
-    if (exact) {
-      expect(actual, 'expected element to have exact text ' + JSON.stringify(expected) + ' but contained ' + JSON.stringify(actual)).to.equal(expected.toString());
+
+module.exports = function elementTester($, options) {
+  function assertElementProperties(elements, expected, getProperty, exact) {
+    function assertion(actual, expected) {
+      if (exact) {
+        expect(actual, 'expected element to have exact text ' + JSON.stringify(expected) + ' but contained ' + JSON.stringify(actual)).to.equal(expected.toString());
+      } else {
+        expect(actual, 'expected element to contain ' + JSON.stringify(expected) + ' but contained ' + JSON.stringify(actual)).to.contain(expected);
+      }
+    }
+
+    if (expected instanceof Array) {
+      var actualTexts = elements.toArray().map(function (item) {
+        return getProperty($(item));
+      });
+
+      expect(actualTexts.length, 'expected ' + JSON.stringify(actualTexts) + ' to respectively contain ' + JSON.stringify(expected)).to.eql(expected.length);
+
+      expected.forEach(function (expected, index) {
+        var actualText = actualTexts[index];
+        assertion(actualText, expected);
+      });
     } else {
-      expect(actual, 'expected element to contain ' + JSON.stringify(expected) + ' but contained ' + JSON.stringify(actual)).to.contain(expected);
+      var elementText = getProperty(elements);
+      assertion(elementText, expected);
     }
   }
 
-  if (expected instanceof Array) {
-    var actualTexts = elements.toArray().map(function (item) {
-      return getProperty($(item));
-    });
-
-    expect(actualTexts.length, 'expected ' + JSON.stringify(actualTexts) + ' to respectively contain ' + JSON.stringify(expected)).to.eql(expected.length);
-
-    expected.forEach(function (expected, index) {
-      var actualText = actualTexts[index];
-      assertion(actualText, expected);
-    });
-  } else {
-    var elementText = getProperty(elements);
-    assertion(elementText, expected);
-  }
-}
-
-
-module.exports = function elementTester(options) {
   var options = new Options(options);
 
   var css = options.option('css');

@@ -3,7 +3,6 @@ var dispatchEvent = require('./dispatchEvent');
 var sendkeys = require('./sendkeys');
 var sendclick = require('./sendclick');
 var Options = require('./options');
-var $ = require('jquery');
 
 function blurActiveElement() {
   var activeElement;
@@ -64,6 +63,7 @@ module.exports = {
   },
 
   submit: function(options) {
+    var $ = this.get('$');
     var self = this;
 
     return this.element(options).then(function(element) {

@@ -5,7 +5,7 @@ var assertions = require('./assertions');
 function Selector(selector, finders, options) {
   this._selector = selector;
   this._finders = finders || [];
-  this._options = options || { visibleOnly: true };
+  this._options = options || { visibleOnly: true, $: require('jquery') };
   this._handlers = [];
 }
 

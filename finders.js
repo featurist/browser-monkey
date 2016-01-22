@@ -3,26 +3,23 @@ var trace = require('./trace');
 var Options = require('./options');
 var elementTester = require('./elementTester');
 var expectOneElement = require('./expectOneElement');
-var $ = require('jquery');
-
-
-function filterInvisible(index){
-  var el = this[index] || this;
-  var ignoreVisibilityOfTags = ['OPTION'];
-  if (el && ignoreVisibilityOfTags.indexOf(el.tagName) !== -1) {
-    el = el.parentNode;
-  }
-  return $(el).is(':visible');
-}
 
 module.exports = {
   elementFinder: function(css) {
+    var $ = this.get('$');
     var self = this;
     return {
       find: function(element) {
         var els = $(element).find(css);
         if (self.get('visibleOnly')) {
-          els = els.filter(filterInvisible);
+          els = els.filter(function(index){
+            var el = this[index] || this;
+            var ignoreVisibilityOfTags = ['OPTION'];
+            if (el && ignoreVisibilityOfTags.indexOf(el.tagName) !== -1) {
+              el = el.parentNode;
+            }
+            return $(el).is(':visible');
+          });
         }
         if (els.length > 0) {
           return els;
@@ -42,11 +39,12 @@ module.exports = {
   },
 
   find: function (selector, options) {
+    var $ = this.get('$');
     var message = JSON.stringify(options);
     var scope = this.addFinder(this.elementFinder(selector));
 
     if (options) {
-      var tester = elementTester(options);
+      var tester = elementTester($, options);
 
       return scope.filter(function (element) {
         try {
@@ -61,12 +59,13 @@ module.exports = {
   },
 
   containing: function (selector, options) {
+    var $ = this.get('$');
     var message = options && JSON.stringify(options);
     var findElements = this.elementFinder(selector);
     var finder;
 
     if (options) {
-      var testElements = elementTester(options);
+      var testElements = elementTester($, options);
       finder = {
         find: function (elements) {
           var found = findElements.find(elements);
@@ -129,6 +128,7 @@ module.exports = {
   },
 
   findElements: function (options) {
+    var $ = this.get('$');
     var self = this;
     var allowMultiple = options && options.hasOwnProperty('allowMultiple')? options.allowMultiple: false;
 
@@ -195,6 +195,7 @@ module.exports = {
     });
   },
   filter: function (filter, message) {
+    var $ = this.get('$');
     return this.addFinder({
       find: function (elements) {
         var filteredElements = elements.toArray().filter(filter);
