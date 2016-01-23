@@ -76,8 +76,12 @@ Selector.prototype.component = function (methods) {
   return new Component().scope(this);
 };
 
+function create(rootSelector){
+  return new Selector(rootSelector)
+    .component(finders)
+    .component(actions)
+    .component(assertions);
+}
 
-module.exports = new Selector()
-  .component(finders)
-  .component(actions)
-  .component(assertions);
+module.exports = create();
+module.exports.create = create;

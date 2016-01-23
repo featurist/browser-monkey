@@ -21,7 +21,7 @@ module.exports = {
             return $(el).is(':visible');
           });
         }
-        if (els.length > 0) {
+        if (els.size() > 0) {
           return els;
         }
       },
@@ -160,6 +160,7 @@ module.exports = {
     if (!allowMultiple) {
       expectOneElement(self, elements);
     }
+
     return elements.toArray();
   },
 
