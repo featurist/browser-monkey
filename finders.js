@@ -138,7 +138,7 @@ module.exports = {
       },
 
       toString: function() {
-        return 'containing: ' + finder.toString();
+        return ':has(' + finder.toString() + ')';
       }
     });
   },
@@ -156,7 +156,7 @@ module.exports = {
   },
 
   printFinders: function (finders) {
-    return finders.map(function (f) { return f.toString(); }).join(' / ');
+    return finders.map(function (f) { return f.toString(); }).join(' ').replace(/\s+\:/g,':');
   },
 
   findElements: function (options) {

@@ -114,6 +114,26 @@ describe('find', function () {
       });
     });
 
+    domTest('errors with a usable css selector if it cant find something', function (browser, dom) {
+      var promise = browser.find('.outer').find('.not-there').element();
+
+      setTimeout(function () {
+        dom.insert('<div class="outer"><div>bad</div></div>');
+      }, 200);
+
+      expect(promise).to.be.rejectedWith('expected to find: .outer .not-there')
+    });
+
+    domTest('errors with a usable css selector if it cant find an element containing another', function (browser, dom) {
+      var promise = browser.find('.outer').containing('.not-there').shouldExist();
+
+      setTimeout(function () {
+        dom.insert('<div class="outer"><div>bad</div></div>');
+      }, 200);
+
+      expect(promise).to.be.rejectedWith('expected to find: .outer:has(.not-there)')
+    });
+
     domTest("fails if it can't find an element containing another", function (browser, dom) {
       var promise = browser.find('.outer').containing('.inner').shouldExist();
 
@@ -123,6 +143,7 @@ describe('find', function () {
 
       return expect(promise).to.be.rejected;
     });
+
   });
   describe('chains', function () {
     domTest('eventually finds the inner element, even if the outer element exists', function (browser, dom) {
