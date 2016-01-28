@@ -21,7 +21,7 @@ module.exports = {
             return $(el).is(':visible');
           });
         }
-        if (els.size() > 0) {
+        if (els.length > 0) {
           return els;
         }
       },

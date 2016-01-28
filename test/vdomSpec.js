@@ -1,7 +1,7 @@
 var h = require('virtual-dom/h');
 var vquery = require('vdom-query')
 function createBrowser(render){
-  var browser = require('..').create(render);
+  var browser = require('..').create(render());
   browser.set({$: vquery, visibleOnly: false});
   return browser;
 }
