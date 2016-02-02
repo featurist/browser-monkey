@@ -150,7 +150,7 @@ module.exports = {
 
     function selector() {
       if(self._selector instanceof Element && self._selector.tagName == 'IFRAME') {
-        return self._selector.contentDocument;
+        return self._selector.contentDocument.body;
       } else {
         return self._selector || 'body';
       }
