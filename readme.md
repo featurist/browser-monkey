@@ -343,6 +343,7 @@ would match:
 * `options.html` - a string, expects the resolved element to have the html. An array expects the same number of elements, each with the respective html.
 * `options.length` - a number, expects there to be this number of elements
 * `options.elements` - a function, which is passed the resolved elements, return truthy for a match, falsey for a failure.
+* `options.attributes` - an object representing the attributes that should appear on an element, `shouldHave({ attributes: { href: '/home' } })` would match `<a href="/home"></a>`
 * `options.message` - the error message
 * `options.timeout` - length of time to wait for the element (1000ms)
 * `options.interval` - time between testing the dom (10ms)

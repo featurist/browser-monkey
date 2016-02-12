@@ -169,6 +169,25 @@ describe('assertions', function(){
       });
     });
 
+    it('verifies attributes are present', function(){
+      dom.insert('<a id="abc" href="/home">hello</a>');
+      var good = browser.find('a').shouldHave({
+        attributes: {
+          id: 'abc',
+          href: '/home'
+        }
+      });
+      var bad = browser.find('a').shouldHave({
+        attributes: {
+          'class': 'other'
+        }
+      });
+      return Promise.all([
+        good, 
+        expect(bad).to.be.rejected
+      ]);
+    });
+
     describe('exactText', function(){
       it('eventually finds elements that have the exact array of text', function(){
         var promise = browser.find('.element option').shouldHave({exactText: ['', 'Mr', 'Mrs']});
