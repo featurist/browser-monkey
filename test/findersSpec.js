@@ -1,20 +1,14 @@
-var browser = require('..');
-var createTestDom = require('./createTestDom');
-var $ = require('jquery');
+var domTest = require('./domTest');
 
 describe('find', function () {
-  var dom;
+  describe.only('current', function(){
+    domTest('should eventually find an element', function (browser, dom) {
+      var promise = browser.find('.element').shouldExist();
 
-  beforeEach(function(){
-    dom = createTestDom();
-  });
+      dom.eventuallyInsert('<div class="element"></div>');
 
-  it('should eventually find an element', function () {
-    var promise = browser.find('.element').shouldExist();
-
-    dom.eventuallyInsert('<div class="element"></div>');
-
-    return promise;
+      return promise;
+    });
   });
 
   it('should eventually find an element using a filter', function () {
