@@ -1,12 +1,15 @@
 var browser = require('..');
 var createHDom = require('./createTestDom');
 var createVDom = require('./createVDom');
+var isNode = require('detect-node');
 
 module.exports = function domTest(testName, testCb){
-  it('HTML: ' + testName, function(){
-    var htmlDom = createHDom();
-    return testCb(browser, htmlDom);
-  });
+  if (!isNode) {
+    it('HTML: ' + testName, function(){
+      var htmlDom = createHDom();
+      return testCb(browser, htmlDom);
+    });
+  }
 
   it('VDOM: ' + testName, function(){
     var h = require('virtual-dom/h');

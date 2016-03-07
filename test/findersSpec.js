@@ -2,27 +2,28 @@ var domTest = require('./domTest');
 
 describe('find', function () {
   describe.only('current', function(){
-    domTest('should eventually find an element', function (browser, dom) {
-      var promise = browser.find('.element').shouldExist();
 
-      dom.eventuallyInsert('<div class="element"></div>');
+  domTest('should eventually find an element', function (browser, dom) {
+    var promise = browser.find('.element').shouldExist();
 
-      return promise;
-    });
+    dom.eventuallyInsert('<div class="element"></div>');
+
+    return promise;
   });
 
-  it('should eventually find an element using a filter', function () {
+  domTest('should eventually find an element using a filter', function (browser, dom) {
     var promise = browser.find('.element').filter(function (element) {
-      return element.classList.contains('correct');
+      return element.hasClass('correct');
     }, 'has class "correct"').element();
 
     dom.insert('<div class="element"></div>');
     dom.eventuallyInsert('<div class="element correct"></div>');
 
     return promise.then(function (element) {
-      expect(element.className).to.equal('element correct');
+      expect(element.attr('class')).to.equal('element correct');
     });
   });
+    });
 
   it('should eventually find an element with the right text', function () {
     var promise = browser.find('.element', {text: 'green'}).element();

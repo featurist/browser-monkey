@@ -118,8 +118,9 @@ module.exports = {
   },
 
   element: function (options) {
+    var $ = this.get('$');
     return this.resolve(options).then(function (elements) {
-      return elements[0];
+      return $(elements[0]);
     });
   },
 
@@ -149,7 +150,7 @@ module.exports = {
     };
 
     function selector() {
-      if(self._selector instanceof Element && self._selector.tagName == 'IFRAME') {
+      if(typeof Element !== 'undefined' && self._selector instanceof Element && self._selector.tagName == 'IFRAME') {
         return self._selector.contentDocument;
       } else {
         return self._selector || 'body';
@@ -173,6 +174,7 @@ module.exports = {
       return self.findElements(options);
     });
 
+    traceOption = false;
     if (traceOption) {
       return trace(result);
     } else {
@@ -199,7 +201,9 @@ module.exports = {
     var $ = this.get('$');
     return this.addFinder({
       find: function (elements) {
-        var filteredElements = elements.toArray().filter(filter);
+        var filteredElements = elements.toArray().filter(function(element){
+          return filter($(element))
+        });
 
         if (filteredElements && filteredElements.length > 0) {
           return $(filteredElements);
