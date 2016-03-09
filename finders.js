@@ -93,16 +93,16 @@ module.exports = {
 
     return this.addFinder({
       find: function(elements) {
-        var els = elements.filter(function() {
+        var els = Array.prototype.filter.call(elements, function(el) {
           try {
-            return finder.find(this);
+            return finder.find(el);
           } catch (e) {
             return false;
           }
         });
 
         if (els.length > 0) {
-          return els;
+          return $(els);
         }
       },
 

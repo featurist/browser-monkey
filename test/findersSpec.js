@@ -1,8 +1,6 @@
 var domTest = require('./domTest');
 
-describe('find', function () {
-  describe.only('current', function(){
-
+describe.only('find', function () {
   domTest('should eventually find an element', function (browser, dom) {
     var promise = browser.find('.element').shouldExist();
 
@@ -23,22 +21,21 @@ describe('find', function () {
       expect(element.attr('class')).to.equal('element correct');
     });
   });
-    });
 
-  it('should eventually find an element with the right text', function () {
+  domTest('should eventually find an element with the right text', function (browser, dom) {
     var promise = browser.find('.element', {text: 'green'}).element();
 
     dom.insert('<div class="element"></div>');
     dom.eventuallyInsert('<div class="element">red</div><div class="element">blue</div><div class="element">green</div>');
 
     return promise.then(function (element) {
-      expect(element.innerText).to.equal('green');
+      expect(element.text()).to.equal('green');
     });
   });
 
-  it('filter fails with the right message', function () {
+  domTest('filter fails with the right message', function (browser, dom) {
     var promise = browser.find('.element').filter(function (element) {
-      return element.classList.contains('correct');
+      return element.hasClass('correct');
     }, 'has class "correct"').element();
 
     dom.insert('<div class="element"></div>');
@@ -47,7 +44,7 @@ describe('find', function () {
     return expect(promise).to.be.rejectedWith('has class "correct"');
   });
 
-  it('should eventually find an element in an iframe', function(){
+  xit('should eventually find an element in an iframe', function(){
     var iframe = document.createElement('iframe');
     iframe.src = '/base/test/page1.html';
     iframe.width = 700;
@@ -59,17 +56,18 @@ describe('find', function () {
     });
   });
 
-  it('calls a function for each element found', function(){
+  domTest('calls a function for each element found', function(browser, dom){
     var promise = browser.find('span').elements();
 
-    dom.eventuallyInsert('<div><span>a</span><span>b</span></div>');
+    dom.insert('<div><span>a</span><span>b</span></div>');
 
     return promise.then(function(elements){
       expect(elements.length).to.equal(2);
     });
   });
 
-  describe('visibility', function(){
+
+  xdescribe('visibility', function(){
     it('should not find an element that is visually hidden', function(){
       dom.insert('<div class="element">hello <span style="display:none;">world</span></div>');
 
@@ -88,60 +86,60 @@ describe('find', function () {
     });
   });
   describe('containing', function () {
-    it('eventually finds an element containing another element', function () {
+    domTest('eventually finds an element containing another element', function (browser, dom) {
       var promise = browser.find('.outer').containing('.inner').shouldExist();
 
       setTimeout(function () {
         dom.insert('<div class="outer"><div>bad</div></div>');
         dom.insert('<div class="outer"><div class="inner">good</div></div>');
-      }, 200);
+      }, 10);
 
       return promise;
     });
 
-    it('element returns the outer element', function () {
+    domTest('element returns the outer element', function (browser, dom) {
       var promise = browser.find('.outer').containing('.inner').element();
 
       setTimeout(function () {
         dom.insert('<div class="outer"><div>bad</div></div>');
         dom.insert('<div class="outer"><div class="inner">good</div></div>');
-      }, 200);
+      }, 10);
 
       return promise.then(function (element) {
-        expect($(element).is('.outer')).to.be.true;
+        expect(element.hasClass('outer')).to.be.true;
       });
     });
 
-    it("fails if it can't find an element containing another", function () {
+    domTest("fails if it can't find an element containing another", function (browser, dom) {
       var promise = browser.find('.outer').containing('.inner').shouldExist();
 
       setTimeout(function () {
         dom.insert('<div class="outer"><div>bad</div></div>');
-      }, 200);
+      }, 10);
 
       return expect(promise).to.be.rejected;
     });
   });
   describe('chains', function () {
-    it('eventually finds the inner element, even if the outer element exists', function () {
+    domTest('eventually finds the inner element, even if the outer element exists', function (browser, dom) {
       var promise = browser.find('.outer').find('.inner').shouldExist();
 
       setTimeout(function () {
         var outer = dom.insert('<div class="outer"></div>');
         setTimeout(function () {
           outer.append('<div class="inner">good</div>');
-        }, 200);
-      }, 200);
+        }, 10);
+      }, 10);
 
       return promise;
     });
 
-    it('fails to find the inner element if it never arrives', function () {
+    domTest('fails to find the inner element if it never arrives', function (browser, dom) {
       var promise = browser.find('.outer').find('.inner').shouldExist();
 
       setTimeout(function () {
         var outer = dom.insert('<div class="outer"></div>');
-      }, 200);
+      }, 10);
 
       return expect(promise).to.be.rejected;
     });

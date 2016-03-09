@@ -12,7 +12,7 @@ module.exports = function createVDOM(body){
       var self = this;
       setTimeout(function () {
         self.insert(html);
-      }, 200);
+      }, 10);
     }
   }
 }

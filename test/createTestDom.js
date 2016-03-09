@@ -25,7 +25,7 @@ module.exports = function() {
       var self = this;
       setTimeout(function () {
         self.insert(html);
-      }, 200);
+      }, 10);
     }
   };
 };
