@@ -84,7 +84,7 @@ describe('actions', function(){
 
   describe('select', function(){
     describe('text', function(){
-      it('should eventually select an option element using the text', function(){
+      it('eventually selects an option element using the text', function(){
         var promise = browser.find('.element').select({text: 'Second'});
         var selectedItem = undefined;
 
@@ -100,7 +100,7 @@ describe('actions', function(){
         });
       });
 
-      it('should eventually select an option element using a partial match', function(){
+      it('eventually selects an option element using a partial match', function(){
         var promise = browser.find('.element').select({text: 'Seco'});
         var selectedItem = undefined;
 
@@ -116,7 +116,7 @@ describe('actions', function(){
         });
       });
 
-      it('should select an option that eventually appears', function(){
+      it('selects an option that eventually appears', function(){
         var promise = browser.find('.element').select({text: 'Second'});
         var selectedItem = undefined;
 
@@ -134,7 +134,7 @@ describe('actions', function(){
         });
       });
 
-      it('should error when the specified option does not exist', function(){
+      it('errors when the specified option does not exist', function(){
         var promise = browser.find('.element').select({text: 'Does not exist'});
 
         dom.eventuallyInsert('<select class="element"><option>First</option><option>Second</option></select>');
@@ -144,7 +144,13 @@ describe('actions', function(){
         ]);
       });
 
-      it('should select an option using text that is falsy', function(){
+      it('errors when the input is not a select', function(){
+        var promise = browser.find('.element').select({text: 'Whatevs'});
+        dom.eventuallyInsert('<div class="element"></div>');
+        return expect(promise).to.be.rejectedWith('Cannot select from a DIV');
+      });
+
+      it('selects an option using text that is falsy', function(){
         var promise = browser.find('.element').select({text: 0});
         var selectedItem = undefined;
 
@@ -209,7 +215,7 @@ describe('actions', function(){
     });
   });
 
-  describe.only('typeIn', function(){
+  describe('typeIn', function(){
     [
       '<input class="element"></input>',
       '<input class="element" type="text"></input>',
