@@ -57,6 +57,7 @@ module.exports = {
 
     return this.element(options).then(function(element) {
       debug('typeIn', element, text);
+      assertCanTypeIntoElement(element);
       self.handleEvent({type: 'typing', text: text, element: element});
       blurActiveElement();
       return sendkeys(element, text);
@@ -146,5 +147,22 @@ function inferField(component, field){
   };
   if (!field.name) {
     throw new Error('No action found for field: '+JSON.stringify(field));
+  }
+}
+
+function canTypeIntoElement(element) {
+  return $(element).is('input:not([type]), ' +
+                       'input[type=text], ' +
+                       'input[type=email], ' +
+                       'input[type=password], ' +
+                       'input[type=search], ' +
+                       'input[type=tel], ' +
+                       'input[type=url], ' +
+                       'textarea');
+}
+
+function assertCanTypeIntoElement(element) {
+  if (!canTypeIntoElement(element)) {
+    throw new Error('Cannot type into ' + element.tagName);
   }
 }

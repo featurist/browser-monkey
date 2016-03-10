@@ -209,18 +209,43 @@ describe('actions', function(){
     });
   });
 
-  describe('typeIn', function(){
-    it('should eventually enter text into an element', function () {
-      var promise = browser.find('.element').typeIn('haha');
-
-      dom.eventuallyInsert('<input type="text" class="element"></input>');
-
-      return promise.then(function () {
-        expect(dom.el.find('input.element').val()).to.equal('haha');
+  describe.only('typeIn', function(){
+    [
+      '<input class="element"></input>',
+      '<input class="element" type="text"></input>',
+      '<input class="element" type="email"></input>',
+      '<input class="element" type="password"></input>',
+      '<input class="element" type="search"></input>',
+      '<input class="element" type="tel"></input>',
+      '<input class="element" type="url"></input>',
+      '<textarea class="element"></textara>'
+    ].forEach(function(html) {
+            
+      it('eventually enters text into: ' + html, function () {
+        var promise = browser.find('.element').typeIn('haha');
+        dom.eventuallyInsert(html);
+        return promise.then(function () {
+          expect(dom.el.find('.element').val()).to.equal('haha');
+        });
       });
+      
+    });
+    
+    [
+      '<div class="element"></div>',
+      '<input type="checkbox" class="element"></input>',
+      '<select class="element"></select>'
+    ].forEach(function(html) {
+      
+      it('rejects attempt to type into element: ' + html, function () {
+        var promise = browser.find('.element').typeIn('whatevs');
+        dom.eventuallyInsert(html);
+        return expect(promise).to.be.rejectedWith('Cannot type into ' + $(html)[0].tagName);
+      });
+
     });
 
-    it('typing empty text blanks out existing text', function () {
+    it('blanks out existing text when typing empty text', function () {
       var firedEvents = [];
       dom.insert('<input type="text" class="element" value="good bye">')
         .on('input', function(){ firedEvents.push('input'); });
