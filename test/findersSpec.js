@@ -67,6 +67,14 @@ describe('find', function () {
     });
   });
 
+  it('can find things in an iframe', function(){
+    dom.eventuallyInsert('<iframe src="/base/test/page2.html"></iframe>');
+
+    return browser.find('iframe').element().then(function(iframe){
+      return browser.scope(iframe).find('h1', {text: 'Hello World'}).shouldExist();
+    });
+  });
+
   it('calls a function for each element found', function(){
     var promise = browser.find('span').elements();
 
