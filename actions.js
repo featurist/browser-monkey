@@ -32,20 +32,26 @@ module.exports = {
     var selectOptions = Options.remove(options, ['text', 'exactText']);
     var self = this;
 
-    return this.find('option', selectOptions).element().then(function(optionElement) {
-      optionElement.selected = true;
-      var selectElement = optionElement.parentNode;
+    return self.element().then(function(element) {
+      if ($(element).is('select')) {
+        return self.find('option', selectOptions).element().then(function(optionElement) {
+          optionElement.selected = true;
+          var selectElement = optionElement.parentNode;
 
-      debug('select', selectElement);
-      self.handleEvent({
-        type: 'select option',
-        value: optionElement.value,
-        element: selectElement,
-        optionElement: optionElement
-      });
+          debug('select', selectElement);
+          self.handleEvent({
+            type: 'select option',
+            value: optionElement.value,
+            element: selectElement,
+            optionElement: optionElement
+          });
 
-      blurActiveElement();
-      dispatchEvent(selectElement, 'change');
+          blurActiveElement();
+          dispatchEvent(selectElement, 'change');
+        });
+      } else {
+        throw new Error('Cannot select from a ' + element.tagName);
+      }
     });
   },
 
@@ -57,6 +63,7 @@ module.exports = {
 
     return this.element(options).then(function(element) {
       debug('typeIn', element, text);
+      assertCanTypeIntoElement(element);
       self.handleEvent({type: 'typing', text: text, element: element});
       blurActiveElement();
       return sendkeys(element, text);
@@ -146,5 +153,22 @@ function inferField(component, field){
   };
   if (!field.name) {
     throw new Error('No action found for field: '+JSON.stringify(field));
+  }
+}
+
+function canTypeIntoElement(element) {
+  return $(element).is('input:not([type]), ' +
+                       'input[type=text], ' +
+                       'input[type=email], ' +
+                       'input[type=password], ' +
+                       'input[type=search], ' +
+                       'input[type=tel], ' +
+                       'input[type=url], ' +
+                       'textarea');
+}
+
+function assertCanTypeIntoElement(element) {
+  if (!canTypeIntoElement(element)) {
+    throw new Error('Cannot type into ' + element.tagName);
   }
 }

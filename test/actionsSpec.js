@@ -84,7 +84,7 @@ describe('actions', function(){
 
   describe('select', function(){
     describe('text', function(){
-      it('should eventually select an option element using the text', function(){
+      it('eventually selects an option element using the text', function(){
         var promise = browser.find('.element').select({text: 'Second'});
         var selectedItem = undefined;
 
@@ -100,7 +100,7 @@ describe('actions', function(){
         });
       });
 
-      it('should eventually select an option element using a partial match', function(){
+      it('eventually selects an option element using a partial match', function(){
         var promise = browser.find('.element').select({text: 'Seco'});
         var selectedItem = undefined;
 
@@ -116,7 +116,7 @@ describe('actions', function(){
         });
       });
 
-      it('should select an option that eventually appears', function(){
+      it('selects an option that eventually appears', function(){
         var promise = browser.find('.element').select({text: 'Second'});
         var selectedItem = undefined;
 
@@ -134,7 +134,7 @@ describe('actions', function(){
         });
       });
 
-      it('should error when the specified option does not exist', function(){
+      it('errors when the specified option does not exist', function(){
         var promise = browser.find('.element').select({text: 'Does not exist'});
 
         dom.eventuallyInsert('<select class="element"><option>First</option><option>Second</option></select>');
@@ -144,7 +144,13 @@ describe('actions', function(){
         ]);
       });
 
-      it('should select an option using text that is falsy', function(){
+      it('errors when the input is not a select', function(){
+        var promise = browser.find('.element').select({text: 'Whatevs'});
+        dom.eventuallyInsert('<div class="element"></div>');
+        return expect(promise).to.be.rejectedWith('Cannot select from a DIV');
+      });
+
+      it('selects an option using text that is falsy', function(){
         var promise = browser.find('.element').select({text: 0});
         var selectedItem = undefined;
 
@@ -210,17 +216,42 @@ describe('actions', function(){
   });
 
   describe('typeIn', function(){
-    it('should eventually enter text into an element', function () {
-      var promise = browser.find('.element').typeIn('haha');
-
-      dom.eventuallyInsert('<input type="text" class="element"></input>');
-
-      return promise.then(function () {
-        expect(dom.el.find('input.element').val()).to.equal('haha');
+    [
+      '<input class="element"></input>',
+      '<input class="element" type="text"></input>',
+      '<input class="element" type="email"></input>',
+      '<input class="element" type="password"></input>',
+      '<input class="element" type="search"></input>',
+      '<input class="element" type="tel"></input>',
+      '<input class="element" type="url"></input>',
+      '<textarea class="element"></textara>'
+    ].forEach(function(html) {
+            
+      it('eventually enters text into: ' + html, function () {
+        var promise = browser.find('.element').typeIn('haha');
+        dom.eventuallyInsert(html);
+        return promise.then(function () {
+          expect(dom.el.find('.element').val()).to.equal('haha');
+        });
       });
+      
+    });
+    
+    [
+      '<div class="element"></div>',
+      '<input type="checkbox" class="element"></input>',
+      '<select class="element"></select>'
+    ].forEach(function(html) {
+      
+      it('rejects attempt to type into element: ' + html, function () {
+        var promise = browser.find('.element').typeIn('whatevs');
+        dom.eventuallyInsert(html);
+        return expect(promise).to.be.rejectedWith('Cannot type into ' + $(html)[0].tagName);
+      });
+
     });
 
-    it('typing empty text blanks out existing text', function () {
+    it('blanks out existing text when typing empty text', function () {
       var firedEvents = [];
       dom.insert('<input type="text" class="element" value="good bye">')
         .on('input', function(){ firedEvents.push('input'); });
