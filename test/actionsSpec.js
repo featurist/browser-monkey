@@ -84,6 +84,20 @@ describe('actions', function(){
 
   describe('select', function(){
     describe('text', function(){
+      it('respects timeout option', function(){
+        var promise = browser.find('.element').select({text: 'Second', timeout: 100});
+        var selectedItem = undefined;
+
+        dom.eventuallyInsert(
+          $('<select class="element"><option>First</option><option>Second</option></select>').change(function (e) {
+            var el = e.target;
+            selectedItem = el.options[el.selectedIndex].text;
+          })
+        );
+
+        return expect(promise).to.be.rejected
+      });
+
       it('eventually selects an option element using the text', function(){
         var promise = browser.find('.element').select({text: 'Second'});
         var selectedItem = undefined;

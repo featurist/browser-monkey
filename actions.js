@@ -32,7 +32,7 @@ module.exports = {
     var selectOptions = Options.remove(options, ['text', 'exactText']);
     var self = this;
 
-    return self.element().then(function(element) {
+    return self.element(options).then(function(element) {
       if ($(element).is('select')) {
         return self.find('option', selectOptions).element().then(function(optionElement) {
           optionElement.selected = true;
