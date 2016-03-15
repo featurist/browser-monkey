@@ -123,7 +123,7 @@ describe('assertions', function(){
       return Promise.all([
         good1,
         good2,
-        expect(bad).to.be.rejected()
+        expect(bad).to.be.rejected
       ]);
     });
 
