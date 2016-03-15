@@ -4,7 +4,8 @@ var Options = require('./options');
 var elementTester = require('./elementTester');
 var expectOneElement = require('./expectOneElement');
 var $ = require('jquery');
-
+var htmlXpaths = require('html-xpaths').dsl();
+var xpath = require('xpath-dom');
 
 function filterInvisible(index){
   var el = this[index] || this;
@@ -194,6 +195,15 @@ module.exports = {
       }
     });
   },
+  
+  link: function(label) {
+    return this.addFinder({
+      find: function (elements) {
+        return $(xpath.findAll(htmlXpaths.link(label).toXPath()));
+      }
+    });
+  },
+
   filter: function (filter, message) {
     return this.addFinder({
       find: function (elements) {
