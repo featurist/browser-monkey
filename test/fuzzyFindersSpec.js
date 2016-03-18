@@ -16,7 +16,7 @@ describe('fuzzy finders', function() {
       dom.eventuallyInsert('<a id="foo" href="/somewhere"></a>');
       return browser.link('foo').shouldExist();
     });
-    
+
     it('finds anchors by title', function () {
       dom.eventuallyInsert('<a title="bar" href="/somewhere"></a>');
       return browser.link('bar').shouldExist();
@@ -38,5 +38,45 @@ describe('fuzzy finders', function() {
     });
 
   });
+
+  describe('.button(label)', function () {
+
+    it('finds button elements by id', function () {
+      dom.eventuallyInsert('<button id="foo"></button>');
+      return browser.button('foo').shouldExist();
+    });
+
+    it('finds button elements by value substring', function () {
+      dom.eventuallyInsert('<button value="foobar"></button>');
+      return browser.button('foo').shouldExist();
+    });
+
+    it('finds button elements by title substring', function () {
+      dom.eventuallyInsert('<button title="foobar"></button>');
+      return browser.button('foo').shouldExist();
+    });
+
+    it('finds button elements by nested image input alt', function () {
+      dom.eventuallyInsert('<button><input type="image" alt="yoyo" /></button>');
+      return browser.button('yo').shouldExist();
+    });
+
+    it('finds input[type=submit] elements', function () {
+      dom.eventuallyInsert('<input id="foo" type="submit"></input>');
+      return browser.button('foo').shouldExist();
+    });
+
+    it('finds input[type=reset] elements', function () {
+      dom.eventuallyInsert('<input id="foo" type="reset"></input>');
+      return browser.button('foo').shouldExist();
+    });
+
+    it('finds input[type=button] elements', function () {
+      dom.eventuallyInsert('<input id="foo" type="button"></input>');
+      return browser.button('foo').shouldExist();
+    });
+
+  });
+
   
 });

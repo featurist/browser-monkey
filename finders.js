@@ -16,6 +16,22 @@ function filterInvisible(index){
   return $(el).is(':visible');
 }
 
+function fuzzyFinder(name) {
+  return function(locator) {
+    return this.addFinder({
+      find: function (elements) {
+        return $([].concat(elements).reduce(function(a, i) {
+          return a.concat(xpath.findAll(htmlXpaths[name](locator).toXPath(), i[0]))
+        }, []));
+      },
+
+      toString: function() {
+        return "[" + name + ": " + htmlXpaths[name](locator) + "]";
+      }
+    });
+  }
+}
+
 module.exports = {
   elementFinder: function(css) {
     var self = this;
@@ -196,19 +212,9 @@ module.exports = {
     });
   },
   
-  link: function(label) {
-    return this.addFinder({
-      find: function (elements) {
-        return $([].concat(elements).reduce(function(a, i) {
-          return a.concat(xpath.findAll(htmlXpaths.link(label).toXPath(), i[0]))
-        }, []));
-      },
+  link: fuzzyFinder('link'),
 
-      toString: function() {
-        return "[link: " + htmlXpaths.link(label) + "]";
-      }
-    });
-  },
+  button: fuzzyFinder('button'),
 
   filter: function (filter, message) {
     return this.addFinder({
