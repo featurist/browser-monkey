@@ -199,7 +199,13 @@ module.exports = {
   link: function(label) {
     return this.addFinder({
       find: function (elements) {
-        return $(xpath.findAll(htmlXpaths.link(label).toXPath()));
+        return $([].concat(elements).reduce(function(a, i) {
+          return a.concat(xpath.findAll(htmlXpaths.link(label).toXPath(), i[0]))
+        }, []));
+      },
+
+      toString: function() {
+        return "[link: " + htmlXpaths.link(label) + "]";
       }
     });
   },
