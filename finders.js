@@ -4,8 +4,6 @@ var Options = require('./options');
 var elementTester = require('./elementTester');
 var expectOneElement = require('./expectOneElement');
 var $ = require('jquery');
-var htmlXpaths = require('html-xpaths').dsl();
-var xpath = require('xpath-dom');
 
 function filterInvisible(index){
   var el = this[index] || this;
@@ -14,22 +12,6 @@ function filterInvisible(index){
     el = el.parentNode;
   }
   return $(el).is(':visible');
-}
-
-function fuzzyFinder(name) {
-  return function(locator) {
-    return this.addFinder({
-      find: function (elements) {
-        return $([].concat(elements).reduce(function(a, i) {
-          return a.concat(xpath.findAll(htmlXpaths[name](locator).toXPath(), i[0]))
-        }, []));
-      },
-
-      toString: function() {
-        return "[" + name + ": " + htmlXpaths[name](locator) + "]";
-      }
-    });
-  }
 }
 
 module.exports = {
@@ -240,7 +222,29 @@ module.exports = {
     });
   },
 
-  button: fuzzyFinder('button'),
+  button: function(label) {
+    return this.addFinder({
+      find: function (elements) {
+        var selector = "button, input[type='submit'], input[type='button'], input[type='reset']";
+        var buttons = elements.find(selector).toArray().filter(function(b) {
+          var button = $(b);
+          return button.attr('id') == label ||
+                 (typeof button.attr('value') == 'string' && button.attr('value').indexOf(label) > -1) ||
+                 (typeof button.attr('title') == 'string' && button.attr('title').indexOf(label) > -1) ||
+                 button.find("input[type='image']").toArray().filter(function(img) {
+                   return (typeof $(img).attr('alt') == 'string' && $(img).attr('alt').indexOf(label) > -1);
+                 }).length > 0
+        });
+        if (buttons.length > 0) {
+          return $(buttons);
+        }
+      },
+
+      toString: function () {
+        return "[button: " + label + "]";
+      }
+    });
+  },
 
   filter: function (filter, message) {
     return this.addFinder({

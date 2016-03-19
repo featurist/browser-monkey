@@ -56,9 +56,19 @@ describe('fuzzy finders', function() {
       return browser.button('foo').shouldExist();
     });
 
+    it('does not find button elements by id', function () {
+      dom.insert('<button id="something" />');
+      return browser.button('another').shouldNotExist();
+    });
+
     it('finds button elements by value substring', function () {
       dom.eventuallyInsert('<button value="foobar"></button>');
-      return browser.button('foo').shouldExist();
+      return browser.button('oob').shouldExist();
+    });
+
+    it('does not find button elements by value substring', function () {
+      dom.insert('<button value="gremlin"></button>');
+      return browser.button('elmgrin').shouldNotExist();
     });
 
     it('finds button elements by title substring', function () {
@@ -66,9 +76,14 @@ describe('fuzzy finders', function() {
       return browser.button('foo').shouldExist();
     });
 
-    it('finds button elements by nested image input alt', function () {
+    it('finds button elements by nested image input alt substring', function () {
       dom.eventuallyInsert('<button><input type="image" alt="yoyo" /></button>');
       return browser.button('yo').shouldExist();
+    });
+
+    it('does not find button elements by nested image input alt', function () {
+      dom.insert('<button><input type="image" alt="yoyo" /></button>');
+      return browser.button('no').shouldNotExist();
     });
 
     it('finds input[type=submit] elements', function () {
@@ -87,6 +102,5 @@ describe('fuzzy finders', function() {
     });
 
   });
-
   
 });
