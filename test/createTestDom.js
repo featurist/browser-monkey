@@ -23,9 +23,12 @@ module.exports = function() {
     },
     eventuallyInsert: function(html) {
       var self = this;
-      setTimeout(function () {
-        self.insert(html);
-      }, 200);
+      return new Promise(function(inserted) {
+        setTimeout(function () {
+          self.insert(html);
+          inserted($(div));
+        }, 200);
+      })
     }
   };
 };

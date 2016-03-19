@@ -4,101 +4,134 @@ var $ = require('jquery');
 
 describe('fuzzy finders', function() {
 
-  var dom;
-
-  beforeEach(function() {
-    dom = createTestDom();
-  });
-
   describe('.link(label)', function () {
 
+    beforeEach(function() {
+      createTestDom().eventuallyInsert(
+        '<a href="#one">Link One</a> ' +
+        '<a id="link_two" href="#two">Link Two</a> ' +
+        '<a title="Link Three" href="#three">Another Link</a> ' +
+        '<a href="#four"><img alt="Fourth Link" /></a> ' +
+        '<div id="container"><a href="#five">Fifth Link</a></div>'
+      );
+    });
+
     it('finds anchors by text', function () {
-      dom.eventuallyInsert('<a href="/somewhere">foo</a>');
-      return browser.link('foo').shouldExist();
+      return browser.link('Link One').click().then(function() {
+        expect(window.location.hash).to.equal('#one');
+      });
     });
 
     it('finds anchors by id', function () {
-      dom.eventuallyInsert('<a id="foo" href="/somewhere"></a>');
-      return browser.link('foo').shouldExist();
+      return browser.link('link_two').click().then(function() {
+        expect(window.location.hash).to.equal('#two');
+      });
     });
     
-    it('does not find anchors by id', function () {
-      dom.eventuallyInsert('<a id="bar" href="/somewhere"></a>');
-      return browser.link('omg').shouldNotExist();
+    it('finds anchors by title', function () {
+      return browser.link('Link Three').click().then(function() {
+        expect(window.location.hash).to.equal('#three');
+      });
     });
 
-    it('finds anchors by title', function () {
-      dom.eventuallyInsert('<a title="bar" href="/somewhere"></a>');
-      return browser.link('bar').shouldExist();
-    });
-    
     it('finds anchors by nested img alt', function () {
-      dom.eventuallyInsert('<a href="/somewhere"><img alt="baz" /></a>');
-      return browser.link('baz').shouldExist();
+      return browser.link('Fourth Link').click().then(function() {
+        expect(window.location.hash).to.equal('#four');
+      });
     });
 
     it('finds anchors inside elements', function () {
-      dom.eventuallyInsert('<div id="x"><a id="foo" href="/somewhere"></a></div>');
-      return browser.find('#x').link('foo').shouldExist();
+      return browser.find('#container').link('Fifth Link').click().then(function() {
+        expect(window.location.hash).to.equal('#five');
+      });
+    });
+
+    it('does not find anchors by id', function () {
+      return browser.link('omg').shouldNotExist();
     });
 
     it('does not find anchors inside elements', function () {
-      dom.eventuallyInsert('<div id="y"></div><a id="foo" href="/somewhere"></a>');
-      return browser.find('#y').link('foo').shouldNotExist();
+      return browser.find('#container').link('foo').shouldNotExist();
     });
 
   });
 
   describe('.button(label)', function () {
 
+    var clicked;
+
+    beforeEach(function() {
+      clicked = [];
+      createTestDom().eventuallyInsert(
+        '<button id="button_one">Button One</a> ' +
+        '<button id="button_two">Button T w o</a> ' +
+        '<input id="button_three" type="submit" value="Button Three"></input> ' +
+        '<button id="button_four" title="Button Four">F o u r</button> ' +
+        '<input id="button_five" title="Button Five" value="F i v e"></button> ' +
+        '<button id="button_six"><img alt="Button Six" /></button>' +
+        '<input id="button_seven" type="reset" value="Button Seven"></input> ' +
+        '<input id="button_eight" type="button" value="Button Eight"></input> '
+      ).then(function(dom) {
+        dom.on('click', '*', function() {
+          clicked.push(this.id);
+        });
+      });
+    });
+
+    it('finds button elements by text', function () {
+      browser.button('Button One').click().then(function() {
+        expect(clicked).to.eql(['button_one']);
+      });
+    });
+
     it('finds button elements by id', function () {
-      dom.eventuallyInsert('<button id="foo"></button>');
-      return browser.button('foo').shouldExist();
+      browser.button('button_two').click().then(function() {
+        expect(clicked).to.eql(['button_two']);
+      });
     });
 
     it('does not find button elements by id', function () {
-      dom.insert('<button id="something" />');
-      return browser.button('another').shouldNotExist();
+      return browser.button('button_666').shouldNotExist();
     });
 
     it('finds button elements by value substring', function () {
-      dom.eventuallyInsert('<button value="foobar"></button>');
-      return browser.button('oob').shouldExist();
+      browser.button('Three').click().then(function() {
+        expect(clicked).to.eql(['button_three']);
+      });
     });
 
     it('does not find button elements by value substring', function () {
-      dom.insert('<button value="gremlin"></button>');
-      return browser.button('elmgrin').shouldNotExist();
+      return browser.button('not a substring').shouldNotExist();
     });
 
     it('finds button elements by title substring', function () {
-      dom.eventuallyInsert('<button title="foobar"></button>');
-      return browser.button('foo').shouldExist();
+      browser.button('Four').click().then(function() {
+        expect(clicked).to.eql(['button_four']);
+      });
+    });
+
+    it('finds input elements by title substring', function () {
+      browser.button('Five').click().then(function() {
+        expect(clicked).to.eql(['button_five']);
+      });
     });
 
     it('finds button elements by nested image input alt substring', function () {
-      dom.eventuallyInsert('<button><input type="image" alt="yoyo" /></button>');
-      return browser.button('yo').shouldExist();
-    });
-
-    it('does not find button elements by nested image input alt', function () {
-      dom.insert('<button><input type="image" alt="yoyo" /></button>');
-      return browser.button('no').shouldNotExist();
-    });
-
-    it('finds input[type=submit] elements', function () {
-      dom.eventuallyInsert('<input id="foo" type="submit"></input>');
-      return browser.button('foo').shouldExist();
+      browser.button('Six').click().then(function() {
+        expect(clicked).to.eql(['button_six']);
+      });
     });
 
     it('finds input[type=reset] elements', function () {
-      dom.eventuallyInsert('<input id="foo" type="reset"></input>');
-      return browser.button('foo').shouldExist();
+      browser.button('Seven').click().then(function() {
+        expect(clicked).to.eql(['button_six']);
+      });
     });
 
     it('finds input[type=button] elements', function () {
-      dom.eventuallyInsert('<input id="foo" type="button"></input>');
-      return browser.button('foo').shouldExist();
+      browser.button('Eight').click().then(function() {
+        expect(clicked).to.eql(['button_eight']);
+      });
     });
 
   });
