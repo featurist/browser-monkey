@@ -212,7 +212,33 @@ module.exports = {
     });
   },
   
-  link: fuzzyFinder('link'),
+  link: function(label) {
+    return this.addFinder({
+      find: function (elements) {
+        var links = elements.find('a').toArray().filter(function(a) {
+          var anchor = $(a);
+          var href = anchor.attr('href');
+          return typeof href !== typeof undefined &&
+                 href !== false &&
+                 (
+                   anchor.text() == label ||
+                   anchor.attr('id') == label ||
+                   anchor.attr('title') == label ||
+                   anchor.find("img").toArray().filter(function(img) {
+                     return $(img).attr('alt') == label;
+                   }).length > 0
+                 );
+        });
+        if (links.length > 0) {
+          return $(links);
+        }
+      },
+
+      toString: function () {
+        return "[link: " + label + "]";
+      }
+    });
+  },
 
   button: fuzzyFinder('button'),
 

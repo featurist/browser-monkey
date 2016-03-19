@@ -12,9 +12,19 @@ describe('fuzzy finders', function() {
 
   describe('.link(label)', function () {
 
+    it('finds anchors by text', function () {
+      dom.eventuallyInsert('<a href="/somewhere">foo</a>');
+      return browser.link('foo').shouldExist();
+    });
+
     it('finds anchors by id', function () {
       dom.eventuallyInsert('<a id="foo" href="/somewhere"></a>');
       return browser.link('foo').shouldExist();
+    });
+    
+    it('does not find anchors by id', function () {
+      dom.eventuallyInsert('<a id="bar" href="/somewhere"></a>');
+      return browser.link('omg').shouldNotExist();
     });
 
     it('finds anchors by title', function () {
@@ -32,7 +42,7 @@ describe('fuzzy finders', function() {
       return browser.find('#x').link('foo').shouldExist();
     });
 
-    it('fails to find anchors inside elements', function () {
+    it('does not find anchors inside elements', function () {
       dom.eventuallyInsert('<div id="y"></div><a id="foo" href="/somewhere"></a>');
       return browser.find('#y').link('foo').shouldNotExist();
     });
