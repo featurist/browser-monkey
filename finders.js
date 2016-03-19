@@ -197,20 +197,7 @@ module.exports = {
   link: function(label) {
     return this.addFinder({
       find: function (elements) {
-        var links = elements.find('a').toArray().filter(function(a) {
-          var anchor = $(a);
-          var href = anchor.attr('href');
-          return typeof href !== typeof undefined &&
-                 href !== false &&
-                 (
-                   anchor.text() == label ||
-                   anchor.attr('id') == label ||
-                   anchor.attr('title') == label ||
-                   anchor.find("img").toArray().filter(function(img) {
-                     return $(img).attr('alt') == label;
-                   }).length > 0
-                 );
-        });
+        var links = findLinksByLabel(elements, label);
         if (links.length > 0) {
           return $(links);
         }
@@ -225,16 +212,7 @@ module.exports = {
   button: function(label) {
     return this.addFinder({
       find: function (elements) {
-        var selector = "button, input[type='submit'], input[type='button'], input[type='reset']";
-        var buttons = elements.find(selector).toArray().filter(function(b) {
-          var button = $(b);
-          return button.attr('id') == label ||
-                 (typeof button.attr('value') == 'string' && button.attr('value').indexOf(label) > -1) ||
-                 (typeof button.attr('title') == 'string' && button.attr('title').indexOf(label) > -1) ||
-                 button.find("input[type='image']").toArray().filter(function(img) {
-                   return (typeof $(img).attr('alt') == 'string' && $(img).attr('alt').indexOf(label) > -1);
-                 }).length > 0
-        });
+        var buttons = findButtonsByLabel(elements, label);
         if (buttons.length > 0) {
           return $(buttons);
         }
@@ -242,6 +220,23 @@ module.exports = {
 
       toString: function () {
         return "[button: " + label + "]";
+      }
+    });
+  },
+
+  linkOrButton: function(label) {
+    return this.addFinder({
+      find: function (elements) {
+        var linksAndButtons = findLinksByLabel(elements, label).concat(
+          findButtonsByLabel(elements, label)
+        );
+        if (linksAndButtons.length > 0) {
+          return $(linksAndButtons);
+        }
+      },
+
+      toString: function () {
+        return "[linkOrButton: " + label + "]";
       }
     });
   },
@@ -269,3 +264,35 @@ module.exports = {
   }
 
 };
+
+function findButtonsByLabel(elements, label) {
+  var selector = "button, input[type='submit'], input[type='button'], input[type='reset']";
+  return elements.find(selector).toArray().filter(function(b) {
+    var button = $(b);
+    return button.attr('id') == label ||
+           button.text() == label ||
+           (typeof button.attr('value') == 'string' && button.attr('value').indexOf(label) > -1) ||
+           (typeof button.attr('title') == 'string' && button.attr('title').indexOf(label) > -1) ||
+           button.find("img").toArray().filter(function(img) {
+             return typeof $(img).attr('alt') == 'string' && $(img).attr('alt').indexOf(label) > -1;
+           }).length > 0
+  });
+}
+
+function findLinksByLabel(elements, label) {
+  var links = elements.find('a').toArray().filter(function(a) {
+    var anchor = $(a);
+    var href = anchor.attr('href');
+    return typeof href !== typeof undefined &&
+           href !== false &&
+           (
+             anchor.text() == label ||
+             anchor.attr('id') == label ||
+             anchor.attr('title') == label ||
+             anchor.find("img").toArray().filter(function(img) {
+               return $(img).attr('alt') == label;
+             }).length > 0
+           );
+  });
+  return links;
+}

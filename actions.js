@@ -20,6 +20,10 @@ module.exports = {
   click: function(options) {
     var self = this;
 
+    if (typeof options == 'string') {
+      return this.linkOrButton(options).click(arguments[1]);
+    }
+
     return this.enabled().element(options).then(function(element) {
       debug('click', element);
       self.handleEvent({type: 'click', element: element});
