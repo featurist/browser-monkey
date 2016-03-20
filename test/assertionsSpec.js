@@ -1,23 +1,17 @@
-var browser = require('..');
-var createTestDom = require('./createTestDom');
+var domTest = require('./domTest');
 
 describe('assertions', function(){
-  var dom;
 
-  beforeEach(function(){
-    dom = createTestDom();
-  });
-
-  describe('shouldNotExist', function () {
-    it("should ensure that element eventually doesn't exists", function () {
-      var elementToRemove = dom.insert('<div class="removing"></div>');
-      var elementToStay = dom.insert('<div class="staying"></div>');
+  describe.only('shouldNotExist', function () {
+    domTest("should ensure that element eventually doesn't exists", function (browser, dom) {
+      dom.insert('<div class="removing"></div>');
+      dom.insert('<div class="staying"></div>');
 
       var good = browser.find('.removing').shouldNotExist();
       var bad = browser.find('.staying').shouldNotExist();
 
       setTimeout(function () {
-        elementToRemove.remove();
+        dom.el.find('.removing').remove();
       }, 50);
 
       return Promise.all([
@@ -26,13 +20,13 @@ describe('assertions', function(){
       ]);
     });
 
-    it('allows trytryagain parameters to be used', function () {
-      var elementToRemove = dom.insert('<div class="removing"></div>');
+    domTest('allows trytryagain parameters to be used', function (browser, dom) {
+      dom.insert('<div class="removing"></div>');
 
       var promise = browser.find('.removing').shouldNotExist({timeout: 500, interval: 100});
 
       setTimeout(function () {
-        elementToRemove.remove();
+        dom.el.find('.removing').remove();
       }, 50);
 
       return promise;

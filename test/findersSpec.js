@@ -1,6 +1,6 @@
 var domTest = require('./domTest');
 
-describe.only('find', function () {
+describe('find', function () {
   domTest('should eventually find an element', function (browser, dom) {
     var promise = browser.find('.element').shouldExist();
 
