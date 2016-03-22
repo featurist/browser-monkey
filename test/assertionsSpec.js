@@ -2,7 +2,7 @@ var domTest = require('./domTest');
 
 describe('assertions', function(){
 
-  describe.only('shouldNotExist', function () {
+  describe('shouldNotExist', function () {
     domTest("should ensure that element eventually doesn't exists", function (browser, dom) {
       dom.insert('<div class="removing"></div>');
       dom.insert('<div class="staying"></div>');
@@ -34,7 +34,7 @@ describe('assertions', function(){
   });
 
   describe('is', function () {
-    it('should eventually find an element if it has a class', function () {
+    domTest('should eventually find an element if it has a class', function (browser, dom) {
       var good = browser.find('.element').is('.good').shouldExist();
       var bad = browser.find('.element').is('.bad').shouldExist();
 
@@ -49,13 +49,14 @@ describe('assertions', function(){
       return Promise.all([good, expect(bad).to.be.rejected]);
     });
   });
-  it('eventually finds an element containing text', function () {
+
+  domTest('eventually finds an element containing text', function (browser, dom) {
     var promise = browser.find('.element', {text: 'some t'}).shouldExist();
     dom.eventuallyInsert('<div class="element"><div>some text</div></div>');
     return promise;
   });
 
-  it('eventually finds an element containing text as it appears on the page', function () {
+  domTest('eventually finds an element containing text as it appears on the page', function (browser, dom) {
     var promise = browser.find('.element', {text: 'This is some text that is all on one line.\nAnd some more on another line'}).shouldExist();
     dom.eventuallyInsert('<div class="element"><div>\
     This\
@@ -69,7 +70,7 @@ describe('assertions', function(){
     return promise;
   });
 
-  it('eventually finds an element containing exactText', function () {
+  domTest('eventually finds an element containing exactText', function (browser, dom) {
     var good = browser.find('.a', {exactText: '8'}).shouldExist();
     var bad = browser.find('.b', {exactText: '8'}).shouldExist();
 
@@ -82,7 +83,7 @@ describe('assertions', function(){
   });
 
   describe('shouldHave', function () {
-    it('eventually finds an element and asserts that it has text', function () {
+    domTest('eventually finds an element and asserts that it has text', function (browser, dom) {
       var good = browser.find('.element').shouldHave({text: 'some t'});
       var bad = browser.find('.element').shouldHave({text: 'sme t'});
 
@@ -94,7 +95,7 @@ describe('assertions', function(){
       ]);
     });
 
-    it('allows trytryagain parameters to be used', function () {
+    domTest('allows trytryagain parameters to be used', function (browser, dom) {
       var good = browser.find('.element').shouldHave({text: 'some t', timeout: 400, interval: 100});
       var bad = browser.find('.element').shouldHave({text: 'sme t'});
 
@@ -106,7 +107,7 @@ describe('assertions', function(){
       ]);
     });
 
-    it('eventually finds an element and asserts that it has value', function () {
+    domTest('eventually finds an element and asserts that it has value', function (browser, dom) {
       var good1 = browser.find('.element1 input').shouldHave({value: 'some t'});
       var good2 = browser.find('.element2 input').shouldHave({value: 0});
       var bad = browser.find('.element1 input').shouldHave({value: 'sme t'});
@@ -121,7 +122,7 @@ describe('assertions', function(){
       ]);
     });
 
-    it('finds an element with exact value', function () {
+    domTest('finds an element with exact value', function (browser, dom) {
       var bad = browser.find('.element1 input').shouldHave({exactValue: 'some t'});
       var good = browser.find('.element1 input').shouldHave({exactValue: 'some text'});
 
@@ -133,7 +134,7 @@ describe('assertions', function(){
       ]);
     });
 
-    it("treats selects with no value as empty string", function(){
+    domTest("treats selects with no value as empty string", function(browser, dom){
       dom.insert('<select></select>');
 
       var select = browser.find('select');
@@ -144,7 +145,7 @@ describe('assertions', function(){
       ]);
     });
 
-    it('recurses through a tree of assertions', function(){
+    domTest('recurses through a tree of assertions', function(browser, dom){
       dom.insert('<div class="airport"><span class="date">Aug 2055</span><span class="text">LHR</span><span class="blank"></span></div>');
       return browser.component({
         airport: function(){
@@ -164,7 +165,7 @@ describe('assertions', function(){
     });
 
     describe('exactText', function(){
-      it('eventually finds elements that have the exact array of text', function(){
+      domTest('eventually finds elements that have the exact array of text', function(browser, dom){
         var promise = browser.find('.element option').shouldHave({exactText: ['', 'Mr', 'Mrs']});
 
         dom.eventuallyInsert('<select class="element"><option></option><option>Mr</option><option>Mrs</option></select>');
@@ -174,7 +175,7 @@ describe('assertions', function(){
     });
 
     describe('checkboxes', function () {
-      it('eventually finds a checked checkbox', function () {
+      domTest('eventually finds a checked checkbox', function (browser, dom) {
         var good = browser.find('.checkbox').shouldHave({checked: true});
 
         var checkbox = dom.insert('<input class="checkbox" type=checkbox />');
@@ -188,7 +189,7 @@ describe('assertions', function(){
       });
 
 
-      it('fails if only one of many checkboxes is checked', function () {
+      domTest('fails if only one of many checkboxes is checked', function (browser, dom) {
         var good = browser.find('.checkbox').shouldHave({checked: true});
 
         var checkbox = dom.insert('<input class="checkbox" type=checkbox /><input class="checkbox" type=checkbox />');
@@ -201,7 +202,7 @@ describe('assertions', function(){
         ]);
       });
 
-      it('ensures that each checkbox in the scope is either checked or unchecked', function () {
+      domTest('ensures that each checkbox in the scope is either checked or unchecked', function (browser, dom) {
         var good = browser.find('.checkbox').shouldHave({checked: [true, false]});
         var bad = browser.find('.checkbox').shouldHave({checked: [false, true]});
 
@@ -216,7 +217,7 @@ describe('assertions', function(){
         ]);
       });
 
-      it('fails to find a checked checkbox', function () {
+      domTest('fails to find a checked checkbox', function (browser, dom) {
         var good = browser.find('.checkbox').shouldHave({checked: false});
         var bad = browser.find('.checkbox').shouldHave({checked: true});
 
@@ -229,7 +230,7 @@ describe('assertions', function(){
       });
     });
 
-    it('eventually finds elements and asserts that they each have text', function () {
+    domTest('eventually finds elements and asserts that they each have text', function (browser, dom) {
       var good = browser.find('.element div').shouldHave({text: ['one', 2]});
       var bad1 = browser.find('.element div').shouldHave({text: ['one']});
       var bad2 = browser.find('.element div').shouldHave({text: ['one', 'three']});
@@ -243,7 +244,7 @@ describe('assertions', function(){
       ]);
     });
 
-    it('eventually finds elements and asserts that they each have value', function () {
+    domTest('eventually finds elements and asserts that they each have value', function (browser, dom) {
       var good = browser.find('.element input').shouldHave({value: ['one', 2, 0]});
       var bad1 = browser.find('.element input').shouldHave({value: ['one']});
       var bad2 = browser.find('.element input').shouldHave({value: ['one', 'three']});
@@ -257,7 +258,7 @@ describe('assertions', function(){
       ]);
     });
 
-    it('eventually finds an element and asserts that it has css', function () {
+    domTest('eventually finds an element and asserts that it has css', function (browser, dom) {
       var good = browser.find('.element').shouldHave({css: '.the-class'});
       var bad1 = browser.find('.element').shouldHave({css: '.not-the-class'});
       var bad2 = browser.find('.element').shouldHave({css: '.not-found'});
@@ -271,7 +272,7 @@ describe('assertions', function(){
       ]);
     });
 
-    it('eventually finds an element and asserts that it has n elements', function () {
+    domTest('eventually finds an element and asserts that it has n elements', function (browser, dom) {
       var good = browser.find('.element').shouldHave({length: 2});
       var bad1 = browser.find('.element').shouldHave({length: 1});
 
@@ -283,7 +284,7 @@ describe('assertions', function(){
       ]);
     });
 
-    it('eventually finds an element and asserts that it passes an assertion', function () {
+    domTest('eventually finds an element and asserts that it passes an assertion', function (browser, dom) {
       var good1 = browser.find('.element').shouldHaveElement(function (element) {
         expect(element.innerText).to.equal('a');
       });
@@ -310,7 +311,7 @@ describe('assertions', function(){
       ]);
     });
 
-    it('eventually finds elements and asserts that they pass an assertion', function () {
+    domTest('eventually finds elements and asserts that they pass an assertion', function (browser, dom) {
       var good1 = browser.find('.element').shouldHaveElements(function (elements) {
         var xs = elements.map(function (element) {
           return element.dataset.x;
@@ -337,7 +338,7 @@ describe('assertions', function(){
   });
 
   describe('shouldNotHave', function () {
-    it('eventually finds an element and asserts that it does not have text', function () {
+    domTest('eventually finds an element and asserts that it does not have text', function (browser, dom) {
       var promise = browser.find('.element').shouldNotHave({text: 'sme t'});
 
       dom.eventuallyInsert('<div class="element"><div>some text</div></div>');
@@ -345,7 +346,7 @@ describe('assertions', function(){
       return promise;
     });
 
-    it('allows trytryagain parameters to be used', function () {
+    domTest('allows trytryagain parameters to be used', function (browser, dom) {
       var promise = browser.find('.element').shouldNotHave({text: 'sme t', timeout: 400, interval: 100});
 
       dom.eventuallyInsert('<div class="element"><div>some text</div></div>');

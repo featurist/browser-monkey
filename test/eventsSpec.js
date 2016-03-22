@@ -1,14 +1,7 @@
-var browser = require('..');
-var createTestDom = require('./createTestDom');
+var domTest = require('./domTest');
 
 describe('events', function(){
-  var dom;
-
-  beforeEach(function(){
-    dom = createTestDom();
-  });
-
-  it('typeIn element should fire change', function(){
+  domTest('typeIn element should fire change', function(browser, dom){
     var firedEvents = [];
 
     dom.insert('<input type="text" class="input">')
@@ -25,7 +18,7 @@ describe('events', function(){
     });
   });
 
-  it('typeIn element should fire input on each character', function(){
+  domTest('typeIn element should fire input on each character', function(browser, dom){
     var firedEvents = [];
 
     dom.insert('<input type="text" class="input">')
@@ -42,7 +35,7 @@ describe('events', function(){
     });
   });
 
-  it('typeIn element should fire change and then blur event on input', function(){
+  domTest('typeIn element should fire change and then blur event on input', function(browser, dom){
     var firedEvents = [];
 
     dom.insert('<input type="text" class="input"><input type="text" class="change">');
@@ -63,7 +56,7 @@ describe('events', function(){
     });
   });
 
-  it('click element should fire blur event on input', function(){
+  domTest('click element should fire blur event on input', function(browser, dom){
     var blurred = false;
 
     dom.insert('<input type="text" class="input"><button>button</button>');
@@ -82,7 +75,7 @@ describe('events', function(){
     });
   });
 
-  it('select element should fire blur event on input', function(){
+  domTest('select element should fire blur event on input', function(browser, dom){
     var blurred = false;
 
     dom.insert('<input type="text" class="input"><select><option>one</option></select>');
@@ -102,7 +95,7 @@ describe('events', function(){
   });
 
   describe('callbacks on interaction', function () {
-    it('fires events on clicks', function () {
+    domTest('fires events on clicks', function (browser, dom) {
       var button = dom.insert('<button>a button</button>')[0];
 
       var event;
@@ -116,7 +109,7 @@ describe('events', function(){
       });
     });
 
-    it('fires events on typeIn', function () {
+    domTest('fires events on typeIn', function (browser, dom) {
       var input = dom.insert('<input></input>')[0];
 
       var event;
@@ -131,7 +124,7 @@ describe('events', function(){
       });
     });
 
-    it('fires events on typeIn', function () {
+    domTest('fires events on typeIn', function (browser, dom) {
       var editorDiv = dom.insert('<div class="editor"></div>')[0];
 
       var event;
@@ -146,7 +139,7 @@ describe('events', function(){
       });
     });
 
-    it('fires events on select', function () {
+    domTest('fires events on select', function (browser, dom) {
       var select = dom.insert('<select><option>one</option></select>')[0];
 
       var event;
