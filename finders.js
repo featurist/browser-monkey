@@ -218,7 +218,8 @@ module.exports = {
 
   enabled: function () {
     return this.filter(function (element) {
-      return !((element.tagName == 'BUTTON' || element.tagName == 'INPUT') && element.disabled == true);
+      var tagName = element.prop('tagName');
+      return !((tagName == 'BUTTON' || tagName == 'INPUT') && element.prop('disabled'));
     }, '[disabled=false]');
   }
 

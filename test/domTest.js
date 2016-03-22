@@ -7,7 +7,7 @@ module.exports = function domTest(testName, testCb){
   if (!isNode) {
     it('HTML: ' + testName, function(){
       var htmlDom = createHDom();
-      return testCb(browser, htmlDom);
+      return testCb(browser, htmlDom, require('jquery'));
     });
   }
 
@@ -19,7 +19,7 @@ module.exports = function domTest(testName, testCb){
     browser.set({$: vquery, visibleOnly: false});
 
     var virtualDom = createVDom(body);
-    return testCb(browser, virtualDom);
+    return testCb(browser, virtualDom, vquery);
   });
 }
 

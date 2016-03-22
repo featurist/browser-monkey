@@ -2,12 +2,12 @@ var domTest = require('./domTest');
 
 describe('actions', function(){
   describe('clicking', function () {
-    domTest('should eventually click an element', function (browser, dom) {
+    domTest('should eventually click an element', function (browser, dom, $) {
       var promise = browser.find('.element').click();
       var clicked = false;
 
       dom.eventuallyInsert(
-        $('<div class="element"></div>').click(function () {
+        $('<div class="element"></div>').on('click', function () {
           clicked = true;
         })
       );
@@ -20,11 +20,11 @@ describe('actions', function(){
     domTest('sends mousedown mouseup and click events', function (browser, dom) {
       var events = [];
 
-      dom.insert('<div class="element"></div>').mousedown(function () {
+      dom.insert('<div class="element"></div>').on('mousedown', function () {
         events.push('mousedown');
-      }).mouseup(function () {
+      }).on('mouseup', function () {
         events.push('mouseup');
-      }).click(function () {
+      }).on('click', function () {
         events.push('click');
       });
 
@@ -39,7 +39,7 @@ describe('actions', function(){
       var buttonState = 'disabled';
 
       var button = dom.insert('<input type=checkbox disabled></input>');
-      button[0].addEventListener('click', function () {
+      button.on('click', function () {
         clicked = buttonState;
       });
 
@@ -58,12 +58,14 @@ describe('actions', function(){
       var clicked;
       var buttonState = 'disabled';
 
-      var button = dom.insert('<button disabled>a button</button>');
-      button[0].addEventListener('click', function () {
+      button = dom.insert('<button disabled>a button</button>');
+      button.on('click', function () {
+        console.log('click handler')
         clicked = buttonState;
       });
 
       setTimeout(function () {
+        console.log('enabled')
         button.prop('disabled', false);
         buttonState = 'enabled'
       }, 100);

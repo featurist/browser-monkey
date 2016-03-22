@@ -1,7 +1,5 @@
 var debug = require('debug')('browser-monkey');
-var dispatchEvent = require('./dispatchEvent');
 var sendkeys = require('./sendkeys');
-var sendclick = require('./sendclick');
 var Options = require('./options');
 
 function blurActiveElement() {
@@ -23,17 +21,20 @@ module.exports = {
       debug('click', element);
       self.handleEvent({type: 'click', element: element});
       blurActiveElement();
-      return sendclick(element);
+      element.trigger('mousedown');
+      element.trigger('mouseup');
+      element.trigger('click');
     });
   },
 
   select: function(options) {
+    var $ = this.get('$');
     var selectOptions = Options.remove(options, ['text', 'exactText']);
     var self = this;
 
     return this.find('option', selectOptions).element().then(function(optionElement) {
       optionElement.selected = true;
-      var selectElement = optionElement.parentNode;
+      var selectElement = $(optionElement).parent();
 
       debug('select', selectElement);
       self.handleEvent({
@@ -44,7 +45,7 @@ module.exports = {
       });
 
       blurActiveElement();
-      dispatchEvent(selectElement, 'change');
+      selectElement.trigger('change');
     });
   },
 
