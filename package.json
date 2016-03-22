@@ -19,6 +19,7 @@
     "karma-mocha-reporter": "1.0.2",
     "lie": "^3.0.1",
     "mocha": "2.2.1",
+    "plastiq": "^1.28.0",
     "virtual-dom": "^2.1.1"
   },
   "dependencies": {
