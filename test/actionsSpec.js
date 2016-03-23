@@ -78,14 +78,13 @@ describe('actions', function(){
 
   describe('select', function(){
     describe('text', function(){
-      domTest('should eventually select an option element using the text', function(browser, dom){
+      domTest('should eventually select an option element using the text', function(browser, dom, $){
         var promise = browser.find('.element').select({text: 'Second'});
         var selectedItem = undefined;
 
         dom.eventuallyInsert(
-          $('<select class="element"><option>First</option><option>Second</option></select>').change(function (e) {
-            var el = e.target;
-            selectedItem = el.options[el.selectedIndex].text;
+          $('<select class="element"><option>First</option><option>Second</option></select>').on('change', function () {
+            selectedItem = $(this).find('option[selected]').text();
           })
         );
 
@@ -94,14 +93,13 @@ describe('actions', function(){
         });
       });
 
-      domTest('should eventually select an option element using a partial match', function(browser, dom){
+      domTest('should eventually select an option element using a partial match', function(browser, dom, $){
         var promise = browser.find('.element').select({text: 'Seco'});
         var selectedItem = undefined;
 
         dom.eventuallyInsert(
-          $('<select class="element"><option>First</option><option>Second</option></select>').change(function (e) {
-            var el = e.target;
-            selectedItem = el.options[el.selectedIndex].text;
+          $('<select class="element"><option>First</option><option>Second</option></select>').on('change', function (e) {
+            selectedItem = $(this).find('option[selected]').text();
           })
         );
 
@@ -110,17 +108,16 @@ describe('actions', function(){
         });
       });
 
-      domTest('should select an option that eventually appears', function(browser, dom){
+      domTest('should select an option that eventually appears', function(browser, dom, $){
         var promise = browser.find('.element').select({text: 'Second'});
         var selectedItem = undefined;
 
-        var select = dom.insert('<select class="element"></select>').change(function (e) {
-          var el = e.target;
-          selectedItem = el.options[el.selectedIndex].text;
+        var select = dom.insert('<select class="element"></select>').on('change', function (e) {
+          selectedItem = $(this).find('option[selected]').text();
         });
 
         setTimeout(function () {
-          $('<option>First</option><option>Second</option>').appendTo(select);
+          select.append('<option>First</option><option>Second</option>');
         }, 20);
 
         return promise.then(function () {
@@ -138,13 +135,12 @@ describe('actions', function(){
         ]);
       });
 
-      domTest('should select an option using text that is falsy', function(browser, dom){
+      domTest('should select an option using text that is falsy', function(browser, dom, $){
         var promise = browser.find('.element').select({text: 0});
         var selectedItem = undefined;
 
-        var select = dom.insert('<select class="element"><option>0</option><option>1</option></select>').change(function (e) {
-          var el = e.currentTarget;
-          selectedItem = el.options[el.selectedIndex].text;
+        var select = dom.insert('<select class="element"><option>0</option><option>1</option></select>').on('change', function (e) {
+          selectedItem = $(this).find('option[selected]').text();
         });
 
 
@@ -155,13 +151,12 @@ describe('actions', function(){
     });
 
     describe('exactText', function(){
-      domTest('should select an option using exact text that would otherwise match multiple options', function(browser, dom){
+      domTest('should select an option using exact text that would otherwise match multiple options', function(browser, dom, $){
         var promise = browser.find('.element').select({exactText: 'Mr'});
         var selectedItem = undefined;
 
-        var select = dom.insert('<select class="element"><option>Mr</option><option>Mrs</option></select>').change(function (e) {
-          var el = e.currentTarget;
-          selectedItem = el.options[el.selectedIndex].text;
+        var select = dom.insert('<select class="element"><option>Mr</option><option>Mrs</option></select>').on('change', function (e) {
+          selectedItem = $(this).find('option[selected]').text();
         });
 
 
@@ -170,13 +165,12 @@ describe('actions', function(){
         });
       });
 
-      domTest('should select an option using exact text that is falsy', function(browser, dom){
+      domTest('should select an option using exact text that is falsy', function(browser, dom, $){
         var promise = browser.find('.element').select({exactText: 0});
         var selectedItem = undefined;
 
-        var select = dom.insert('<select class="element"><option>0</option><option>1</option></select>').change(function (e) {
-          var el = e.currentTarget;
-          selectedItem = el.options[el.selectedIndex].text;
+        var select = dom.insert('<select class="element"><option>0</option><option>1</option></select>').on('change', function (e) {
+          selectedItem = $(this).find('option[selected]').text();
         });
 
 

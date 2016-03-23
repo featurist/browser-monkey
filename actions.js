@@ -9,7 +9,7 @@ function blurActiveElement() {
   } catch ( err ) { }
 
   if (activeElement) {
-    dispatchEvent(activeElement, 'blur');
+    //dispatchEvent(activeElement, 'blur');
   }
 }
 
@@ -33,13 +33,13 @@ module.exports = {
     var self = this;
 
     return this.find('option', selectOptions).element().then(function(optionElement) {
-      optionElement.selected = true;
-      var selectElement = $(optionElement).parent();
+      optionElement.prop('selected', true);
+      var selectElement = optionElement.parent();
 
       debug('select', selectElement);
       self.handleEvent({
         type: 'select option',
-        value: optionElement.value,
+        value: optionElement.val(),
         element: selectElement,
         optionElement: optionElement
       });
