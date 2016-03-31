@@ -64,23 +64,15 @@ describe('admin', function () {
 
 Browser monkey will explain what it is doing using [`debug`](https://github.com/visionmedia/debug). It can be extremely useful to see which buttons were clicked, or which text boxes were typed-in. To turn on, follow the [guide](https://github.com/visionmedia/debug#browser-support), or in short:
 
-Put this into your test
-
 ```js
-window._debug = require('debug');
-```
-
-Then type this into your browser console and refresh:
-
-```js
-_debug.enable('*');
+localStorage['debug'] = '*';
 ```
 
 Or to be more specific:
 
 
 ```js
-_debug.enable('browser-monkey');
+localStorage['debug'] = 'browser-monkey';
 ```
 
 # api
