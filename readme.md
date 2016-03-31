@@ -62,7 +62,7 @@ describe('admin', function () {
 
 # debug
 
-Browser monkey will explain what it is doing using [`debug`](https://github.com/visionmedia/debug). It can be extremely useful to see which buttons were clicked, or which text boxes were typed-in. To turn on, follow the [guide](https://github.com/visionmedia/debug#browser-support), or in short:
+Browser monkey will explain what it is doing using [`debug`](https://github.com/visionmedia/debug). It can be extremely useful to see which buttons were clicked, or which text boxes were typed-in. To turn on, follow the [guide](https://github.com/visionmedia/debug#browser-support), or in short, type this into your browser console:
 
 ```js
 localStorage['debug'] = '*';
