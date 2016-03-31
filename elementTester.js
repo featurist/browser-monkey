@@ -58,7 +58,7 @@ module.exports = function elementTester(options) {
   }
 
   function getNormalisedText(el) {
-    return el[0].innerText.replace(/ +/g,' ').replace(/ *\n */g,"\n");
+    return (el[0].innerText || el[0].textContent).replace(/ +/g,' ').replace(/ *\n */g,"\n");;
   }
 
   return {
