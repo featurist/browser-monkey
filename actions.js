@@ -71,7 +71,7 @@ module.exports = {
       debug('submit', element);
       self.handleEvent({type: 'submit', element: element});
       blurActiveElement();
-      return $(element).submit();
+      return $(element).trigger('submit');
     });
   },
 

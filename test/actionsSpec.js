@@ -186,9 +186,9 @@ describe('actions', function(){
       var submitted;
       var promise = browser.find('input').submit();
 
-      dom.insert('<form><input type=text></form>').submit(function (ev) {
+      dom.insert('<form><input type=text></form>').on('submit', function (ev) {
         submitted = true;
-        ev.preventDefault();
+        //ev.preventDefault();
       });
 
       return promise.then(function () {
