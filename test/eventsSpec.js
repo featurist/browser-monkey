@@ -96,7 +96,7 @@ describe('events', function(){
 
   describe('callbacks on interaction', function () {
     domTest('fires events on clicks', function (browser, dom) {
-      var button = dom.insert('<button>a button</button>')[0];
+      var button = dom.insert('<button>a button</button>');
 
       var event;
 
@@ -105,12 +105,12 @@ describe('events', function(){
       }).find('button').click().then(function () {
         expect(event, 'expected event to fire').to.not.be.undefined;
         expect(event.type).to.equal('click');
-        expect(event.element).to.equal(button);
+        expect(event.element[0]).to.equal(button[0]);
       });
     });
 
     domTest('fires events on typeIn', function (browser, dom) {
-      var input = dom.insert('<input></input>')[0];
+      var input = dom.insert('<input></input>');
 
       var event;
 
@@ -120,12 +120,12 @@ describe('events', function(){
         expect(event, 'expected event to fire').to.not.be.undefined;
         expect(event.type).to.equal('typing');
         expect(event.text).to.equal('some text');
-        expect(event.element).to.equal(input);
+        expect(event.element[0]).to.equal(input[0]);
       });
     });
 
     domTest('fires events on typeIn', function (browser, dom) {
-      var editorDiv = dom.insert('<div class="editor"></div>')[0];
+      var editorDiv = dom.insert('<div class="editor"></div>');
 
       var event;
 
@@ -135,12 +135,12 @@ describe('events', function(){
         expect(event, 'expected event to fire').to.not.be.undefined;
         expect(event.type).to.equal('typing html');
         expect(event.html).to.equal('some <b>html</b>');
-        expect(event.element).to.equal(editorDiv);
+        expect(event.element[0]).to.equal(editorDiv[0]);
       });
     });
 
     domTest('fires events on select', function (browser, dom) {
-      var select = dom.insert('<select><option>one</option></select>')[0];
+      var select = dom.insert('<select><option>one</option></select>');
 
       var event;
 
@@ -150,8 +150,8 @@ describe('events', function(){
         expect(event, 'expected event to fire').to.not.be.undefined;
         expect(event.type).to.equal('select option');
         expect(event.value).to.equal('one');
-        expect(event.optionElement).to.equal(select.firstChild);
-        expect(event.element).to.equal(select);
+        expect(event.optionElement[0]).to.equal(select.find('option')[0]);
+        expect(event.element[0]).to.equal(select[0]);
       });
     });
   });

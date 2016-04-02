@@ -39,7 +39,7 @@ module.exports = {
       debug('select', selectElement);
       self.handleEvent({
         type: 'select option',
-        value: optionElement.val(),
+        value: selectElement.val(),
         element: selectElement,
         optionElement: optionElement
       });
