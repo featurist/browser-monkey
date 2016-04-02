@@ -1,4 +1,5 @@
 var domTest = require('./domTest');
+var retry = require('trytryagain');
 
 describe('actions', function(){
   describe('clicking', function () {
@@ -214,8 +215,10 @@ describe('actions', function(){
         .on('input', function(){ firedEvents.push('input'); });
 
       return browser.find('.element').typeIn('').then(function () {
-        expect(dom.el.find('input.element').val()).to.equal('');
-        expect(firedEvents).to.eql(['input'])
+        return retry(function(){
+          expect(dom.el.find('input.element').val()).to.equal('');
+          expect(firedEvents).to.eql(['input']);
+        });
       });
     });
   });
