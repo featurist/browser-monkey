@@ -250,7 +250,8 @@ describe('actions', function(){
           return this.find('.name');
         }
       });
-      dom.eventuallyInsert('<select class="title"><option>Mrs</option><option>Mr</option></select><input type="text" class="name"></input>');
+      dom.eventuallyInsert('<select class="title"><option>Mrs</option><option>Mr</option></select>');
+      dom.eventuallyInsert('<input type="text" class="name"></input>');
 
       return component.fill([
         { name: 'title', action: 'select', options: {exactText: 'Mr'}},
@@ -273,7 +274,9 @@ describe('actions', function(){
           return this.find('.agree');
         }
       });
-      dom.eventuallyInsert('<select class="title"><option>Mrs</option><option>Mr</option></select><input type="text" class="name"></input><label class="agree"><input type="checkbox"></label>');
+      dom.eventuallyInsert('<select class="title"><option>Mrs</option><option>Mr</option></select>');
+      dom.eventuallyInsert('<input type="text" class="name"></input>');
+      dom.eventuallyInsert('<label class="agree"><input type="checkbox"></label>');
 
       return component.fill([
         { select: 'title', text: 'Mrs'},
