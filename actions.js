@@ -2,25 +2,31 @@ var debug = require('debug')('browser-monkey');
 var sendkeys = require('./sendkeys');
 var Options = require('./options');
 
-function blurActiveElement() {
-  var activeElement;
-  try {
-    activeElement = document.activeElement;
-  } catch ( err ) { }
-
-  if (activeElement) {
-    //dispatchEvent(activeElement, 'blur');
-  }
-}
-
 module.exports = {
+  activate: function (element) {
+    var $ = this.get('$');
+    var document = this.get('document');
+    if (element && element.hasOwnProperty('length')) {
+      element = element[0];
+    }
+
+    var activeElement = document.activeElement;
+
+    if (activeElement) {
+      // not sure why but the element is not blurring unless
+      // this gets triggered twice :-(
+      $(activeElement).trigger('blur').trigger('blur');
+    }
+    document.activeElement = element;
+  },
+
   click: function(options) {
     var self = this;
 
     return this.enabled().element(options).then(function(element) {
       debug('click', element);
       self.handleEvent({type: 'click', element: element});
-      blurActiveElement();
+      self.activate(element);
       element.trigger('mousedown');
       element.trigger('mouseup');
       element.trigger('click');
@@ -33,8 +39,9 @@ module.exports = {
     var self = this;
 
     return this.find('option', selectOptions).element().then(function(optionElement) {
-      optionElement.prop('selected', true);
       var selectElement = optionElement.parent();
+      self.activate(selectElement);
+      optionElement.prop('selected', true);
 
       debug('select', selectElement);
       self.handleEvent({
@@ -44,7 +51,6 @@ module.exports = {
         optionElement: optionElement
       });
 
-      blurActiveElement();
       selectElement.trigger('change');
     });
   },
@@ -57,8 +63,8 @@ module.exports = {
 
     return this.element(options).then(function(element) {
       debug('typeIn', element, text);
+      self.activate(element);
       self.handleEvent({type: 'typing', text: text, element: element});
-      blurActiveElement();
       return sendkeys(element, text);
     });
   },
@@ -69,8 +75,8 @@ module.exports = {
 
     return this.element(options).then(function(element) {
       debug('submit', element);
+      self.activate(element);
       self.handleEvent({type: 'submit', element: element});
-      blurActiveElement();
       return $(element).trigger('submit');
     });
   },
@@ -79,6 +85,7 @@ module.exports = {
     var self = this;
 
     return this.element(options).then(function(element) {
+      self.activate(element);
       debug('typeInHtml', element, html);
       self.handleEvent({type: 'typing html', html: html, element: element});
       return sendkeys.html(element, html);

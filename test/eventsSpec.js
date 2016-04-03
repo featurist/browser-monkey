@@ -1,3 +1,4 @@
+var retry = require('trytryagain');
 var domTest = require('./domTest');
 
 describe('events', function(){
@@ -38,11 +39,12 @@ describe('events', function(){
   domTest('typeIn element should fire change and then blur event on input', function(browser, dom){
     var firedEvents = [];
 
-    dom.insert('<input type="text" class="input"><input type="text" class="change">');
+    dom.insert('<input type="text" class="input">');
+    dom.insert('<input type="text" class="change">');
 
-    dom.el.find('.input').one('blur', function(e){
+    dom.el.find('.input').on('blur', function(e){
       firedEvents.push('blur');
-    }).one('change', function(){
+    }).on('change', function(){
       firedEvents.push('change');
     });
 
@@ -59,13 +61,11 @@ describe('events', function(){
   domTest('click element should fire blur event on input', function(browser, dom){
     var blurred = false;
 
-    dom.insert('<input type="text" class="input"><button>button</button>');
-
+    dom.insert('<input type="text" class="input" />');
+    dom.insert('<button>button</button>');
 
     dom.el.find('.input').on('blur', function(e){
-      if (e.target.className === 'input') {
-        blurred = true;
-      }
+      blurred = true;
     })
 
     return browser.find('.input').typeIn('first').then(function(){
@@ -75,17 +75,15 @@ describe('events', function(){
     });
   });
 
-  domTest('select element should fire blur event on input', function(browser, dom){
+  domTest('select element should fire blur event on input', function(browser, dom, $){
     var blurred = false;
 
-    dom.insert('<input type="text" class="input"><select><option>one</option></select>');
+    dom.insert('<select><option>one</option></select>');
+    dom.insert('<input type="text" class="input"></input>');
+    dom.el.find('input').on('blur', function(e){
+      blurred = true;
+    });
 
-
-    dom.el.find('.input').on('blur', function(e){
-      if (e.target.className === 'input') {
-        blurred = true;
-      }
-    })
 
     return browser.find('.input').typeIn('first').then(function(){
       return browser.find('select').select({text: 'one'});

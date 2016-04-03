@@ -26,7 +26,7 @@ describe('plastiq integration', function(){
     plastiq.appendVDom(vdom, render, {}, { requestRender: setTimeout, window: {} });
     var browser = monkey.create(vdom);
     var vquery = require('vdom-query')
-    browser.set({$: vquery, visibleOnly: false});
+    browser.set({$: vquery, visibleOnly: false, document: {}});
 
     return browser.find('.toggle').click().then(function(){
       return browser.find('span', {text: 'hello'}).shouldExist();
