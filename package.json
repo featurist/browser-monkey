@@ -9,6 +9,7 @@
   "author": "Tim Macfarlane <timmacfarlane@gmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "2vdom": "^0.2.0",
     "chai-as-promised": "5.1.0",
     "detect-node": "^2.0.3",
     "karma": "0.12.31",

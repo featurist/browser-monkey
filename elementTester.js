@@ -90,11 +90,13 @@ module.exports = function elementTester($, options) {
 
         if (checked instanceof Array) {
           var elementsChecked = elements.map(function (element) {
-            return !!element.checked;
+            return !!$(element).prop('checked');
           });
           expect(elementsChecked, 'expected ' + elementsToString(els) + ' to have checked states ' + JSON.stringify(checked)).to.eql(checked);
         } else {
-          var elementsNotMatching = elements.filter(function (element) { return element.checked != checked; });
+          var elementsNotMatching = elements.filter(function (element) {
+            return $(element).prop('checked') !== checked;
+          });
           expect(elementsNotMatching.length, 'expected ' + elementsToString(els) + ' to be ' + (checked? 'checked': 'unchecked')).to.equal(0);
         }
       }

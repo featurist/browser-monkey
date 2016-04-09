@@ -188,13 +188,13 @@ describe('assertions', function(){
         ]);
       });
 
-
       domTest('fails if only one of many checkboxes is checked', function (browser, dom) {
         var good = browser.find('.checkbox').shouldHave({checked: true});
 
-        var checkbox = dom.insert('<input class="checkbox" type=checkbox /><input class="checkbox" type=checkbox />');
+        var checkbox = dom.insert('<input class="checkbox" type=checkbox />');
+        dom.insert('<input class="checkbox" type=checkbox />');
         setTimeout(function () {
-          checkbox[0].checked = true;
+          checkbox.prop('checked', true);
         }, 20);
 
         return Promise.all([
@@ -206,9 +206,10 @@ describe('assertions', function(){
         var good = browser.find('.checkbox').shouldHave({checked: [true, false]});
         var bad = browser.find('.checkbox').shouldHave({checked: [false, true]});
 
-        var checkbox = dom.insert('<input class="checkbox" type=checkbox /><input class="checkbox" type=checkbox />');
+        var checkbox = dom.insert('<input class="checkbox" type=checkbox />');
+        dom.insert('<input class="checkbox" type=checkbox />');
         setTimeout(function () {
-          checkbox[0].checked = true;
+          checkbox.prop('checked', true);
         }, 20);
 
         return Promise.all([
