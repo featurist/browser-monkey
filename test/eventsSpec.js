@@ -73,7 +73,9 @@ describe('events', function(){
     return browser.find('.input').typeIn('first').then(function(){
       return browser.find('button').click();
     }).then(function(){
-      expect(blurred).to.be.true
+      return retry(function(){
+        expect(blurred).to.be.true;
+      });
     });
   });
 
@@ -90,7 +92,9 @@ describe('events', function(){
     return browser.find('.input').typeIn('first').then(function(){
       return browser.find('select').select({text: 'one'});
     }).then(function(){
-      expect(blurred).to.be.true
+      return retry(function(){
+        expect(blurred).to.be.true;
+      });
     });
   });
 
