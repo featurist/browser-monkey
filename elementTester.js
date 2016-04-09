@@ -64,9 +64,7 @@ module.exports = function elementTester($, options) {
       var els = $(element);
 
       if (css && !els.is(css)) {
-        if (!els.is(css)) {
-          throw new Error(message || ('expected elements ' + elementsToString(els) + ' to have css ' + css));
-        }
+        throw new Error(message || ('expected elements ' + elementsToString(els) + ' to have css ' + css));
       }
 
       if (text !== undefined) {

@@ -277,7 +277,8 @@ describe('assertions', function(){
       var good = browser.find('.element').shouldHave({length: 2});
       var bad1 = browser.find('.element').shouldHave({length: 1});
 
-      dom.eventuallyInsert('<div class="element"></div><div class="element"></div>');
+      dom.eventuallyInsert('<div class="element"></div>');
+      dom.eventuallyInsert('<div class="element"></div>');
 
       return Promise.all([
         good,
@@ -285,21 +286,22 @@ describe('assertions', function(){
       ]);
     });
 
-    domTest('eventually finds an element and asserts that it passes an assertion', function (browser, dom) {
+    domTest('eventually finds an element and asserts that it passes an assertion', function (browser, dom, $) {
       var good1 = browser.find('.element').shouldHaveElement(function (element) {
-        expect(element.innerText).to.equal('a');
+        expect(element.text()).to.equal('a');
       });
 
       var bad1 = browser.find('.multi').shouldHaveElement(function (element) {
-        expect(element.innerText).to.equal('b');
+        expect(element.text()).to.equal('b');
       });
 
       var bad2 = browser.find('.element').shouldHaveElement(function (element) {
-        expect(element.innerText).to.equal('b');
+        expect(element.text()).to.equal('b');
       });
 
       var element = dom.insert('<div class="element"></div>');
-      dom.eventuallyInsert('<div class="multi"></div><div class="multi">b</div>');
+      dom.eventuallyInsert('<div class="multi"></div>');
+      dom.eventuallyInsert('<div class="multi">b</div>');
 
       setTimeout(function () {
         element.text('a');
@@ -312,10 +314,10 @@ describe('assertions', function(){
       ]);
     });
 
-    domTest('eventually finds elements and asserts that they pass an assertion', function (browser, dom) {
+    domTest('eventually finds elements and asserts that they pass an assertion', function (browser, dom, $) {
       var good1 = browser.find('.element').shouldHaveElements(function (elements) {
         var xs = elements.map(function (element) {
-          return element.dataset.x;
+          return $(element).attr('data-x');
         });
 
         expect(xs).to.eql(['one', 'two', 'three']);
@@ -323,13 +325,15 @@ describe('assertions', function(){
 
       var bad1 = browser.find('.element').shouldHaveElements(function (elements) {
         var xs = elements.map(function (element) {
-          return element.dataset.x;
+          return $(element).attr('data-x');
         });
 
         expect(xs).to.eql(['one', 'two']);
       });
 
-      dom.eventuallyInsert('<div class="element" data-x="one"></div><div class="element" data-x="two"></div><div class="element" data-x="three"></div>');
+      dom.eventuallyInsert('<div class="element" data-x="one"></div>');
+      dom.eventuallyInsert('<div class="element" data-x="two"></div>');
+      dom.eventuallyInsert('<div class="element" data-x="three"></div>');
 
       return Promise.all([
         good1,

@@ -46,12 +46,15 @@ module.exports = {
   },
 
   shouldHaveElement: function(fn, options) {
+    var $ = this.get('$');
     var self = this;
 
     return this.addFinder({
       find: function (elements) {
         expectOneElement(self, elements);
-        elements.toArray().forEach(fn);
+        elements.toArray().forEach(function(element){
+          fn($(element));
+        });
         return elements;
       }
     }).shouldExist(options);
