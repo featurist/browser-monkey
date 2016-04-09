@@ -51,10 +51,12 @@ describe('events', function(){
     return browser.find('.input').typeIn('first').then(function(){
       return browser.find('.change').typeIn('second');
     }).then(function () {
-      expect(firedEvents).to.eql([
-        'change',
-        'blur'
-      ])
+      return retry(function(){
+        expect(firedEvents).to.eql([
+          'change',
+          'blur'
+        ]);
+      });
     });
   });
 

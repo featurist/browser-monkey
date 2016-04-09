@@ -13,9 +13,7 @@ module.exports = {
     var activeElement = document.activeElement;
 
     if (activeElement) {
-      // not sure why but the element is not blurring unless
-      // this gets triggered twice :-(
-      $(activeElement).trigger('blur').trigger('blur');
+      $(activeElement).trigger('blur');
     }
     document.activeElement = element;
   },
