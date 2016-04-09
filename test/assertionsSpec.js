@@ -57,7 +57,7 @@ describe('assertions', function(){
   });
 
   domTest('eventually finds an element containing text as it appears on the page', function (browser, dom) {
-    var promise = browser.find('.element', {text: 'This is some text that is all on one line.\nAnd some more on another line'}).shouldExist();
+    var promise = browser.find('.element').shouldHave({text: 'This is some text that is all on one line.\nAnd some more on another line'});
     dom.eventuallyInsert('<div class="element"><div>\
     This\
     is\
