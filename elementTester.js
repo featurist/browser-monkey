@@ -56,7 +56,7 @@ module.exports = function elementTester($, options) {
   }
 
   function getNormalisedText(el) {
-    return $(el).innerText().replace(/ +/g,' ').replace(/ *\n */g,"\n");
+    return el.innerText().replace(/ +/g,' ').replace(/ *\n */g,"\n");
   }
 
   return {
