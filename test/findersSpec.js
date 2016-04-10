@@ -44,7 +44,7 @@ describe('find', function () {
     return expect(promise).to.be.rejectedWith('has class "correct"');
   });
 
-  xit('should eventually find an element in an iframe', function(){
+  domTest('should eventually find an element in an iframe', function(browser, dom){
     var iframe = document.createElement('iframe');
     iframe.src = '/base/test/page1.html';
     iframe.width = 700;
@@ -54,7 +54,7 @@ describe('find', function () {
     return iframeScope.find('a', {text: 'page 2'}).click().then(function(){
       return iframeScope.find('h1').shouldHave({text: 'Hello World'});
     });
-  });
+  }, {vdom: false});
 
   domTest('calls a function for each element found', function(browser, dom){
     var promise = browser.find('span').elements();
@@ -67,24 +67,25 @@ describe('find', function () {
   });
 
 
-  xdescribe('visibility', function(){
-    it('should not find an element that is visually hidden', function(){
+  describe('visibility', function(){
+    domTest('should not find an element that is visually hidden', function(browser, dom){
       dom.insert('<div class="element">hello <span style="display:none;">world</span></div>');
 
       return browser.find('.element > span').shouldNotExist();
-    });
+    }, {vdom: false});
 
-    it('should find an element that is visually hidden when visibleOnly = false', function(){
+    domTest('should find an element that is visually hidden when visibleOnly = false', function(browser, dom){
       dom.insert('<div class="element">hello <span style="display:none;">world</span></div>');
 
       return browser.set({visibleOnly: false}).find('.element > span').shouldExist();
     });
 
-    it('should find elements that are visually hidden because of how html renders them', function(){
+    domTest('should find elements that are visually hidden because of how html renders them', function(browser, dom){
       dom.insert('<select><option>First</option><option>Second</option></select>');
       return browser.find('select option').shouldHave({text: ['First', 'Second']});
     });
   });
+
   describe('containing', function () {
     domTest('eventually finds an element containing another element', function (browser, dom) {
       var promise = browser.find('.outer').containing('.inner').shouldExist();
