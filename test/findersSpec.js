@@ -52,7 +52,10 @@ describe('find', function () {
     dom.el.append(iframe);
     var iframeScope = browser.scope(iframe);
     return iframeScope.find('a', {text: 'page 2'}).click().then(function(){
-      return iframeScope.find('h1').shouldHave({text: 'Hello World'});
+      return Promise.all([
+        iframeScope.find('h1').shouldHave({text: 'Hello World'}),
+        iframeScope.shouldHave({text: 'Hello World'})
+      ]);
     });
   }, {vdom: false});
 

@@ -27,7 +27,11 @@ module.exports = {
       self.activate(element);
       element.trigger('mousedown');
       element.trigger('mouseup');
-      element.trigger('click');
+      if (element[0] && element[0].click) {
+        element[0].click();
+      } else {
+        element.trigger('click');
+      }
     });
   },
 
