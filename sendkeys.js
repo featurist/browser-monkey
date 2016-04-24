@@ -4,9 +4,9 @@ function dispatchEvent(el, type, char) {
 
 function sendkey(el, char) {
   dispatchEvent(el, "keydown", char);
-  dispatchEvent(el, "keyup", char);
   dispatchEvent(el, "keypress", char);
   dispatchEvent(el, "input");
+  dispatchEvent(el, "keyup", char);
 }
 
 function sendkeys(el, text) {
@@ -20,11 +20,11 @@ function sendkeys(el, text) {
   if (text.length === 0) {
     sendkey(el, '');
     el.val('');
-    console.log('set to nothing')
   } else {
     for (var n = 0; n < text.length; ++n) {
       var char = text[n];
-      el.val(text.substring(0, n + 1));
+      var value = text.substring(0, n + 1);
+      el.val(value);
       sendkey(el, char);
     }
   }

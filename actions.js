@@ -45,6 +45,7 @@ module.exports = {
       self.activate(selectElement);
       optionElement.prop('selected', true);
       optionElement.attr('selected', 'selected');
+      selectElement.val(optionElement.val());
 
       debug('select', selectElement);
       self.handleEvent({

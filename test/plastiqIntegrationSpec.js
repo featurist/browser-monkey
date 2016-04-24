@@ -16,6 +16,7 @@ describe('plastiq integration', function(){
               model.show = !model.show;
             }
           }),
+          h('input', {type: 'text', binding: [model, 'name']}),
           renderMessage()
         ]
       );
@@ -30,6 +31,10 @@ describe('plastiq integration', function(){
 
     return browser.find('.toggle').click().then(function(){
       return browser.find('span', {text: 'hello'}).shouldExist();
+    }).then(function(){
+      return browser.find('input').typeIn('monkey');
+    }).then(function(){
+      return browser.find('input').shouldHave({value: 'monkey'});
     })
   });
 });
