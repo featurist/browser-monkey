@@ -24,10 +24,11 @@ function domTest(testName, testCb, options){
   runTests(testName, function(){
     runHtml('HTML', function(){
       var htmlDom = createHDom();
+      var browser = browserMonkey();
       browser.set({
         document: document
       });
-      return testCb(browserMonkey(), htmlDom, require('jquery'));
+      return testCb(browser, htmlDom, require('jquery'));
     });
 
     runVDom('VDOM', function(){
