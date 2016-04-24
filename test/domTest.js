@@ -1,7 +1,9 @@
-var browser = require('..');
 var createHDom = require('./createTestDom');
 var createVDom = require('./createVDom');
 var isNode = require('detect-node');
+var h = require('virtual-dom/h');
+var vquery = require('vdom-query')
+var browserMonkey = require('..');
 
 function noop(){}
 
@@ -25,14 +27,12 @@ function domTest(testName, testCb, options){
       browser.set({
         document: document
       });
-      return testCb(browser, htmlDom, require('jquery'));
+      return testCb(browserMonkey(), htmlDom, require('jquery'));
     });
 
     runVDom('VDOM', function(){
-      var h = require('virtual-dom/h');
       var body = h('body');
-      var browser = require('..').create(body);
-      var vquery = require('vdom-query')
+      var browser = browserMonkey(body);
       browser.set({
         $: vquery,
         visibleOnly: false,

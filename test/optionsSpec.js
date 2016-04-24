@@ -1,4 +1,4 @@
-var browser = require('..');
+var browser = require('..')();
 var createTestDom = require('./createTestDom');
 
 describe('options', function () {
