@@ -34,7 +34,11 @@ module.exports = {
 
     return self.element(options).then(function(element) {
       if ($(element).is('select')) {
-        return self.find('option', selectOptions).element().then(function(optionElement) {
+        return self.find('option', selectOptions).elements().then(function(optionElements) {
+          var optionElement = optionElements[0];
+          if (optionElements.length > 1) {
+            console.warn('More than one element matched your criteria, we have selected the first match');
+          }
           optionElement.selected = true;
           var selectElement = optionElement.parentNode;
 

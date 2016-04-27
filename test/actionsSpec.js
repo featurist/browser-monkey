@@ -130,6 +130,18 @@ describe('actions', function(){
         });
       });
 
+      it('selects the first match if multiple available', function(){
+        var selectedItem = undefined;
+
+        var select = dom.insert('<select><option value="1">Item</option><option value="2">Item</option></select>').change(function (e) {
+          selectedItem = select.val();
+        });
+
+        return browser.find('select').select({text: 'Item'}).then(function(){
+          expect(selectedItem).to.equal('1');
+        });
+      });
+
       it('selects an option that eventually appears', function(){
         var promise = browser.find('.element').select({text: 'Second'});
         var selectedItem = undefined;
