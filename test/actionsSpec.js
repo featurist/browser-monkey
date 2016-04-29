@@ -86,7 +86,6 @@ describe('actions', function(){
     describe('text', function(){
       it('respects timeout option', function(){
         var promise = browser.find('.element').select({text: 'Second', timeout: 100});
-        var selectedItem = undefined;
 
         dom.eventuallyInsert(
           $('<select class="element"><option>First</option><option>Second</option></select>').change(function (e) {
@@ -173,7 +172,7 @@ describe('actions', function(){
       it('errors when the input is not a select', function(){
         var promise = browser.find('.element').select({text: 'Whatevs'});
         dom.eventuallyInsert('<div class="element"></div>');
-        return expect(promise).to.be.rejectedWith('Cannot select from a DIV');
+        return expect(promise).to.be.rejectedWith('to have css select');
       });
 
       it('selects an option using text that is falsy', function(){

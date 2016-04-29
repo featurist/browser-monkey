@@ -32,30 +32,21 @@ module.exports = {
     var selectOptions = Options.remove(options, ['text', 'exactText']);
     var self = this;
 
-    return self.element(options).then(function(element) {
-      if ($(element).is('select')) {
-        return self.find('option', selectOptions).elements().then(function(optionElements) {
-          var optionElement = optionElements[0];
-          if (optionElements.length > 1) {
-            console.warn('More than one element matched your criteria, we have selected the first match');
-          }
-          optionElement.selected = true;
-          var selectElement = optionElement.parentNode;
+    return self.is('select').find('option', selectOptions).elements(options).then(function(optionElements) {
+      var optionElement = optionElements[0];
+      optionElement.selected = true;
+      var selectElement = optionElement.parentNode;
 
-          debug('select', selectElement);
-          self.handleEvent({
-            type: 'select option',
-            value: optionElement.value,
-            element: selectElement,
-            optionElement: optionElement
-          });
+      debug('select', selectElement);
+      self.handleEvent({
+        type: 'select option',
+        value: optionElement.value,
+        element: selectElement,
+        optionElement: optionElement
+      });
 
-          blurActiveElement();
-          dispatchEvent(selectElement, 'change');
-        });
-      } else {
-        throw new Error('Cannot select from a ' + element.tagName);
-      }
+      blurActiveElement();
+      dispatchEvent(selectElement, 'change');
     });
   },
 
