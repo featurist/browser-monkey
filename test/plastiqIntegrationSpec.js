@@ -1,4 +1,4 @@
-var browserMonkey = require('..');
+var browserMonkey = require('..').create;
 var plastiq = require('plastiq');
 var h = plastiq.html;
 

@@ -3,19 +3,21 @@ var sendkeys = require('./sendkeys');
 var Options = require('./options');
 
 module.exports = {
-  activate: function (element) {
+  focus: function(element) {
     var $ = this.get('$');
     var document = this.get('document');
-    if (element && element.hasOwnProperty('length')) {
-      element = element[0];
-    }
+    if (document) {
+      if (element && element.hasOwnProperty('length')) {
+        element = element[0];
+      }
 
-    var activeElement = document.activeElement;
-
-    if (activeElement) {
-      $(activeElement).trigger('blur');
+      var activeElement = document.activeElement;
+      if (activeElement) {
+        $(activeElement).trigger('blur');
+      }
+      document.activeElement = element;
     }
-    document.activeElement = element;
+    $(element).focus();
   },
 
   click: function(options) {
@@ -24,14 +26,10 @@ module.exports = {
     return this.enabled().element(options).then(function(element) {
       debug('click', element);
       self.handleEvent({type: 'click', element: element});
-      self.activate(element);
+      self.focus(element);
       element.trigger('mousedown');
       element.trigger('mouseup');
-      if (element[0] && element[0].click) {
-        element[0].click();
-      } else {
-        element.trigger('click');
-      }
+      element.trigger('click');
     });
   },
 
@@ -42,7 +40,7 @@ module.exports = {
 
     return this.find('option', selectOptions).element().then(function(optionElement) {
       var selectElement = optionElement.parent();
-      self.activate(selectElement);
+      self.focus(selectElement);
       optionElement.prop('selected', true);
       optionElement.attr('selected', 'selected');
       selectElement.val(optionElement.val());
@@ -67,21 +65,20 @@ module.exports = {
 
     return this.element(options).then(function(element) {
       debug('typeIn', element, text);
-      self.activate(element);
+      self.focus(element);
       self.handleEvent({type: 'typing', text: text, element: element});
       return sendkeys(element, text);
     });
   },
 
   submit: function(options) {
-    var $ = this.get('$');
     var self = this;
 
     return this.element(options).then(function(element) {
       debug('submit', element);
-      self.activate(element);
+      self.focus(element);
       self.handleEvent({type: 'submit', element: element});
-      return $(element).trigger('submit');
+      return element.trigger('submit');
     });
   },
 
@@ -89,7 +86,7 @@ module.exports = {
     var self = this;
 
     return this.element(options).then(function(element) {
-      self.activate(element);
+      self.focus(element);
       debug('typeInHtml', element, html);
       self.handleEvent({type: 'typing html', html: html, element: element});
       return sendkeys.html(element, html);

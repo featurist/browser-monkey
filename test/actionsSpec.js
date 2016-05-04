@@ -61,12 +61,10 @@ describe('actions', function(){
 
       button = dom.insert('<button disabled>a button</button>');
       button.on('click', function () {
-        console.log('click handler')
         clicked = buttonState;
       });
 
       setTimeout(function () {
-        console.log('enabled')
         button.prop('disabled', false);
         buttonState = 'enabled'
       }, 100);
@@ -184,12 +182,11 @@ describe('actions', function(){
 
   describe('submit', function () {
     domTest('should submit the form', function (browser, dom) {
-      var submitted;
+      var submitted = false;
       var promise = browser.find('input').submit();
 
       dom.insert('<form><input type=text></form>').on('submit', function (ev) {
         submitted = true;
-        //ev.preventDefault();
       });
 
       return promise.then(function () {

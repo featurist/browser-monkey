@@ -1,3 +1,4 @@
+var window = require('global');
 var finders = require('./finders');
 var actions = require('./actions');
 var assertions = require('./assertions');
@@ -78,9 +79,14 @@ Selector.prototype.component = function (methods) {
   return new Component().scope(this);
 };
 
-module.exports = function createBrowserMonkey(rootSelector){
+function createBrowserMonkey(rootSelector){
   return new Selector(rootSelector)
     .component(finders)
     .component(actions)
     .component(assertions);
 }
+
+var browser = createBrowserMonkey();
+module.exports = browser;
+
+module.exports.create = createBrowserMonkey;

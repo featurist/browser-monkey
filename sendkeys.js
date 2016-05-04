@@ -10,11 +10,6 @@ function sendkey(el, char) {
 }
 
 function sendkeys(el, text) {
-  el.focus();
-  if (el.setActive) {
-    el.setActive();
-  }
-
   var originalValue = el.val();
 
   if (text.length === 0) {

@@ -39,8 +39,8 @@ describe('events', function(){
   domTest('typeIn element should fire change and then blur event on input', function(browser, dom){
     var firedEvents = [];
 
-    dom.insert('<input type="text" class="input">');
-    dom.insert('<input type="text" class="change">');
+    dom.insert('<input type="text" class="input" />');
+    dom.insert('<input type="text" class="change" />');
 
     dom.el.find('.input').on('blur', function(e){
       firedEvents.push('blur');

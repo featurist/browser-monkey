@@ -37,7 +37,9 @@ module.exports = {
     var additionalOptions = Options.remove(options, additionalAssertions);
 
     var assertions = additionalAssertions.map(function(finderMethodName){
-      return self[finderMethodName]().shouldHave(additionalOptions[finderMethodName]);
+      if (typeof self[finderMethodName] === 'function') {
+        return self[finderMethodName]().shouldHave(additionalOptions[finderMethodName]);
+      }
     });
 
     assertions.push(this.addFinder(this.createElementTester(options)).shouldExist(resolveOptions));
