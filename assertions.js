@@ -1,11 +1,10 @@
 var Options = require('./options');
-var elementTester = require('./elementTester');
 var expectOneElement = require('./expectOneElement');
 
 module.exports = {
   is: function (css) {
     var $ = this.get('$');
-    return this.addFinder(elementTester($, {css: css}));
+    return this.addFinder(this.createElementTester({css: css}));
   },
 
   exists: function (options) {
@@ -41,7 +40,7 @@ module.exports = {
       return self[finderMethodName]().shouldHave(additionalOptions[finderMethodName]);
     });
 
-    assertions.push(this.addFinder(elementTester($, options)).shouldExist(resolveOptions));
+    assertions.push(this.addFinder(this.createElementTester(options)).shouldExist(resolveOptions));
     return Promise.all(assertions);
   },
 
@@ -76,6 +75,6 @@ module.exports = {
     var resolveOptions = Options.remove(options, ['timeout', 'interval']);
     resolveOptions.allowMultiple = true;
 
-    return this.addFinder(elementTester($, options)).shouldNotExist(resolveOptions);
+    return this.addFinder(this.createElementTester(options)).shouldNotExist(resolveOptions);
   }
 };

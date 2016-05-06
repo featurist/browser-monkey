@@ -1,12 +1,14 @@
 var finders = require('./finders');
 var actions = require('./actions');
 var assertions = require('./assertions');
+var elementTester = require('./elementTester');
 
 function Selector(selector, finders, options) {
   this._selector = selector;
   this._finders = finders || [];
   this._options = options || { visibleOnly: true, $: require('./jquery')};
   this._handlers = [];
+  this._elementTesters = elementTester;
 }
 
 Selector.prototype.set = function(options){

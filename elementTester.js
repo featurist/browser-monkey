@@ -1,125 +1,82 @@
 var chai = require('chai');
 var expect = chai.expect;
-
-var Options = require('./options');
 var elementsToString = require('./elementsToString');
 
-
-module.exports = function elementTester($, options) {
-  function assertElementProperties(elements, expected, getProperty, exact) {
-    function assertion(actual, expected) {
-      if (exact) {
-        expect(actual, 'expected element to have exact text ' + JSON.stringify(expected) + ' but contained ' + JSON.stringify(actual)).to.equal(expected.toString());
-      } else {
-        expect(actual, 'expected element to contain ' + JSON.stringify(expected) + ' but contained ' + JSON.stringify(actual)).to.contain(expected);
-      }
-    }
-
-    if (expected instanceof Array) {
-      var actualTexts = elements.toArray().map(function (item) {
-        return getProperty($(item));
-      });
-
-      expect(actualTexts.length, 'expected ' + JSON.stringify(actualTexts) + ' to respectively contain ' + JSON.stringify(expected)).to.eql(expected.length);
-
-      expected.forEach(function (expected, index) {
-        var actualText = actualTexts[index];
-        assertion(actualText, expected);
-      });
+function assertElementProperties($, elements, expected, getProperty, exact) {
+  function assertion(actual, expected) {
+    if (exact) {
+      expect(actual, 'expected element to have exact text ' + JSON.stringify(expected) + ' but contained ' + JSON.stringify(actual)).to.equal(expected.toString());
     } else {
-      var elementText = getProperty(elements);
-      assertion(elementText, expected);
+      expect(actual, 'expected element to contain ' + JSON.stringify(expected) + ' but contained ' + JSON.stringify(actual)).to.contain(expected);
     }
   }
 
-  var options = new Options(options);
+  if (expected instanceof Array) {
+    var actualTexts = elements.toArray().map(function (item) {
+      return getProperty($(item));
+    });
 
-  var css = options.option('css');
-  var text = options.option('text');
-  var exactText = options.option('exactText');
-  var message = options.option('message');
-  var predicate = options.option('elements');
-  var length = options.option('length');
-  var value = options.option('value');
-  var exactValue = options.option('exactValue');
-  var html = options.option('html');
-  var checked = options.option('checked');
+    expect(actualTexts.length, 'expected ' + JSON.stringify(actualTexts) + ' to respectively contain ' + JSON.stringify(expected)).to.eql(expected.length);
 
-  options.validate();
-
-  if (typeof options === 'string') {
-    css = options;
+    expected.forEach(function (expected, index) {
+      var actualText = actualTexts[index];
+      assertion(actualText, expected);
+    });
+  } else {
+    var elementText = getProperty($(elements));
+    assertion(elementText, expected);
   }
-
-  if (typeof options === 'function') {
-    predicate = options;
-  }
-
-  function getNormalisedText(el) {
-    return el.innerText().replace(/ +/g,' ').replace(/ *\n */g,"\n");
-  }
-
-  return {
-    find: function(element) {
-      var els = $(element);
-
-      if (css && !els.is(css)) {
-        throw new Error(message || ('expected elements ' + elementsToString(els) + ' to have css ' + css));
-      }
-
-      if (text !== undefined) {
-        assertElementProperties(els, text, function (e) { return getNormalisedText(e); });
-      }
-
-      if (exactText !== undefined) {
-        assertElementProperties(els, exactText, function (e) { return getNormalisedText(e); }, true);
-      }
-
-      if (value !== undefined) {
-        assertElementProperties(els, value, function (e) { return e.val() || ''; });
-      }
-
-      if (exactValue !== undefined) {
-        assertElementProperties(els, exactValue, function (e) { return e.val() || ''; }, true);
-      }
-
-      if (checked) {
-        var elements = els.toArray();
-
-        if (checked instanceof Array) {
-          var elementsChecked = elements.map(function (element) {
-            return !!$(element).prop('checked');
-          });
-          expect(elementsChecked, 'expected ' + elementsToString(els) + ' to have checked states ' + JSON.stringify(checked)).to.eql(checked);
-        } else {
-          var elementsNotMatching = elements.filter(function (element) {
-            return $(element).prop('checked') !== checked;
-          });
-          expect(elementsNotMatching.length, 'expected ' + elementsToString(els) + ' to be ' + (checked? 'checked': 'unchecked')).to.equal(0);
-        }
-      }
-
-      if (html) {
-        assertElementProperties(els, html, function (e) { return e.html(); });
-      }
-
-      if (length !== undefined) {
-        if (els.length !== length) {
-          throw new Error(message || ('expected ' + elementsToString(els) + ' to have ' + length + ' elements'));
-        }
-      }
-
-      if (predicate) {
-        if (!predicate(els.toArray())) {
-          throw new Error(message || 'expected elements to pass predicate');
-        }
-      }
-
-      return els;
-    },
-
-    toString: function() {
-      return message || css || text;
-    }
-  };
 }
+
+function getNormalisedText(el) {
+  return el.innerText().replace(/ +/g,' ').replace(/ *\n */g,"\n");
+}
+
+module.exports = {
+  css: function($el, message, css) {
+    if (!$el.is(css)) {
+      throw new Error(message || ('expected elements ' + elementsToString($el) + ' to have css ' + css));
+    }
+  },
+  elements: function($el, message, predicate){
+    if (!predicate($el.toArray())) {
+      throw new Error(message || 'expected elements to pass predicate');
+    }
+  },
+  text: function($el, message, text) {
+    assertElementProperties(this.get('$'), $el, text, function (e) { return getNormalisedText(e); });
+  },
+  length: function($el, message, length) {
+    if ($el.length !== length) {
+      throw new Error(message || ('expected ' + elementsToString($el) + ' to have ' + length + ' elements'));
+    }
+  },
+  html: function($el, message, html) {
+    assertElementProperties(this.get('$'), $el, html, function (e) { return e.html(); });
+  },
+  checked: function($el, message, checked) {
+    var $ = this.get('$');
+    var elements = $el.toArray();
+
+    if (checked instanceof Array) {
+      var elementsChecked = elements.map(function (element) {
+        return !!$(element).prop('checked');
+      });
+      expect(elementsChecked, 'expected ' + elementsToString($el) + ' to have checked states ' + JSON.stringify(checked)).to.eql(checked);
+    } else {
+      var elementsNotMatching = elements.filter(function (element) {
+        return $(element).prop('checked') !== checked;
+      });
+      expect(elementsNotMatching.length, 'expected ' + elementsToString($el) + ' to be ' + (checked? 'checked': 'unchecked')).to.equal(0);
+    }
+  },
+  exactText: function($el, message, exactText) {
+    assertElementProperties(this.get('$'), $el, exactText, function (e) { return getNormalisedText(e); }, true);
+  },
+  value: function($el, message, value) {
+    assertElementProperties(this.get('$'), $el, value, function (e) { return e.val() || ''; });
+  },
+  exactValue: function($el, message, exactValue) {
+    assertElementProperties(this.get('$'), $el, exactValue, function (e) { return e.val() || ''; }, true);
+  }
+};

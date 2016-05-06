@@ -1,7 +1,6 @@
 var retry = require('trytryagain');
 var trace = require('./trace');
 var Options = require('./options');
-var elementTester = require('./elementTester');
 var expectOneElement = require('./expectOneElement');
 
 module.exports = {
@@ -38,13 +37,44 @@ module.exports = {
     return this.clone({_finders: finders});
   },
 
+  createElementTester: function(criteria) {
+    var self = this;
+
+    if (typeof criteria === 'string') {
+      criteria = { css: criteria };
+    }
+
+    if (typeof criteria === 'function') {
+      criteria = { predicate: criteria };
+    }
+
+    return {
+      find: function($el) {
+        var message = criteria.message;
+        Object.keys(criteria).forEach(function(key){
+          var value = criteria[key];
+          var tester = self._elementTesters[key];
+
+          if (value !== undefined) {
+            tester.call(self, $el, message, value);
+          }
+        });
+        return $el;
+      },
+
+      toString: function(){
+        return criteria.message || criteria.css || criteria.text;
+      }
+    };
+  },
+
   find: function (selector, options) {
     var $ = this.get('$');
     var message = JSON.stringify(options);
     var scope = this.addFinder(this.elementFinder(selector));
 
     if (options) {
-      var tester = elementTester($, options);
+      var tester = this.createElementTester(options);
 
       return scope.filter(function (element) {
         try {
@@ -65,13 +95,14 @@ module.exports = {
     var finder;
 
     if (options) {
-      var testElements = elementTester($, options);
+      var tester = this.createElementTester(options);
+
       finder = {
         find: function (elements) {
           var found = findElements.find(elements);
           var tested = found.toArray().filter(function (element) {
             try {
-              testElements.find(element);
+              tester.find(element);
               return true;
             } catch (error) {
               return false;
