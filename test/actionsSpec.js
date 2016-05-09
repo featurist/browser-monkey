@@ -221,12 +221,28 @@ describe('actions', function(){
   });
 
   describe('checkboxes', function(){
-    domTest('can check a checkbox by clicking it', function (browser, dom) {
+    domTest('can check a checkbox by clicking on it', function (browser, dom) {
       var checkbox = dom.insert('<input class="checkbox" type=checkbox>');
 
       expect(checkbox.prop('checked')).to.be.false;
 
       var clicked = browser.find('.checkbox').click();
+      return clicked.then(function () {
+        expect(checkbox.prop('checked')).to.be.true;
+      }).then(function () {
+        return browser.find('.checkbox').click();
+      }).then(function () {
+        expect(checkbox.prop('checked')).to.be.false;
+      });
+    });
+
+    domTest('can check a checkbox by clicking its label', function (browser, dom) {
+      var label = dom.insert('<label>Check: <input class="checkbox" type=checkbox></label>');
+      var checkbox = dom.el.find('input');
+
+      expect(checkbox.prop('checked')).to.be.false;
+
+      var clicked = browser.find('label').click();
       return clicked.then(function () {
         expect(checkbox.prop('checked')).to.be.true;
       }).then(function () {
@@ -273,7 +289,7 @@ describe('actions', function(){
       });
       dom.eventuallyInsert('<select class="title"><option>Mrs</option><option>Mr</option></select>');
       dom.eventuallyInsert('<input type="text" class="name"></input>');
-      dom.eventuallyInsert('<label class="agree"><input type="checkbox"></label>');
+      dom.eventuallyInsert('<label class="agree">Check: <input type="checkbox"></label>');
 
       return component.fill([
         { select: 'title', text: 'Mrs'},

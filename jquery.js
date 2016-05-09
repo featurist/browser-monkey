@@ -3,8 +3,14 @@ function dispatchEvent(element, eventType){
   var event;
 
   if (document.createEvent) {
-    event = document.createEvent("Event");
-    event.initEvent(eventType, true, true);
+    if (eventType === 'click' && element.tagName === 'A') {
+      var event = document.createEvent("MouseEvents");
+      event.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+    }
+    else {
+      event = document.createEvent("Event");
+      event.initEvent(eventType, true, true);
+    }
   } else {
     event = document.createEventObject();
     event.eventType = eventType;
@@ -18,6 +24,7 @@ function dispatchEvent(element, eventType){
     element.fireEvent("on" + event.eventType, event);
   }
 }
+
 if (jquery.fn) {
   jquery.fn.extend({
     innerText: function(){
@@ -31,12 +38,16 @@ if (jquery.fn) {
           element.checked = !element.checked;
           dispatchEvent(element, eventType);
         }
+        else if (eventType === 'click' && element.tagName === 'LABEL') {
+          jquery(element).find('input[type=checkbox]').trigger('click');
+        }
         else if (eventType === 'submit' && element.form) {
           if (!jquery.preventFormSubmit) {
             element.form.submit();
           }
           dispatchEvent(element.form, eventType);
-        } else {
+        }
+        else {
           dispatchEvent(element, eventType);
         }
       };
