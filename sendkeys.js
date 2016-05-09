@@ -21,8 +21,8 @@ function sendkeys(el, text) {
   var originalValue = el.value;
 
   if (text.length === 0) {
-    sendkey(el, '');
     el.value = '';
+    sendkey(el, '');
   } else {
     for (var n = 0; n < text.length; ++n) {
       var char = text[n];

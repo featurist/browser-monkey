@@ -279,11 +279,11 @@ describe('actions', function(){
     it('blanks out existing text when typing empty text', function () {
       var firedEvents = [];
       dom.insert('<input type="text" class="element" value="good bye">')
-        .on('input', function(){ firedEvents.push('input'); });
+      .on('input', function(ev){ firedEvents.push('input: ' + JSON.stringify(ev.target.value)); });
 
       return browser.find('.element').typeIn('').then(function () {
         expect(dom.el.find('input.element').val()).to.equal('');
-        expect(firedEvents).to.eql(['input'])
+        expect(firedEvents).to.eql(['input: ""'])
       });
     });
   });
