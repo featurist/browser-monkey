@@ -185,7 +185,7 @@ describe('actions', function(){
       var submitted = false;
       var promise = browser.find('input').submit();
 
-      dom.insert('<form><input type=text></form>').on('submit', function (ev) {
+      dom.insert('<form action="#"><input type=text></form>').on('submit', function (ev) {
         submitted = true;
       });
 
