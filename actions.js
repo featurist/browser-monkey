@@ -6,17 +6,15 @@ module.exports = {
   focus: function(element) {
     var $ = this.get('$');
     var document = this.get('document');
-    if (document) {
-      if (element && element.hasOwnProperty('length')) {
-        element = element[0];
-      }
-
-      var activeElement = document.activeElement;
-      if (activeElement) {
-        $(activeElement).trigger('blur');
-      }
-      document.activeElement = element;
+    if (element && element.length > 0) {
+      element = element[0];
     }
+
+    var activeElement = document.activeElement;
+    if (activeElement && !$(activeElement).is(':focus')) {
+      $(activeElement).trigger('blur');
+    }
+    document.activeElement = element;
     $(element).focus();
   },
 
