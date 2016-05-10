@@ -3,7 +3,7 @@ function dispatchEvent(element, eventType){
   var event;
 
   if (document.createEvent) {
-    if (eventType === 'click' && element.tagName === 'A') {
+    if (eventType === 'click' && (element.tagName === 'A' || element.tagName === 'LABEL')) {
       var event = document.createEvent("MouseEvents");
       event.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
     }
@@ -37,9 +37,6 @@ if (jquery.fn) {
         if (eventType === 'click' && element.type === 'checkbox') {
           element.checked = !element.checked;
           dispatchEvent(element, eventType);
-        }
-        else if (eventType === 'click' && element.tagName === 'LABEL') {
-          jquery(element).find('input[type=checkbox]').trigger('click');
         }
         else if (eventType === 'submit' && element.form) {
           if (!jquery.preventFormSubmit) {
