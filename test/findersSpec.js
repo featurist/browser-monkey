@@ -59,6 +59,18 @@ describe('find', function () {
     });
   }, {vdom: false});
 
+  domTest('can find things in an iframe', function(browser, dom){
+    var iframe = document.createElement('iframe');
+    iframe.src = '/base/test/page2.html';
+    iframe.width = 700;
+    iframe.height = 1000;
+    dom.el.append(iframe);
+
+    return browser.find('iframe').element().then(function(iframe){
+      return browser.scope(iframe).find('h1', {text: 'Hello World'}).shouldExist();
+    });
+  }, {vdom: false});
+
   domTest('calls a function for each element found', function(browser, dom){
     var promise = browser.find('span').elements();
 
@@ -116,6 +128,26 @@ describe('find', function () {
 
     domTest('errors with a usable css selector if it cant find something', function (browser, dom) {
       var promise = browser.find('.outer').find('.not-there').element();
+
+      setTimeout(function () {
+        dom.insert('<div class="outer"><div>bad</div></div>');
+      }, 200);
+
+      expect(promise).to.be.rejectedWith('expected to find: .outer .not-there')
+    });
+
+    domTest('errors with a usable css selector if it cant find an element containing another', function (browser, dom) {
+      var promise = browser.find('.outer').containing('.not-there').shouldExist();
+
+      setTimeout(function () {
+        dom.insert('<div class="outer"><div>bad</div></div>');
+      }, 200);
+
+      expect(promise).to.be.rejectedWith('expected to find: .outer:has(.not-there)')
+    });
+
+    domTest("fails if it can't find an element containing another", function (browser, dom) {
+      var promise = browser.find('.outer').containing('.inner').shouldExist();
 
       setTimeout(function () {
         dom.insert('<div class="outer"><div>bad</div></div>');

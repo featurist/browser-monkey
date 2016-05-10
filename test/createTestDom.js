@@ -21,11 +21,11 @@ module.exports = function() {
       this.el.append(append);
       return append;
     },
-    eventuallyInsert: function(html) {
+    eventuallyInsert: function(html, after) {
       var self = this;
       setTimeout(function () {
         self.insert(html);
-      }, 10);
+      }, after || 10);
     }
   };
 };

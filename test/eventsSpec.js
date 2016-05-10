@@ -150,7 +150,7 @@ describe('events', function(){
 
       return browser.on(function (e) {
         event = e;
-      }).find('select').select('one').then(function () {
+      }).find('select').select({text: 'one'}).then(function () {
         expect(event, 'expected event to fire').to.not.be.undefined;
         expect(event.type).to.equal('select option');
         expect(event.value).to.equal('one');

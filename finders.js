@@ -181,10 +181,27 @@ module.exports = {
     };
 
     function selector() {
-      if(typeof Element !== 'undefined' && self._selector instanceof Element && self._selector.tagName == 'IFRAME') {
-        return self._selector.contentDocument.body;
+      /*console.log('ele', typeof Element !== 'undefined')
+      console.log('ele inst', self._selector instanceof Element, self._selector)
+      console.log('iframe', self._selector.prop('tagName') == 'IFRAME')*/
+      //if(typeof Element !== 'undefined' && self._selector instanceof Element && self._selector.prop('tagName') == 'IFRAME') {
+
+      var selector = self._selector;
+      if (
+        selector &&
+        typeof Element !== 'undefined' &&
+        selector instanceof Element &&
+        selector.tagName == 'IFRAME'
+      ) {
+        return selector.contentDocument.body; 
+      } else if (
+        selector &&
+        typeof selector.prop === 'function' &&
+        selector.prop('tagName') === 'IFRAME'
+      ) {
+        return selector[0].contentDocument.body;
       } else {
-        return self._selector || 'body';
+        return selector || 'body';
       }
     }
 

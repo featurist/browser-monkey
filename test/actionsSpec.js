@@ -77,6 +77,19 @@ describe('actions', function(){
 
   describe('select', function(){
     describe('text', function(){
+      domTest('respects timeout option', function(browser, dom, $){
+        var promise = browser.find('.element').select({text: 'Second', timeout: 20});
+        var selectedItem = undefined;
+
+        dom.eventuallyInsert(
+          $('<select class="element"><option>First</option><option>Second</option></select>').on('change', function (e) {
+            selectedItem = $(this).find('option[selected]').text();
+          })
+        , 30);
+
+        return expect(promise).to.be.rejected
+      });
+
       domTest('should eventually select an option element using the text', function(browser, dom, $){
         var promise = browser.find('.element').select({text: 'Second'});
         var selectedItem = undefined;
@@ -124,7 +137,7 @@ describe('actions', function(){
         });
       });
 
-      domTest('should error when the specified option does not exist', function(browser, dom){
+      domTest('errors when the specified option does not exist', function(browser, dom){
         var promise = browser.find('.element').select({text: 'Does not exist'});
 
         dom.eventuallyInsert('<select class="element"><option>First</option><option>Second</option></select>');
@@ -134,7 +147,13 @@ describe('actions', function(){
         ]);
       });
 
-      domTest('should select an option using text that is falsy', function(browser, dom, $){
+      domTest('errors when the input is not a select', function(browser, dom){
+        var promise = browser.find('.element').select({text: 'Whatevs'});
+        dom.eventuallyInsert('<div class="element"></div>');
+        return expect(promise).to.be.rejectedWith('to have css select');
+      });
+
+      domTest('selects an option using text that is falsy', function(browser, dom, $){
         var promise = browser.find('.element').select({text: 0});
         var selectedItem = undefined;
 
@@ -196,17 +215,40 @@ describe('actions', function(){
   });
 
   describe('typeIn', function(){
-    domTest('should eventually enter text into an element', function (browser, dom) {
-      var promise = browser.find('.element').typeIn('haha');
-
-      dom.eventuallyInsert('<input type="text" class="element"></input>');
-
-      return promise.then(function () {
-        expect(dom.el.find('input.element').val()).to.equal('haha');
+    [
+      '<input class="element"></input>',
+      '<input class="element" type="text"></input>',
+      '<input class="element" type="email"></input>',
+      '<input class="element" type="password"></input>',
+      '<input class="element" type="search"></input>',
+      '<input class="element" type="tel"></input>',
+      '<input class="element" type="url"></input>',
+      '<textarea class="element"></textara>'
+    ].forEach(function(html) {
+      domTest('eventually enters text into: ' + html, function (browser, dom) {
+        var promise = browser.find('.element').typeIn('haha');
+        dom.eventuallyInsert(html);
+        return promise.then(function () {
+          expect(dom.el.find('.element').val()).to.equal('haha');
+        });
+      });
+    });
+    return
+    
+    [
+      '<div class="element"></div>',
+      '<input type="checkbox" class="element"></input>',
+      '<select class="element"></select>'
+    ].forEach(function(html) {
+      
+      domTest('rejects attempt to type into element: ' + html, function (browser, dom, $) {
+        var promise = browser.find('.element').typeIn('whatevs');
+        dom.eventuallyInsert(html);
+        return expect(promise).to.be.rejectedWith('Cannot type into ' + $(html).prop('tagName'));
       });
     });
 
-    domTest('typing empty text blanks out existing text', function (browser, dom) {
+    domTest('blanks out existing text when typing empty text', function (browser, dom) {
       var firedEvents = [];
       dom.insert('<input type="text" class="element" value="good bye">')
         .on('input', function(){ firedEvents.push('input'); });
