@@ -1,32 +1,25 @@
 function dispatchEvent(el, type, char) {
-  var event = document.createEvent("Events");
-  event.initEvent(type, true, false);
-  event.charCode = char;
-  el.dispatchEvent(event);
+  el.trigger(type, {charCode: char});
 }
 
 function sendkey(el, char) {
   dispatchEvent(el, "keydown", char);
-  dispatchEvent(el, "keyup", char);
   dispatchEvent(el, "keypress", char);
   dispatchEvent(el, "input");
+  dispatchEvent(el, "keyup", char);
 }
 
 function sendkeys(el, text) {
-  el.focus();
-  if (el.setActive) {
-    el.setActive();
-  }
-
-  var originalValue = el.value;
+  var originalValue = el.val();
 
   if (text.length === 0) {
-    el.value = '';
+    el.val('');
     sendkey(el, '');
   } else {
     for (var n = 0; n < text.length; ++n) {
       var char = text[n];
-      el.value = text.substring(0, n + 1);
+      var value = text.substring(0, n + 1);
+      el.val(value);
       sendkey(el, char);
     }
   }

@@ -1,12 +1,15 @@
+var window = require('global');
 var finders = require('./finders');
 var actions = require('./actions');
 var assertions = require('./assertions');
+var elementTester = require('./elementTester');
 
 function Selector(selector, finders, options) {
   this._selector = selector;
   this._finders = finders || [];
-  this._options = options || { visibleOnly: true };
+  this._options = options || { visibleOnly: true, $: require('./jquery')};
   this._handlers = [];
+  this._elementTesters = elementTester;
 }
 
 Selector.prototype.set = function(options){
@@ -76,8 +79,14 @@ Selector.prototype.component = function (methods) {
   return new Component().scope(this);
 };
 
+function createBrowserMonkey(rootSelector){
+  return new Selector(rootSelector)
+    .component(finders)
+    .component(actions)
+    .component(assertions);
+}
 
-module.exports = new Selector()
-  .component(finders)
-  .component(actions)
-  .component(assertions);
+var browser = createBrowserMonkey();
+module.exports = browser;
+
+module.exports.create = createBrowserMonkey;

@@ -1,10 +1,10 @@
 var Options = require('./options');
-var elementTester = require('./elementTester');
 var expectOneElement = require('./expectOneElement');
 
 module.exports = {
   is: function (css) {
-    return this.addFinder(elementTester({css: css}));
+    var $ = this.get('$');
+    return this.addFinder(this.createElementTester({css: css}));
   },
 
   exists: function (options) {
@@ -24,6 +24,7 @@ module.exports = {
   },
 
   shouldHave: function(options) {
+    var $ = this.get('$');
     var self = this;
 
     var resolveOptions = Options.remove(options, ['timeout', 'interval']);
@@ -36,20 +37,25 @@ module.exports = {
     var additionalOptions = Options.remove(options, additionalAssertions);
 
     var assertions = additionalAssertions.map(function(finderMethodName){
-      return self[finderMethodName]().shouldHave(additionalOptions[finderMethodName]);
+      if (typeof self[finderMethodName] === 'function') {
+        return self[finderMethodName]().shouldHave(additionalOptions[finderMethodName]);
+      }
     });
 
-    assertions.push(this.addFinder(elementTester(options)).shouldExist(resolveOptions));
+    assertions.push(this.addFinder(this.createElementTester(options)).shouldExist(resolveOptions));
     return Promise.all(assertions);
   },
 
   shouldHaveElement: function(fn, options) {
+    var $ = this.get('$');
     var self = this;
 
     return this.addFinder({
       find: function (elements) {
         expectOneElement(self, elements);
-        elements.toArray().forEach(fn);
+        elements.toArray().forEach(function(element){
+          fn($(element));
+        });
         return elements;
       }
     }).shouldExist(options);
@@ -67,9 +73,10 @@ module.exports = {
   },
 
   shouldNotHave: function(options) {
+    var $ = this.get('$');
     var resolveOptions = Options.remove(options, ['timeout', 'interval']);
     resolveOptions.allowMultiple = true;
 
-    return this.addFinder(elementTester(options)).shouldNotExist(resolveOptions);
+    return this.addFinder(this.createElementTester(options)).shouldNotExist(resolveOptions);
   }
 };

@@ -1,14 +1,8 @@
-var browser = require('..');
-var createTestDom = require('./createTestDom');
+var retry = require('trytryagain');
+var domTest = require('./domTest');
 
 describe('events', function(){
-  var dom;
-
-  beforeEach(function(){
-    dom = createTestDom();
-  });
-
-  it('typeIn element should fire change', function(){
+  domTest('typeIn element should fire change', function(browser, dom){
     var firedEvents = [];
 
     dom.insert('<input type="text" class="input">')
@@ -25,7 +19,7 @@ describe('events', function(){
     });
   });
 
-  it('typeIn element should fire input on each character', function(){
+  domTest('typeIn element should fire input on each character', function(browser, dom){
     var firedEvents = [];
 
     dom.insert('<input type="text" class="input">')
@@ -42,68 +36,71 @@ describe('events', function(){
     });
   });
 
-  it('typeIn element should fire change and then blur event on input', function(){
+  domTest('typeIn element should fire change and then blur event on input', function(browser, dom){
     var firedEvents = [];
 
-    dom.insert('<input type="text" class="input"><input type="text" class="change">');
+    dom.insert('<input type="text" class="input" />');
+    dom.insert('<input type="text" class="change" />');
 
-    dom.el.find('.input').one('blur', function(e){
+    dom.el.find('.input').on('blur', function(e){
       firedEvents.push('blur');
-    }).one('change', function(){
+    }).on('change', function(){
       firedEvents.push('change');
     });
 
     return browser.find('.input').typeIn('first').then(function(){
       return browser.find('.change').typeIn('second');
     }).then(function () {
-      expect(firedEvents).to.eql([
-        'change',
-        'blur'
-      ])
+      return retry(function(){
+        expect(firedEvents).to.eql([
+          'change',
+          'blur'
+        ]);
+      });
     });
   });
 
-  it('click element should fire blur event on input', function(){
+  domTest('click element should fire blur event on input', function(browser, dom){
     var blurred = false;
 
-    dom.insert('<input type="text" class="input"><button>button</button>');
-
+    dom.insert('<input type="text" class="input" />');
+    dom.insert('<button>button</button>');
 
     dom.el.find('.input').on('blur', function(e){
-      if (e.target.className === 'input') {
-        blurred = true;
-      }
+      blurred = true;
     })
 
     return browser.find('.input').typeIn('first').then(function(){
       return browser.find('button').click();
     }).then(function(){
-      expect(blurred).to.be.true
+      return retry(function(){
+        expect(blurred).to.be.true;
+      });
     });
   });
 
-  it('select element should fire blur event on input', function(){
+  domTest('select element should fire blur event on input', function(browser, dom, $){
     var blurred = false;
 
-    dom.insert('<input type="text" class="input"><select><option>one</option></select>');
+    dom.insert('<select><option>one</option></select>');
+    dom.insert('<input type="text" class="input"></input>');
+    dom.el.find('input').on('blur', function(e){
+      blurred = true;
+    });
 
-
-    dom.el.find('.input').on('blur', function(e){
-      if (e.target.className === 'input') {
-        blurred = true;
-      }
-    })
 
     return browser.find('.input').typeIn('first').then(function(){
       return browser.find('select').select({text: 'one'});
     }).then(function(){
-      expect(blurred).to.be.true
+      return retry(function(){
+        expect(blurred).to.be.true;
+      });
     });
   });
 
   describe('callbacks on interaction', function () {
-    it('fires events on clicks', function () {
-      var button = dom.insert('<button>a button</button>')[0];
+    domTest('fires events on clicks', function (browser, dom) {
+      var button = dom.insert('<button>a button</button>');
 
       var event;
 
@@ -112,12 +109,12 @@ describe('events', function(){
       }).find('button').click().then(function () {
         expect(event, 'expected event to fire').to.not.be.undefined;
         expect(event.type).to.equal('click');
-        expect(event.element).to.equal(button);
+        expect(event.element[0]).to.equal(button[0]);
       });
     });
 
-    it('fires events on typeIn', function () {
-      var input = dom.insert('<input></input>')[0];
+    domTest('fires events on typeIn', function (browser, dom) {
+      var input = dom.insert('<input></input>');
 
       var event;
 
@@ -127,12 +124,12 @@ describe('events', function(){
         expect(event, 'expected event to fire').to.not.be.undefined;
         expect(event.type).to.equal('typing');
         expect(event.text).to.equal('some text');
-        expect(event.element).to.equal(input);
+        expect(event.element[0]).to.equal(input[0]);
       });
     });
 
-    it('fires events on typeIn', function () {
-      var editorDiv = dom.insert('<div class="editor"></div>')[0];
+    domTest('fires events on typeIn', function (browser, dom) {
+      var editorDiv = dom.insert('<div class="editor"></div>');
 
       var event;
 
@@ -142,23 +139,23 @@ describe('events', function(){
         expect(event, 'expected event to fire').to.not.be.undefined;
         expect(event.type).to.equal('typing html');
         expect(event.html).to.equal('some <b>html</b>');
-        expect(event.element).to.equal(editorDiv);
+        expect(event.element[0]).to.equal(editorDiv[0]);
       });
     });
 
-    it('fires events on select', function () {
-      var select = dom.insert('<select><option>one</option></select>')[0];
+    domTest('fires events on select', function (browser, dom) {
+      var select = dom.insert('<select><option>one</option></select>');
 
       var event;
 
       return browser.on(function (e) {
         event = e;
-      }).find('select').select('one').then(function () {
+      }).find('select').select({text: 'one'}).then(function () {
         expect(event, 'expected event to fire').to.not.be.undefined;
         expect(event.type).to.equal('select option');
         expect(event.value).to.equal('one');
-        expect(event.optionElement).to.equal(select.firstChild);
-        expect(event.element).to.equal(select);
+        expect(event.optionElement[0]).to.equal(select.find('option')[0]);
+        expect(event.element[0]).to.equal(select[0]);
       });
     });
   });

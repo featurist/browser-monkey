@@ -1,52 +1,57 @@
 var debug = require('debug')('browser-monkey');
-var dispatchEvent = require('./dispatchEvent');
 var sendkeys = require('./sendkeys');
-var sendclick = require('./sendclick');
 var Options = require('./options');
-var $ = require('jquery');
-
-function blurActiveElement() {
-  var activeElement;
-  try {
-    activeElement = document.activeElement;
-  } catch ( err ) { }
-
-  if (activeElement) {
-    dispatchEvent(activeElement, 'blur');
-  }
-}
 
 module.exports = {
+  focus: function(element) {
+    var $ = this.get('$');
+    var document = this.get('document');
+    if (element && element.length > 0) {
+      element = element[0];
+    }
+
+    var activeElement = document.activeElement;
+    if (activeElement && !$(activeElement).is(':focus')) {
+      $(activeElement).trigger('blur');
+    }
+    document.activeElement = element;
+    $(element).focus();
+  },
+
   click: function(options) {
     var self = this;
 
     return this.enabled().element(options).then(function(element) {
       debug('click', element);
       self.handleEvent({type: 'click', element: element});
-      blurActiveElement();
-      return sendclick(element);
+      self.focus(element);
+      element.trigger('mousedown');
+      element.trigger('mouseup');
+      element.trigger('click');
     });
   },
 
   select: function(options) {
-    var selectOptions = Options.remove(options, ['text', 'exactText']);
+    var $ = this.get('$');
     var self = this;
 
-    return self.is('select').find('option', selectOptions).elements(options).then(function(optionElements) {
-      var optionElement = optionElements[0];
-      optionElement.selected = true;
-      var selectElement = optionElement.parentNode;
+    return this.is('select').find('option', options).elements().then(function(optionElements) {
+      var optionElement = $(optionElements[0]);
+      var selectElement = optionElement.parent();
+      self.focus(selectElement);
+      optionElement.prop('selected', true);
+      optionElement.attr('selected', 'selected');
+      selectElement.val(optionElement.val());
 
       debug('select', selectElement);
       self.handleEvent({
         type: 'select option',
-        value: optionElement.value,
+        value: selectElement.val(),
         element: selectElement,
         optionElement: optionElement
       });
 
-      blurActiveElement();
-      dispatchEvent(selectElement, 'change');
+      selectElement.trigger('change');
     });
   },
 
@@ -59,8 +64,8 @@ module.exports = {
     return this.element(options).then(function(element) {
       debug('typeIn', element, text);
       assertCanTypeIntoElement(element);
+      self.focus(element);
       self.handleEvent({type: 'typing', text: text, element: element});
-      blurActiveElement();
       return sendkeys(element, text);
     });
   },
@@ -70,9 +75,9 @@ module.exports = {
 
     return this.element(options).then(function(element) {
       debug('submit', element);
+      self.focus(element);
       self.handleEvent({type: 'submit', element: element});
-      blurActiveElement();
-      return $(element).submit();
+      return element.trigger('submit');
     });
   },
 
@@ -80,6 +85,7 @@ module.exports = {
     var self = this;
 
     return this.element(options).then(function(element) {
+      self.focus(element);
       debug('typeInHtml', element, html);
       self.handleEvent({type: 'typing html', html: html, element: element});
       return sendkeys.html(element, html);
@@ -152,7 +158,7 @@ function inferField(component, field){
 }
 
 function canTypeIntoElement(element) {
-  return $(element).is('input:not([type]), ' +
+  return element.is('input:not([type]), ' +
                        'input[type=text], ' +
                        'input[type=email], ' +
                        'input[type=password], ' +
@@ -164,6 +170,6 @@ function canTypeIntoElement(element) {
 
 function assertCanTypeIntoElement(element) {
   if (!canTypeIntoElement(element)) {
-    throw new Error('Cannot type into ' + element.tagName);
+    throw new Error('Cannot type into ' + element.prop('tagName'));
   }
 }

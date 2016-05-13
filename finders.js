@@ -1,28 +1,24 @@
 var retry = require('trytryagain');
 var trace = require('./trace');
 var Options = require('./options');
-var elementTester = require('./elementTester');
 var expectOneElement = require('./expectOneElement');
-var $ = require('jquery');
-
-
-function filterInvisible(index){
-  var el = this[index] || this;
-  var ignoreVisibilityOfTags = ['OPTION'];
-  if (el && ignoreVisibilityOfTags.indexOf(el.tagName) !== -1) {
-    el = el.parentNode;
-  }
-  return $(el).is(':visible');
-}
 
 module.exports = {
   elementFinder: function(css) {
+    var $ = this.get('$');
     var self = this;
     return {
       find: function(element) {
         var els = $(element).find(css);
         if (self.get('visibleOnly')) {
-          els = els.filter(filterInvisible);
+          els = els.filter(function(index){
+            var el = this[index] || this;
+            var ignoreVisibilityOfTags = ['OPTION'];
+            if (el && ignoreVisibilityOfTags.indexOf(el.tagName) !== -1) {
+              el = el.parentNode;
+            }
+            return $(el).is(':visible');
+          });
         }
         if (els.length > 0) {
           return els;
@@ -41,12 +37,44 @@ module.exports = {
     return this.clone({_finders: finders});
   },
 
+  createElementTester: function(criteria) {
+    var self = this;
+
+    if (typeof criteria === 'string') {
+      criteria = { css: criteria };
+    }
+
+    if (typeof criteria === 'function') {
+      criteria = { predicate: criteria };
+    }
+
+    return {
+      find: function($el) {
+        var message = criteria.message;
+        Object.keys(criteria).forEach(function(key){
+          var value = criteria[key];
+          var tester = self._elementTesters[key];
+
+          if (value !== undefined) {
+            tester.call(self, $el, message, value);
+          }
+        });
+        return $el;
+      },
+
+      toString: function(){
+        return criteria.message || criteria.css || criteria.text;
+      }
+    };
+  },
+
   find: function (selector, options) {
+    var $ = this.get('$');
     var message = JSON.stringify(options);
     var scope = this.addFinder(this.elementFinder(selector));
 
     if (options) {
-      var tester = elementTester(options);
+      var tester = this.createElementTester(options);
 
       return scope.filter(function (element) {
         try {
@@ -61,18 +89,20 @@ module.exports = {
   },
 
   containing: function (selector, options) {
+    var $ = this.get('$');
     var message = options && JSON.stringify(options);
     var findElements = this.elementFinder(selector);
     var finder;
 
     if (options) {
-      var testElements = elementTester(options);
+      var tester = this.createElementTester(options);
+
       finder = {
         find: function (elements) {
           var found = findElements.find(elements);
           var tested = found.toArray().filter(function (element) {
             try {
-              testElements.find(element);
+              tester.find(element);
               return true;
             } catch (error) {
               return false;
@@ -94,16 +124,16 @@ module.exports = {
 
     return this.addFinder({
       find: function(elements) {
-        var els = elements.filter(function() {
+        var els = Array.prototype.filter.call(elements, function(el) {
           try {
-            return finder.find(this);
+            return finder.find(el);
           } catch (e) {
             return false;
           }
         });
 
         if (els.length > 0) {
-          return els;
+          return $(els);
         }
       },
 
@@ -119,8 +149,9 @@ module.exports = {
   },
 
   element: function (options) {
+    var $ = this.get('$');
     return this.resolve(options).then(function (elements) {
-      return elements[0];
+      return $(elements[0]);
     });
   },
 
@@ -129,6 +160,7 @@ module.exports = {
   },
 
   findElements: function (options) {
+    var $ = this.get('$');
     var self = this;
     var allowMultiple = options && options.hasOwnProperty('allowMultiple')? options.allowMultiple: false;
 
@@ -149,10 +181,27 @@ module.exports = {
     };
 
     function selector() {
-      if(self._selector instanceof Element && self._selector.tagName == 'IFRAME') {
-        return self._selector.contentDocument.body;
+      /*console.log('ele', typeof Element !== 'undefined')
+      console.log('ele inst', self._selector instanceof Element, self._selector)
+      console.log('iframe', self._selector.prop('tagName') == 'IFRAME')*/
+      //if(typeof Element !== 'undefined' && self._selector instanceof Element && self._selector.prop('tagName') == 'IFRAME') {
+
+      var selector = self._selector;
+      if (
+        selector &&
+        typeof Element !== 'undefined' &&
+        selector instanceof Element &&
+        selector.tagName == 'IFRAME'
+      ) {
+        return selector.contentDocument.body; 
+      } else if (
+        selector &&
+        typeof selector.prop === 'function' &&
+        selector.prop('tagName') === 'IFRAME'
+      ) {
+        return selector[0].contentDocument.body;
       } else {
-        return self._selector || 'body';
+        return selector || 'body';
       }
     }
 
@@ -160,6 +209,7 @@ module.exports = {
     if (!allowMultiple) {
       expectOneElement(self, elements);
     }
+
     return elements.toArray();
   },
 
@@ -172,6 +222,7 @@ module.exports = {
       return self.findElements(options);
     });
 
+    traceOption = false;
     if (traceOption) {
       return trace(result);
     } else {
@@ -195,9 +246,12 @@ module.exports = {
     });
   },
   filter: function (filter, message) {
+    var $ = this.get('$');
     return this.addFinder({
       find: function (elements) {
-        var filteredElements = elements.toArray().filter(filter);
+        var filteredElements = elements.toArray().filter(function(element){
+          return filter($(element))
+        });
 
         if (filteredElements && filteredElements.length > 0) {
           return $(filteredElements);
@@ -212,7 +266,8 @@ module.exports = {
 
   enabled: function () {
     return this.filter(function (element) {
-      return !((element.tagName == 'BUTTON' || element.tagName == 'INPUT') && element.disabled == true);
+      var tagName = element.prop('tagName');
+      return !((tagName == 'BUTTON' || tagName == 'INPUT') && element.prop('disabled'));
     }, '[disabled=false]');
   }
 

@@ -1,14 +1,7 @@
-var browser = require('..');
-var createTestDom = require('./createTestDom');
+var domTest = require('./domTest');
 
 describe('component', function () {
-  var dom;
-
-  beforeEach(function(){
-    dom = createTestDom();
-  });
-
-  it('can return new selectors by extending', function () {
+  domTest('can return new selectors by extending', function (browser, dom) {
     var user = browser.component({
       name: function () {
         return this.find('.user-name');
@@ -26,7 +19,7 @@ describe('component', function () {
     return promise;
   });
 
-  it('components are independent', function () {
+  domTest('components are independent', function (browser, dom) {
     var user = browser.component({
       name: function () {
         return this.find('.user-name');
@@ -46,7 +39,7 @@ describe('component', function () {
     return promise;
   });
 
-  it('can extend another component', function () {
+  domTest('can extend another component', function (browser, dom) {
     var user = browser.component({
       name: function () {
         return this.find('.user-name');
@@ -71,7 +64,7 @@ describe('component', function () {
     return Promise.all([name, secondAddress]);
   });
 
-  it('can return new scoped selectors', function () {
+  domTest('can return new scoped selectors', function (browser, dom) {
     var admin = browser.component({
       user: function () {
         return user.scope(this.find('.user'));
@@ -95,7 +88,7 @@ describe('component', function () {
     return promise;
   });
 
-  it('components inherit scope', function () {
+  domTest('components inherit scope', function (browser, dom) {
     var adminArea = browser.find('.admin');
 
     var admin = adminArea.component({

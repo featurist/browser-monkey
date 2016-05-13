@@ -1,21 +1,14 @@
-var browser = require('..');
-var createTestDom = require('./createTestDom');
-var $ = require('jquery');
+var domTest = require('./domTest');
+var retry = require('trytryagain');
 
 describe('actions', function(){
-  var dom;
-
-  beforeEach(function(){
-    dom = createTestDom();
-  });
-
   describe('clicking', function () {
-    it('should eventually click an element', function () {
+    domTest('should eventually click an element', function (browser, dom, $) {
       var promise = browser.find('.element').click();
       var clicked = false;
 
       dom.eventuallyInsert(
-        $('<div class="element"></div>').click(function () {
+        $('<div class="element"></div>').on('click', function () {
           clicked = true;
         })
       );
@@ -25,14 +18,14 @@ describe('actions', function(){
       });
     });
 
-    it('sends mousedown mouseup and click events', function () {
+    domTest('sends mousedown mouseup and click events', function (browser, dom) {
       var events = [];
 
-      dom.insert('<div class="element"></div>').mousedown(function () {
+      dom.insert('<div class="element"></div>').on('mousedown', function () {
         events.push('mousedown');
-      }).mouseup(function () {
+      }).on('mouseup', function () {
         events.push('mouseup');
-      }).click(function () {
+      }).on('click', function () {
         events.push('click');
       });
 
@@ -41,13 +34,13 @@ describe('actions', function(){
       });
     });
 
-    it('waits until checkbox is enabled before clicking', function () {
+    domTest('waits until checkbox is enabled before clicking', function (browser, dom) {
       var promise = browser.find('input[type=checkbox]').click();
       var clicked;
       var buttonState = 'disabled';
 
       var button = dom.insert('<input type=checkbox disabled></input>');
-      button[0].addEventListener('click', function () {
+      button.on('click', function () {
         clicked = buttonState;
       });
 
@@ -61,13 +54,13 @@ describe('actions', function(){
       });
     });
 
-    it('waits until button is enabled before clicking', function () {
+    domTest('waits until button is enabled before clicking', function (browser, dom) {
       var promise = browser.find('button', {text: 'a button'}).click();
       var clicked;
       var buttonState = 'disabled';
 
-      var button = dom.insert('<button disabled>a button</button>');
-      button[0].addEventListener('click', function () {
+      button = dom.insert('<button disabled>a button</button>');
+      button.on('click', function () {
         clicked = buttonState;
       });
 
@@ -84,27 +77,25 @@ describe('actions', function(){
 
   describe('select', function(){
     describe('text', function(){
-      it('respects timeout option', function(){
-        var promise = browser.find('.element').select({text: 'Second', timeout: 100});
+      domTest('respects timeout option', function(browser, dom, $){
+        var promise = browser.find('.element').select({text: 'Second', timeout: 20});
 
         dom.eventuallyInsert(
-          $('<select class="element"><option>First</option><option>Second</option></select>').change(function (e) {
-            var el = e.target;
-            selectedItem = el.options[el.selectedIndex].text;
+          $('<select class="element"><option>First</option><option>Second</option></select>').on('change', function (e) {
+            selectedItem = $(this).find('option[selected]').text();
           })
-        );
+        , 30);
 
         return expect(promise).to.be.rejected
       });
 
-      it('eventually selects an option element using the text', function(){
+      domTest('should eventually select an option element using the text', function(browser, dom, $){
         var promise = browser.find('.element').select({text: 'Second'});
         var selectedItem = undefined;
 
         dom.eventuallyInsert(
-          $('<select class="element"><option>First</option><option>Second</option></select>').change(function (e) {
-            var el = e.target;
-            selectedItem = el.options[el.selectedIndex].text;
+          $('<select class="element"><option>First</option><option>Second</option></select>').on('change', function () {
+            selectedItem = $(this).find('option[selected]').text();
           })
         );
 
@@ -113,14 +104,13 @@ describe('actions', function(){
         });
       });
 
-      it('eventually selects an option element using a partial match', function(){
+      domTest('should eventually select an option element using a partial match', function(browser, dom, $){
         var promise = browser.find('.element').select({text: 'Seco'});
         var selectedItem = undefined;
 
         dom.eventuallyInsert(
-          $('<select class="element"><option>First</option><option>Second</option></select>').change(function (e) {
-            var el = e.target;
-            selectedItem = el.options[el.selectedIndex].text;
+          $('<select class="element"><option>First</option><option>Second</option></select>').on('change', function (e) {
+            selectedItem = $(this).find('option[selected]').text();
           })
         );
 
@@ -129,10 +119,10 @@ describe('actions', function(){
         });
       });
 
-      it('selects the first match if multiple available', function(){
+      domTest('selects the first match if multiple available', function(browser, dom, $){
         var selectedItem = undefined;
 
-        var select = dom.insert('<select><option value="1">Item</option><option value="2">Item</option></select>').change(function (e) {
+        var select = dom.insert('<select><option value="1">Item</option><option value="2">Item</option></select>').on('change', function (e) {
           selectedItem = select.val();
         });
 
@@ -141,17 +131,16 @@ describe('actions', function(){
         });
       });
 
-      it('selects an option that eventually appears', function(){
+      domTest('selects an option that eventually appears', function(browser, dom, $){
         var promise = browser.find('.element').select({text: 'Second'});
         var selectedItem = undefined;
 
-        var select = dom.insert('<select class="element"></select>').change(function (e) {
-          var el = e.target;
-          selectedItem = el.options[el.selectedIndex].text;
+        var select = dom.insert('<select class="element"></select>').on('change', function (e) {
+          selectedItem = $(this).find('option[selected]').text();
         });
 
         setTimeout(function () {
-          $('<option>First</option><option>Second</option>').appendTo(select);
+          select.append('<option>First</option><option>Second</option>');
         }, 20);
 
         return promise.then(function () {
@@ -159,7 +148,7 @@ describe('actions', function(){
         });
       });
 
-      it('errors when the specified option does not exist', function(){
+      domTest('errors when the specified option does not exist', function(browser, dom){
         var promise = browser.find('.element').select({text: 'Does not exist'});
 
         dom.eventuallyInsert('<select class="element"><option>First</option><option>Second</option></select>');
@@ -169,19 +158,18 @@ describe('actions', function(){
         ]);
       });
 
-      it('errors when the input is not a select', function(){
+      domTest('errors when the input is not a select', function(browser, dom){
         var promise = browser.find('.element').select({text: 'Whatevs'});
         dom.eventuallyInsert('<div class="element"></div>');
         return expect(promise).to.be.rejectedWith('to have css select');
       });
 
-      it('selects an option using text that is falsy', function(){
+      domTest('selects an option using text that is falsy', function(browser, dom, $){
         var promise = browser.find('.element').select({text: 0});
         var selectedItem = undefined;
 
-        var select = dom.insert('<select class="element"><option>0</option><option>1</option></select>').change(function (e) {
-          var el = e.currentTarget;
-          selectedItem = el.options[el.selectedIndex].text;
+        var select = dom.insert('<select class="element"><option>0</option><option>1</option></select>').on('change', function (e) {
+          selectedItem = $(this).find('option[selected]').text();
         });
 
 
@@ -192,13 +180,12 @@ describe('actions', function(){
     });
 
     describe('exactText', function(){
-      it('should select an option using exact text that would otherwise match multiple options', function(){
+      domTest('should select an option using exact text that would otherwise match multiple options', function(browser, dom, $){
         var promise = browser.find('.element').select({exactText: 'Mr'});
         var selectedItem = undefined;
 
-        var select = dom.insert('<select class="element"><option>Mr</option><option>Mrs</option></select>').change(function (e) {
-          var el = e.currentTarget;
-          selectedItem = el.options[el.selectedIndex].text;
+        var select = dom.insert('<select class="element"><option>Mr</option><option>Mrs</option></select>').on('change', function (e) {
+          selectedItem = $(this).find('option[selected]').text();
         });
 
 
@@ -207,13 +194,12 @@ describe('actions', function(){
         });
       });
 
-      it('should select an option using exact text that is falsy', function(){
+      domTest('should select an option using exact text that is falsy', function(browser, dom, $){
         var promise = browser.find('.element').select({exactText: 0});
         var selectedItem = undefined;
 
-        var select = dom.insert('<select class="element"><option>0</option><option>1</option></select>').change(function (e) {
-          var el = e.currentTarget;
-          selectedItem = el.options[el.selectedIndex].text;
+        var select = dom.insert('<select class="element"><option>0</option><option>1</option></select>').on('change', function (e) {
+          selectedItem = $(this).find('option[selected]').text();
         });
 
 
@@ -225,13 +211,12 @@ describe('actions', function(){
   });
 
   describe('submit', function () {
-    it('should submit the form', function () {
-      var submitted;
+    domTest('should submit the form', function (browser, dom) {
+      var submitted = false;
       var promise = browser.find('input').submit();
 
-      dom.insert('<form><input type=text></form>').submit(function (ev) {
+      dom.insert('<form action="#"><input type=text></form>').on('submit', function (ev) {
         submitted = true;
-        ev.preventDefault();
       });
 
       return promise.then(function () {
@@ -251,16 +236,15 @@ describe('actions', function(){
       '<input class="element" type="url"></input>',
       '<textarea class="element"></textara>'
     ].forEach(function(html) {
-            
-      it('eventually enters text into: ' + html, function () {
+      domTest('eventually enters text into: ' + html, function (browser, dom) {
         var promise = browser.find('.element').typeIn('haha');
         dom.eventuallyInsert(html);
         return promise.then(function () {
           expect(dom.el.find('.element').val()).to.equal('haha');
         });
       });
-      
     });
+    return
     
     [
       '<div class="element"></div>',
@@ -268,28 +252,29 @@ describe('actions', function(){
       '<select class="element"></select>'
     ].forEach(function(html) {
       
-      it('rejects attempt to type into element: ' + html, function () {
+      domTest('rejects attempt to type into element: ' + html, function (browser, dom, $) {
         var promise = browser.find('.element').typeIn('whatevs');
         dom.eventuallyInsert(html);
-        return expect(promise).to.be.rejectedWith('Cannot type into ' + $(html)[0].tagName);
+        return expect(promise).to.be.rejectedWith('Cannot type into ' + $(html).prop('tagName'));
       });
-
     });
 
-    it('blanks out existing text when typing empty text', function () {
+    domTest('blanks out existing text when typing empty text', function (browser, dom) {
       var firedEvents = [];
       dom.insert('<input type="text" class="element" value="good bye">')
       .on('input', function(ev){ firedEvents.push('input: ' + JSON.stringify(ev.target.value)); });
 
       return browser.find('.element').typeIn('').then(function () {
-        expect(dom.el.find('input.element').val()).to.equal('');
-        expect(firedEvents).to.eql(['input: ""'])
+        return retry(function(){
+          expect(dom.el.find('input.element').val()).to.equal('');
+          expect(firedEvents).to.eql(['input']);
+        });
       });
     });
   });
 
   describe('checkboxes', function(){
-    it('can check a checkbox by clicking it', function () {
+    domTest('can check a checkbox by clicking on it', function (browser, dom) {
       var checkbox = dom.insert('<input class="checkbox" type=checkbox>');
 
       expect(checkbox.prop('checked')).to.be.false;
@@ -303,10 +288,26 @@ describe('actions', function(){
         expect(checkbox.prop('checked')).to.be.false;
       });
     });
+
+    domTest('can check a checkbox by clicking its label', function (browser, dom) {
+      var label = dom.insert('<label>Check: <input class="checkbox" type=checkbox></label>');
+      var checkbox = dom.el.find('input');
+
+      expect(checkbox.prop('checked')).to.be.false;
+
+      var clicked = browser.find('label').click();
+      return clicked.then(function () {
+        expect(checkbox.prop('checked')).to.be.true;
+      }).then(function () {
+        return browser.find('.checkbox').click();
+      }).then(function () {
+        expect(checkbox.prop('checked')).to.be.false;
+      });
+    });
   });
 
   describe('fill', function(){
-    it('fills a component with the supplied values', function(){
+    domTest('fills a component with the supplied values', function(browser, dom){
       var component = browser.component({
         title: function(){
           return this.find('.title');
@@ -315,7 +316,8 @@ describe('actions', function(){
           return this.find('.name');
         }
       });
-      dom.eventuallyInsert('<select class="title"><option>Mrs</option><option>Mr</option></select><input type="text" class="name"></input>');
+      dom.eventuallyInsert('<select class="title"><option>Mrs</option><option>Mr</option></select>');
+      dom.eventuallyInsert('<input type="text" class="name"></input>');
 
       return component.fill([
         { name: 'title', action: 'select', options: {exactText: 'Mr'}},
@@ -326,7 +328,7 @@ describe('actions', function(){
       });
     });
 
-    it('can fill using shortcut syntax', function(){
+    domTest('can fill using shortcut syntax', function(browser, dom){
       var component = browser.component({
         title: function(){
           return this.find('.title');
@@ -338,7 +340,9 @@ describe('actions', function(){
           return this.find('.agree');
         }
       });
-      dom.eventuallyInsert('<select class="title"><option>Mrs</option><option>Mr</option></select><input type="text" class="name"></input><label class="agree"><input type="checkbox"></label>');
+      dom.eventuallyInsert('<select class="title"><option>Mrs</option><option>Mr</option></select>');
+      dom.eventuallyInsert('<input type="text" class="name"></input>');
+      dom.eventuallyInsert('<label class="agree">Check: <input type="checkbox"></label>');
 
       return component.fill([
         { select: 'title', text: 'Mrs'},
@@ -351,7 +355,7 @@ describe('actions', function(){
       });
     });
 
-    it('can execute actions on a component', function(){
+    domTest('can execute actions on a component', function(browser, dom){
       var myActionRan = false;
       var component = browser.component({
         myAction: function(){
@@ -375,7 +379,7 @@ describe('actions', function(){
       });
     });
 
-    it('throws an error if the action cannot be found', function(){
+    domTest('throws an error if the action cannot be found', function(browser, dom){
       var component = browser.component({});
       var error;
 
@@ -386,7 +390,7 @@ describe('actions', function(){
       return expect(promise).to.be.rejectedWith('actionDoesNotExist');
     });
 
-    it('throws an error when trying to call an action on a field which does not exist', function(){
+    domTest('throws an error when trying to call an action on a field which does not exist', function(browser, dom){
       var component = browser.component({});
 
       var promise = component.fill([
@@ -396,7 +400,7 @@ describe('actions', function(){
       return expect(promise).to.be.rejectedWith("Field 'name' does not exist");
     });
 
-    it('throws an error if the field does not exist', function(){
+    domTest('throws an error if the field does not exist', function(browser, dom){
       var component = browser.component({});
 
       var promise = component.fill(
@@ -406,4 +410,4 @@ describe('actions', function(){
       return expect(promise).to.be.rejectedWith("No field 'address' exists on this component");
     });
   });
-});
+})

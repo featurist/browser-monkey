@@ -1,5 +1,4 @@
 var browser = require('..');
-var createTestDom = require('./createTestDom');
 
 describe('options', function () {
   it('can set an option that is inerhited by components', function(){
