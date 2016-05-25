@@ -4,6 +4,14 @@ function Options(options){
   this.validOptions = [];
 }
 
+
+Options.get = function(options, propertyName){
+  if (typeof options === 'object') {
+    var value = options[propertyName];
+    return value;
+  }
+}
+
 Options.remove = function(options, propertyNames){
   var newOptions = {};
 

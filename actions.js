@@ -35,7 +35,7 @@ module.exports = {
     var $ = this.get('$');
     var self = this;
 
-    return this.is('select').find('option', options).elements().then(function(optionElements) {
+    return this.is('select').find('option', options).elements(options).then(function(optionElements) {
       var optionElement = $(optionElements[0]);
       var selectElement = optionElement.parent();
       self.focus(selectElement);

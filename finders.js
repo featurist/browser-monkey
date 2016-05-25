@@ -55,7 +55,7 @@ module.exports = {
           var value = criteria[key];
           var tester = self._elementTesters[key];
 
-          if (value !== undefined) {
+          if (value !== undefined && tester !== undefined) {
             tester.call(self, $el, message, value);
           }
         });
@@ -162,7 +162,7 @@ module.exports = {
   findElements: function (options) {
     var $ = this.get('$');
     var self = this;
-    var allowMultiple = options && options.hasOwnProperty('allowMultiple')? options.allowMultiple: false;
+    var allowMultiple = Options.get(options, 'allowMultiple');
 
     function findWithFinder(el, finderIndex) {
       var finder = self._finders[finderIndex];
@@ -181,11 +181,6 @@ module.exports = {
     };
 
     function selector() {
-      /*console.log('ele', typeof Element !== 'undefined')
-      console.log('ele inst', self._selector instanceof Element, self._selector)
-      console.log('iframe', self._selector.prop('tagName') == 'IFRAME')*/
-      //if(typeof Element !== 'undefined' && self._selector instanceof Element && self._selector.prop('tagName') == 'IFRAME') {
-
       var selector = self._selector;
       if (
         selector &&
