@@ -1,4 +1,4 @@
-var browserMonkey = require('..').create;
+var browser = require('..');
 var plastiq = require('plastiq');
 var h = plastiq.html;
 
@@ -25,7 +25,7 @@ describe('plastiq integration', function(){
     var vdom = h('div');
 
     plastiq.appendVDom(vdom, render, {}, { requestRender: setTimeout, window: {} });
-    var browser = browserMonkey(vdom);
+    browser = browser.scope(vdom);
     var vquery = require('vdom-query')
     browser.set({$: vquery, visibleOnly: false, document: {}});
 

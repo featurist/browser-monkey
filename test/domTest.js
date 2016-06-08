@@ -4,7 +4,7 @@ var isNode = require('detect-node');
 var h = require('virtual-dom/h');
 var vquery = require('vdom-query')
 var jquery = require('../jquery');
-var browserMonkey = require('..');
+var createBrowser = require('../create');
 
 function noop(){}
 
@@ -25,7 +25,7 @@ function domTest(testName, testCb, options){
   runTests(testName, function(){
     runHtml('HTML', function(){
       var htmlDom = createHDom();
-      var browser = browserMonkey;
+      var browser = createBrowser(document.body);
       browser.set({
         document: window.document
       });
@@ -35,7 +35,7 @@ function domTest(testName, testCb, options){
 
     runVDom('VDOM', function(){
       var body = h('body');
-      var browser = browserMonkey.create(body);
+      var browser = createBrowser(body);
       browser.set({
         $: vquery,
         visibleOnly: false,
