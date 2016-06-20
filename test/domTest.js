@@ -26,9 +26,6 @@ function domTest(testName, testCb, options){
     runHtml('HTML', function(){
       var htmlDom = createHDom();
       var browser = createBrowser(document.body);
-      browser.set({
-        document: window.document
-      });
       jquery.preventFormSubmit = true;
       return testCb(browser, htmlDom, jquery);
     });

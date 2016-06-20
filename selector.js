@@ -3,7 +3,7 @@ var elementTester = require('./elementTester');
 function Selector(selector, finders, options) {
   this._selector = selector;
   this._finders = finders || [];
-  this._options = options || { visibleOnly: true, $: require('./jquery')};
+  this._options = options || { visibleOnly: true, $: require('./jquery'), document: window.document };
   this._handlers = [];
   this._elementTesters = elementTester;
 }
