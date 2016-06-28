@@ -32,6 +32,12 @@ function getNormalisedText(el) {
   return el.innerText().replace(/ +/g,' ').replace(/ *\n */g,"\n");
 }
 
+function getValue(e, property) {
+  var val = e.val();
+  // Fails with missing value attribute in VDOM without 'string' test (returns SoftSetHook{value: ''})
+  return (typeof val === "string" && val) || '';
+}
+
 module.exports = {
   css: function($el, message, css) {
     if (!$el.is(css)) {
@@ -44,7 +50,7 @@ module.exports = {
     }
   },
   text: function($el, message, text) {
-    assertElementProperties(this.get('$'), $el, text, function (e) { return getNormalisedText(e); });
+    assertElementProperties(this.get('$'), $el, text, function (e) { return getNormalisedText(e)}, text === '');
   },
   length: function($el, message, length) {
     if ($el.length !== length) {
@@ -74,10 +80,10 @@ module.exports = {
     assertElementProperties(this.get('$'), $el, exactText, function (e) { return getNormalisedText(e); }, true);
   },
   value: function($el, message, value) {
-    assertElementProperties(this.get('$'), $el, value, function (e) { return e.val() || ''; });
+    assertElementProperties(this.get('$'), $el, value, getValue, value === '');
   },
   exactValue: function($el, message, exactValue) {
-    assertElementProperties(this.get('$'), $el, exactValue, function (e) { return e.val() || ''; }, true);
+    assertElementProperties(this.get('$'), $el, exactValue, getValue, true);
   },
   attributes: function($el, message, attributes) {
     var $ = this.get('$');

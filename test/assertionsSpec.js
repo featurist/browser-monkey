@@ -82,6 +82,18 @@ describe('assertions', function(){
     ]);
   });
 
+  domTest("treats assertion of text: '' as exact text", function (browser, dom) {
+
+    dom.eventuallyInsert('<div><div class="a">something</div><div class="b"></div></div>');
+
+    return browser.find('.a', {text: 'something'}).shouldExist().then(() => {
+      return Promise.all([
+        browser.find('.a', {text: ''}).shouldNotExist(),
+        browser.find('.b', {text: ''}).shouldExist()
+      ])
+    })
+  });
+
   describe('shouldHave', function () {
     domTest('eventually finds an element and asserts that it has text', function (browser, dom) {
       var good = browser.find('.element').shouldHave({text: 'some t'});
@@ -127,6 +139,21 @@ describe('assertions', function(){
       var good = browser.find('.element1 input').shouldHave({exactValue: 'some text'});
 
       dom.eventuallyInsert('<div class="element1"><input type=text value="some text" /></div>');
+
+      return Promise.all([
+        good,
+        expect(bad).to.be.rejected
+      ]);
+    });
+
+    domTest("treats assertion of value: '' as exact value", function (browser, dom) {
+      var bad = browser.find('.element1 input').shouldHave({value: ''});
+      var good = browser.find('.element2 input').shouldHave({value: ''});
+
+      dom.eventuallyInsert(`<div>
+                               <div class="element1"><input type=text value="some text" /></div>
+                               <div class="element2"><input type=text value="" /></div>
+                            </div>`);
 
       return Promise.all([
         good,
