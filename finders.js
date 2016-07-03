@@ -142,6 +142,26 @@ module.exports = {
       }
     });
   },
+ 
+  linkOrButton: function(label) {
+    return this.find(
+      'a, button, input[type=submit], input[type=button], input[type=reset]',
+      {label: label},
+      "[linkOrButton: " + label + "]"
+    );
+  }, 
+
+  button: function(label) {
+    return this.find(
+      'button, input[type=submit], input[type=button], input[type=reset]',
+      {label: label},
+      "[button: " + label + "]"
+    );
+  }, 
+
+  link: function(label) {
+    return this.find('a', {label: label}, "[link: " + label + "]");
+  }, 
 
   elements: function (options) {
     options = Options.default(options, {allowMultiple: true});

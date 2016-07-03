@@ -94,5 +94,38 @@ module.exports = {
         expect($(el).attr(attributeKey)).to.equal(attributes[attributeKey]);
       });
     });
+  },
+
+  label: function($el, message, label) {
+    var $ = this.get('$');
+    var links = $el.toArray().filter(function(el) {
+      if ($(el).is('a')) {
+        var anchor = $(el);
+        var href = anchor.attr('href');
+        return typeof href !== typeof undefined &&
+        href !== false &&
+        (
+         anchor.text() == label ||
+         anchor.attr('id') == label ||
+         anchor.attr('title') == label ||
+         anchor.find("img").toArray().filter(function(img) {
+           return $(img).attr('alt') == label;
+         }).length > 0
+        );
+      }
+      if ($(el).is('button, input[type=submit], input[type=button], input[type=reset]')) {
+        var button = $(el);
+        return button.attr('id') == label ||
+      button.text() == label ||
+      (typeof button.attr('value') == 'string' && button.attr('value').indexOf(label) > -1) ||
+      (typeof button.attr('title') == 'string' && button.attr('title').indexOf(label) > -1) ||
+      button.find("img").toArray().filter(function(img) {
+        return typeof $(img).attr('alt') == 'string' && $(img).attr('alt').indexOf(label) > -1;
+      }).length > 0
+      
+      }
+    });
+
+    expect(links.length).to.equal(1, message);
   }
 };
