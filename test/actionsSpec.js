@@ -47,7 +47,7 @@ describe('actions', function(){
       setTimeout(function () {
         button.prop('disabled', false);
         buttonState = 'enabled'
-      }, 100);
+      }, 10);
 
       return promise.then(function () {
         expect(clicked).to.equal('enabled');
@@ -67,7 +67,7 @@ describe('actions', function(){
       setTimeout(function () {
         button.prop('disabled', false);
         buttonState = 'enabled'
-      }, 100);
+      }, 10);
 
       return promise.then(function () {
         expect(clicked).to.equal('enabled');

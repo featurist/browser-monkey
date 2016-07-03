@@ -43,8 +43,8 @@ describe('assertions', function(){
 
         setTimeout(function () {
           element.addClass('good');
-        }, 100);
-      }, 200);
+        }, 10);
+      }, 10);
 
       return Promise.all([good, expect(bad).to.be.rejected]);
     });

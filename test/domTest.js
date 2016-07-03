@@ -26,6 +26,9 @@ function domTest(testName, testCb, options){
     runHtml('HTML', function(){
       var htmlDom = createHDom();
       var browser = createBrowser(document.body);
+      browser.set({
+        timeout: 100
+      });
       jquery.preventFormSubmit = true;
       return testCb(browser, htmlDom, jquery);
     });
@@ -36,7 +39,8 @@ function domTest(testName, testCb, options){
       browser.set({
         $: vquery,
         visibleOnly: false,
-        document: {}
+        document: {},
+        timeout: 100
       });
 
       var virtualDom = createVDom(body);
