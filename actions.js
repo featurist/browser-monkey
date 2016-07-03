@@ -21,7 +21,11 @@ module.exports = {
   click: function(options) {
     var self = this;
 
-    return this.enabled().element(options).then(function(element) {
+    if (typeof options === 'string') {
+      self = this.linkOrButton(options);
+    }
+
+    return self.enabled().element(options).then(function(element) {
       debug('click', element);
       self.handleEvent({type: 'click', element: element});
       self.focus(element);
