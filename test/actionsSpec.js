@@ -234,13 +234,14 @@ describe('actions', function(){
       '<input class="element" type="search"></input>',
       '<input class="element" type="tel"></input>',
       '<input class="element" type="url"></input>',
+      '<input class="element" type="number"></input>',
       '<textarea class="element"></textara>'
     ].forEach(function(html) {
       domTest('eventually enters text into: ' + html, function (browser, dom) {
-        var promise = browser.find('.element').typeIn('haha');
+        var promise = browser.find('.element').typeIn('1234');
         dom.eventuallyInsert(html);
         return promise.then(function () {
-          expect(dom.el.find('.element').val()).to.equal('haha');
+          expect(dom.el.find('.element').val()).to.equal('1234');
         });
       });
     });

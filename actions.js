@@ -165,6 +165,7 @@ function canTypeIntoElement(element) {
                        'input[type=search], ' +
                        'input[type=tel], ' +
                        'input[type=url], ' +
+                       'input[type=number],' +
                        'textarea');
 }
 
