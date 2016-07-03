@@ -210,7 +210,9 @@ module.exports = {
 
   resolve: function(options) {
     var self = this;
+    var defaultTimeout = this.get('timeout') || 1000;
     var retryOptions = Options.remove(options, ['timeout', 'interval', 'trace']);
+    retryOptions.timeout = retryOptions.timeout || defaultTimeout;
     var traceOption = retryOptions.hasOwnProperty('trace')? retryOptions.trace: true;
 
     var result = retry(retryOptions, function() {
