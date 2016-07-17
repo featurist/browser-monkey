@@ -104,7 +104,7 @@ There are some options you can set, which are inherited by inner scopes.
 scope.set({visibleOnly: false});
 var innerScope = scope.find('input');
 
-innerScope.get(); // {visibleOnly: false};
+innerScope.get('visibleOnly'); // returns false
 ```
 
 * `visibleOnly` if true, then only visible elements will be found, if false, then all elements are considered. Visible is determined by the element's computed CSS, see [jQuery's :visible selector](https://api.jquery.com/visible-selector/). Default is true.
