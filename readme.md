@@ -104,10 +104,11 @@ There are some options you can set, which are inherited by inner scopes.
 scope.set({visibleOnly: false});
 var innerScope = scope.find('input');
 
-innerScope.get(); // {visibleOnly: false};
+innerScope.get('visibleOnly'); // returns false
 ```
 
 * `visibleOnly` if true, then only visible elements will be found, if false, then all elements are considered. Visible is determined by the element's computed CSS, see [jQuery's :visible selector](https://api.jquery.com/visible-selector/). Default is true.
+* `timeout` an integer specifying the milliseconds to wait for an element to appear. This can be overriden by specifying the timeout when calling an action.
 
 ## find
 
@@ -511,3 +512,29 @@ var scopeWithEvents = scope.on(function (event) {
 * `event.optionElement` is the option element selected, in the case of type `'select option'`.
 * `event.text` is the text entered, in the case of type `'typing'`.
 * `event.html` is the html entered, in the case of type `'typing html'`.
+
+# Semantic Finders
+Semantic finders use a text fragment to find matching elements.
+
+## link
+`browser.link('gorilla')` matches:
+ - `<a>gorilla</a>`
+ - `<a id="gorilla">link</a>`
+ - `<a title="gorilla">link</a>`
+ - `<a><img alt="gorilla"></a>`
+
+## button
+A button is considered any of the following types - `input[type=submit]`, `input[type=button]`, `input[type=reset]`
+
+`browser.button('tamarin')` matches:
+ - `<button>tamarin</button>`
+ - `<button id="tamarin">button</button>`
+ - `<button value="tamarin">button</button>`
+ - `<button id="tamarin">button</button>`
+ - `<button><img alt="tamarin"></button>`
+
+## linkOrButton
+would match either a link or button according to their respective rules
+
+## click
+Normally the click action is performed on a scope but you can also provide it with a string `browser.click('monkey')` and it will search for a link or button that matches and perform the click on it.
