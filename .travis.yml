@@ -8,3 +8,8 @@ before_script:
   - sh -e /etc/init.d/xvfb start
 addons:
   firefox: "45.0"
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-4.8
