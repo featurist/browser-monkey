@@ -78,15 +78,13 @@ describe('actions', function(){
   describe('select', function(){
     describe('text', function(){
       domTest('respects timeout option', function(browser, dom, $){
-        var promise = browser.find('.element').select({text: 'Second', timeout: 20});
+        var promise = browser.find('.element').select({text: 'Second', timeout: 3 });
 
         dom.eventuallyInsert(
-          $('<select class="element"><option>First</option><option>Second</option></select>').on('change', function (e) {
-            selectedItem = $(this).find('option[selected]').text();
-          })
-        , 30);
+          $('<select class="element"><option>First</option><option>Second</option></select>')
+        , 6);
 
-        return expect(promise).to.be.rejected
+        return expect(promise).to.be.rejected;
       });
 
       domTest('should eventually select an option element using the text', function(browser, dom, $){
@@ -246,13 +244,13 @@ describe('actions', function(){
       });
     });
     return
-    
+
     [
       '<div class="element"></div>',
       '<input type="checkbox" class="element"></input>',
       '<select class="element"></select>'
     ].forEach(function(html) {
-      
+
       domTest('rejects attempt to type into element: ' + html, function (browser, dom, $) {
         var promise = browser.find('.element').typeIn('whatevs');
         dom.eventuallyInsert(html);
