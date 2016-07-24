@@ -153,7 +153,7 @@ describe('find', function () {
         dom.insert('<div class="outer"><div>bad</div></div>');
       }, 200);
 
-      return expect(promise).to.be.rejectedWith('expected to find: .outer .not-there')
+      return expect(promise).to.be.rejectedWith('expected to find: .outer:has(.inner)');
     });
 
     domTest('errors with a usable css selector if it cant find an element containing another', function (browser, dom) {
