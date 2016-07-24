@@ -133,7 +133,7 @@ describe('find', function () {
         dom.insert('<div class="outer"><div>bad</div></div>');
       }, 200);
 
-      expect(promise).to.be.rejectedWith('expected to find: .outer .not-there')
+      return expect(promise).to.be.rejectedWith('expected to find: .outer .not-there')
     });
 
     domTest('errors with a usable css selector if it cant find an element containing another', function (browser, dom) {
@@ -143,7 +143,7 @@ describe('find', function () {
         dom.insert('<div class="outer"><div>bad</div></div>');
       }, 200);
 
-      expect(promise).to.be.rejectedWith('expected to find: .outer:has(.not-there)')
+      return expect(promise).to.be.rejectedWith('expected to find: .outer:has(.not-there)')
     });
 
     domTest("fails if it can't find an element containing another", function (browser, dom) {
@@ -153,7 +153,7 @@ describe('find', function () {
         dom.insert('<div class="outer"><div>bad</div></div>');
       }, 200);
 
-      expect(promise).to.be.rejectedWith('expected to find: .outer .not-there')
+      return expect(promise).to.be.rejectedWith('expected to find: .outer .not-there')
     });
 
     domTest('errors with a usable css selector if it cant find an element containing another', function (browser, dom) {
@@ -163,7 +163,7 @@ describe('find', function () {
         dom.insert('<div class="outer"><div>bad</div></div>');
       }, 200);
 
-      expect(promise).to.be.rejectedWith('expected to find: .outer:has(.not-there)')
+      return expect(promise).to.be.rejectedWith('expected to find: .outer:has(.not-there)')
     });
 
     domTest("fails if it can't find an element containing another", function (browser, dom) {
