@@ -151,9 +151,7 @@ describe('actions', function(){
 
         dom.eventuallyInsert('<select class="element"><option>First</option><option>Second</option></select>');
 
-        return Promise.all([
-          expect(promise).to.be.rejected
-        ]);
+        return expect(promise).to.be.rejected;
       });
 
       domTest('errors when the input is not a select', function(browser, dom){

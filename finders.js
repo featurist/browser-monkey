@@ -142,14 +142,14 @@ module.exports = {
       }
     });
   },
- 
+
   linkOrButton: function(label) {
     return this.find(
       'a, button, input[type=submit], input[type=button], input[type=reset]',
       {label: label},
       "[linkOrButton: " + label + "]"
     );
-  }, 
+  },
 
   button: function(label) {
     return this.find(
@@ -157,11 +157,11 @@ module.exports = {
       {label: label},
       "[button: " + label + "]"
     );
-  }, 
+  },
 
   link: function(label) {
     return this.find('a', {label: label}, "[link: " + label + "]");
-  }, 
+  },
 
   elements: function (options) {
     options = Options.default(options, {allowMultiple: true});
@@ -191,7 +191,7 @@ module.exports = {
         var found = finder.find(el);
 
         if (!found) {
-          throw new Error("expected to find: " + self.printFinders(self._finders.slice(0, finderIndex + 1)));
+          throw new Error("expected to find: " + self.printFinders(self._finders));
         }
 
         return findWithFinder(found, finderIndex + 1);
@@ -208,7 +208,7 @@ module.exports = {
         selector instanceof Element &&
         selector.tagName == 'IFRAME'
       ) {
-        return selector.contentDocument.body; 
+        return selector.contentDocument.body;
       } else if (
         selector &&
         typeof selector.prop === 'function' &&
