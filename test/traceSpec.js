@@ -8,7 +8,11 @@ describe('trace', function () {
     return trace(wait(100).then(function () {
       var myError = new Error('my error');
       myErrorStack = myError.stack;
-      throw myError;
+      if (myErrorStack) {
+        throw myError;
+      } else {
+        // not supported in this browser
+      }
     })).then(undefined, function (error) {
       expect(error.message).to.equal('my error');
       expect(error.stack).to.not.equal(myErrorStack);
