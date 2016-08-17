@@ -26,12 +26,23 @@ module.exports = {
     }
 
     return self.enabled().element(options).then(function(element) {
+      var isCheckbox = element.prop('tagName') == 'INPUT' && (element.prop('type') || '').toLowerCase() == 'checkbox';
+      var originalCheckedValue;
+
+      if (isCheckbox) {
+        originalCheckedValue = element.prop('checked');
+      }
+
       debug('click', element);
       self.handleEvent({type: 'click', element: element});
       self.focus(element);
       element.trigger('mousedown');
       element.trigger('mouseup');
       element.trigger('click');
+
+      if (isCheckbox && element.prop('checked') == originalCheckedValue) {
+        element.prop('checked', !originalCheckedValue);
+      }
     });
   },
 

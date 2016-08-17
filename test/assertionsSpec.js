@@ -86,7 +86,7 @@ describe('assertions', function(){
 
     dom.eventuallyInsert('<div><div class="a">something</div><div class="b"></div></div>');
 
-    return browser.find('.a', {text: 'something'}).shouldExist().then(() => {
+    return browser.find('.a', {text: 'something'}).shouldExist().then(function () {
       return Promise.all([
         browser.find('.a', {text: ''}).shouldNotExist(),
         browser.find('.b', {text: ''}).shouldExist()
@@ -150,10 +150,10 @@ describe('assertions', function(){
       var bad = browser.find('.element1 input').shouldHave({value: ''});
       var good = browser.find('.element2 input').shouldHave({value: ''});
 
-      dom.eventuallyInsert(`<div>
-                               <div class="element1"><input type=text value="some text" /></div>
-                               <div class="element2"><input type=text value="" /></div>
-                            </div>`);
+      dom.eventuallyInsert('<div>\n' +
+                             '<div class="element1"><input type=text value="some text" /></div>\n' +
+                             '<div class="element2"><input type=text value="" /></div>\n' +
+                           '</div>');
 
       return Promise.all([
         good,
