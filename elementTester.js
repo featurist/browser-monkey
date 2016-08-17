@@ -29,7 +29,7 @@ function assertElementProperties($, elements, expected, getProperty, exact) {
 }
 
 function getNormalisedText(el) {
-  return el.innerText().replace(/ +/g,' ').replace(/ *\n */g,"\n");
+  return el.innerText().replace(/ +/g,' ').replace(/ *\r?\n */g,"\n");
 }
 
 function getValue(e, property) {
