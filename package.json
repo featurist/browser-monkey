@@ -4,7 +4,7 @@
   "description": "reliable dom testing",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha && ./node_modules/.bin/karma start --browsers Firefox --single-run"
+    "test": "mocha && karma start --single-run"
   },
   "author": "Tim Macfarlane <timmacfarlane@gmail.com>",
   "license": "MIT",
