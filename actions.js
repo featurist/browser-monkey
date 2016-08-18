@@ -3,19 +3,23 @@ var sendkeys = require('./sendkeys');
 var detect = require('detect-browser');
 
 module.exports = {
-  focus: function(element) {
-    var $ = this.get('$');
-    var document = this.get('document');
-    if (element && element.length > 0) {
-      element = element[0];
-    }
+  focus: function(element, options) {
+    var focus = typeof options == 'object' && options.hasOwnProperty('focus')? options.focus: true;
 
-    var activeElement = document.activeElement;
-    if (activeElement && !$(activeElement).is(':focus')) {
-      $(activeElement).trigger('blur');
+    if (focus) {
+      var $ = this.get('$');
+      var document = this.get('document');
+      if (element && element.length > 0) {
+        element = element[0];
+      }
+
+      var activeElement = document.activeElement;
+      if (activeElement && !$(activeElement).is(':focus')) {
+        $(activeElement).trigger('blur');
+      }
+      document.activeElement = element;
+      $(element).focus();
     }
-    document.activeElement = element;
-    $(element).focus();
   },
 
   click: function(options) {
@@ -38,7 +42,7 @@ module.exports = {
 
       debug('click', element);
       self.handleEvent({type: 'click', element: element});
-      self.focus(element);
+      self.focus(element, options);
       element.trigger('mousedown');
       element.trigger('mouseup');
       element.trigger('click');
@@ -52,7 +56,7 @@ module.exports = {
     return this.is('select').find('option', options).elements(options).then(function(optionElements) {
       var optionElement = $(optionElements[0]);
       var selectElement = optionElement.parent();
-      self.focus(selectElement);
+      self.focus(selectElement, options);
       optionElement.prop('selected', true);
       optionElement.attr('selected', 'selected');
       selectElement.val(optionElement.val());
@@ -78,7 +82,7 @@ module.exports = {
     return this.element(options).then(function(element) {
       debug('typeIn', element, text);
       assertCanTypeIntoElement(element);
-      self.focus(element);
+      self.focus(element, options);
       self.handleEvent({type: 'typing', text: text, element: element});
       return sendkeys(element, text);
     });
@@ -89,7 +93,7 @@ module.exports = {
 
     return this.element(options).then(function(element) {
       debug('submit', element);
-      self.focus(element);
+      self.focus(element, options);
       self.handleEvent({type: 'submit', element: element});
       return element.trigger('submit');
     });
@@ -99,7 +103,7 @@ module.exports = {
     var self = this;
 
     return this.element(options).then(function(element) {
-      self.focus(element);
+      self.focus(element, options);
       debug('typeInHtml', element, html);
       self.handleEvent({type: 'typing html', html: html, element: element});
       return sendkeys.html(element, html);
