@@ -34,6 +34,22 @@ describe('actions', function(){
       });
     });
 
+    domTest('mousedown mouseup and click events bubble up to parent', function (browser, dom) {
+      var events = [];
+
+      dom.insert('<div class="element"><div class="inner-element">inner</div></div>').on('mousedown', function () {
+        events.push('mousedown');
+      }).on('mouseup', function () {
+        events.push('mouseup');
+      }).on('click', function () {
+        events.push('click');
+      });
+
+      return browser.find('.inner-element').click().then(function () {
+        expect(events).to.eql(['mousedown', 'mouseup', 'click']);
+      });
+    }, {vdom: false});
+
     domTest('waits until checkbox is enabled before clicking', function (browser, dom) {
       var promise = browser.find('input[type=checkbox]').click();
       var clicked;
