@@ -287,12 +287,12 @@ describe('actions', function(){
   });
 
   describe('checkboxes', function(){
-    domTest('can check a checkbox by clicking on it', function (browser, dom) {
+    domTest('can check a checkbox by clicking on it', function (browser, dom, $) {
       var checkbox = dom.insert('<input class="checkbox" type=checkbox>');
       var checked;
 
       checkbox.on('click', function (ev) {
-        checked = ev.target.checked;
+        checked = $(this).prop('checked');
       });
 
       expect(checkbox.prop('checked')).to.be.false;
@@ -309,13 +309,13 @@ describe('actions', function(){
       });
     });
 
-    domTest('can check a checkbox by clicking its label', function (browser, dom) {
+    domTest('can check a checkbox by clicking its label', function (browser, dom, $) {
       var label = dom.insert('<label>Check: <input class="checkbox" type=checkbox></label>');
       var checkbox = dom.el.find('input');
       var checked;
 
       checkbox.on('click', function (ev) {
-        checked = ev.target.checked;
+        checked = $(this).prop('checked');
       });
 
       expect(checkbox.prop('checked')).to.be.false;
