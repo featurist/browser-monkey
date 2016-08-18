@@ -1,6 +1,6 @@
 var debug = require('debug')('browser-monkey');
 var sendkeys = require('./sendkeys');
-var Options = require('./options');
+var detect = require('detect-browser');
 
 module.exports = {
   focus: function(element) {
@@ -31,6 +31,9 @@ module.exports = {
 
       if (isCheckbox) {
         originalCheckedValue = element.prop('checked');
+        if (detect.name == 'ie' || detect.name == 'edge') {
+          element.prop('checked', !originalCheckedValue);
+        }
       }
 
       debug('click', element);
@@ -39,10 +42,6 @@ module.exports = {
       element.trigger('mousedown');
       element.trigger('mouseup');
       element.trigger('click');
-
-      if (isCheckbox && element.prop('checked') == originalCheckedValue) {
-        element.prop('checked', !originalCheckedValue);
-      }
     });
   },
 

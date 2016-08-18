@@ -273,32 +273,46 @@ describe('actions', function(){
   describe('checkboxes', function(){
     domTest('can check a checkbox by clicking on it', function (browser, dom) {
       var checkbox = dom.insert('<input class="checkbox" type=checkbox>');
+      var checked;
+
+      checkbox.on('click', function (ev) {
+        checked = ev.target.checked;
+      });
 
       expect(checkbox.prop('checked')).to.be.false;
 
       var clicked = browser.find('.checkbox').click();
       return clicked.then(function () {
         expect(checkbox.prop('checked')).to.be.true;
+        expect(checked).to.be.true;
       }).then(function () {
         return browser.find('.checkbox').click();
       }).then(function () {
         expect(checkbox.prop('checked')).to.be.false;
+        expect(checked).to.be.false;
       });
     });
 
     domTest('can check a checkbox by clicking its label', function (browser, dom) {
       var label = dom.insert('<label>Check: <input class="checkbox" type=checkbox></label>');
       var checkbox = dom.el.find('input');
+      var checked;
+
+      checkbox.on('click', function (ev) {
+        checked = ev.target.checked;
+      });
 
       expect(checkbox.prop('checked')).to.be.false;
 
       var clicked = browser.find('label').click();
       return clicked.then(function () {
         expect(checkbox.prop('checked')).to.be.true;
+        expect(checked).to.be.true;
       }).then(function () {
         return browser.find('.checkbox').click();
       }).then(function () {
         expect(checkbox.prop('checked')).to.be.false;
+        expect(checked).to.be.false;
       });
     });
   });
