@@ -1,6 +1,5 @@
 var debug = require('debug')('browser-monkey');
 var sendkeys = require('./sendkeys');
-var detect = require('detect-browser');
 
 module.exports = {
   focus: function(element, options) {
@@ -30,16 +29,6 @@ module.exports = {
     }
 
     return self.enabled().element(options).then(function(element) {
-      var isCheckbox = element.prop('tagName') == 'INPUT' && (element.prop('type') || '').toLowerCase() == 'checkbox';
-      var originalCheckedValue;
-
-      if (isCheckbox) {
-        originalCheckedValue = element.prop('checked');
-        if (detect.name == 'ie' || detect.name == 'edge') {
-          element.prop('checked', !originalCheckedValue);
-        }
-      }
-
       debug('click', element);
       self.handleEvent({type: 'click', element: element});
       self.focus(element, options);

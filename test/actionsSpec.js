@@ -235,6 +235,20 @@ describe('actions', function(){
         expect(submitted).to.be.true;
       });
     });
+
+    domTest('should submit the form when submit button is clicked', function (browser, dom) {
+      var submitted = false;
+      var promise = browser.find('input').click();
+
+      dom.insert('<form action="#"><input type="submit">submit</input></form>').on('submit', function (ev) {
+        ev.preventDefault();
+        submitted = true;
+      });
+
+      return promise.then(function () {
+        expect(submitted).to.be.true;
+      });
+    });
   });
 
   describe('typeIn', function(){
