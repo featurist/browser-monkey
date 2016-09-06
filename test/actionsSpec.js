@@ -248,7 +248,7 @@ describe('actions', function(){
       return promise.then(function () {
         expect(submitted).to.be.true;
       });
-    });
+    }, {vdom: false});
   });
 
   describe('typeIn', function(){
