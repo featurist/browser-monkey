@@ -6,8 +6,6 @@ var vquery = require('vdom-query')
 var jquery = require('../jquery');
 var createBrowser = require('../create');
 
-function noop(){}
-
 function domTest(testName, testCb, options){
   options = options || {};
 
@@ -16,10 +14,10 @@ function domTest(testName, testCb, options){
   var runVDom = it;
 
   if (options.hasOwnProperty('vdom') && !options.vdom) {
-    runVDom = noop;
+    runVDom = xit;
   }
   if (isNode || (options.hasOwnProperty('html') && !options.html)) {
-    runHtml = noop;
+    runHtml = xit;
   }
 
   runTests(testName, function(){

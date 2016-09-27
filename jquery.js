@@ -2,26 +2,24 @@ var jquery = require('jquery');
 function dispatchEvent(element, eventType){
   var event;
 
-  if (document.createEvent) {
-    if (eventType === 'click' && (element.tagName === 'A' || element.tagName === 'LABEL')) {
-      var event = document.createEvent("MouseEvents");
-      event.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
-    }
-    else {
+  if (eventType === 'click') {
+    element.click();
+  } else {
+    if (document.createEvent) {
       event = document.createEvent("Event");
       event.initEvent(eventType, true, true);
+    } else {
+      event = document.createEventObject();
+      event.eventType = eventType;
     }
-  } else {
-    event = document.createEventObject();
-    event.eventType = eventType;
-  }
 
-  event.eventName = eventType;
+    event.eventName = eventType;
 
-  if (document.createEvent) {
-    element.dispatchEvent(event);
-  } else {
-    element.fireEvent("on" + event.eventType, event);
+    if (document.createEvent) {
+      element.dispatchEvent(event);
+    } else {
+      element.fireEvent("on" + event.eventType, event);
+    }
   }
 }
 
@@ -34,11 +32,7 @@ if (jquery.fn) {
     trigger: function(eventType){
       for (var i=0; i<this.length; i++){
         var element = this[i];
-        if (eventType === 'click' && element.type === 'checkbox') {
-          element.checked = !element.checked;
-          dispatchEvent(element, eventType);
-        }
-        else if (eventType === 'submit' && element.form) {
+        if (eventType === 'submit' && element.form) {
           if (!jquery.preventFormSubmit) {
             element.form.submit();
           }
@@ -47,7 +41,7 @@ if (jquery.fn) {
         else {
           dispatchEvent(element, eventType);
         }
-      };
+      }
 
       return this;
     },
