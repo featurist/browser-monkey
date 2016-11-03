@@ -82,44 +82,12 @@ module.exports = function(config) {
 };
 
 var browsers = {
-  'browserstack-ie9': {
-    base: 'BrowserStack',
-    browser : 'IE',
-    browser_version : '9.0',
-    os : 'Windows',
-    os_version : '7',
-    resolution : '1024x768'
-  },
-  'browserstack-ie10': {
-    base: 'BrowserStack',
-    browser : 'IE',
-    browser_version : '10.0',
-    os : 'Windows',
-    os_version : '8',
-    resolution : '1024x768'
-  },
-  'browserstack-ie11': {
-    base: 'BrowserStack',
-    browser : 'IE',
-    browser_version : '11.0',
-    os : 'Windows',
-    os_version : '10',
-    resolution : '1024x768'
-  },
-  'browserstack-edge': {
-    base: 'BrowserStack',
-    browser : 'Edge',
-    browser_version : '13.0',
-    os : 'Windows',
-    os_version : '10',
-    resolution : '1024x768'
-  },
   'browserstack-firefox': {
     base: 'BrowserStack',
     browser : 'Firefox',
     browser_version : '47.0',
-    os : 'Windows',
-    os_version : '10',
+    os : 'OS X',
+    os_version : 'El Capitan',
     resolution : '1024x768'
   },
   'browserstack-safari': {
@@ -140,8 +108,8 @@ var browsers = {
     base: 'BrowserStack',
     browser : 'Chrome',
     browser_version : '52.0',
-    os : 'Windows',
-    os_version : '10',
+    os : 'OS X',
+    os_version : 'El Capitan',
     resolution : '1024x768'
   }
 };
