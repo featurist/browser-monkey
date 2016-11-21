@@ -21,41 +21,41 @@ Here is an [example project](https://github.com/dereke/web-testing) that demonst
 # example
 
 ```js
+import createBrowser from 'browser-monkey/create';
+
 describe('admin', function () {
+  let browser = createBrowser(document.body);
+
   // describes the admin panel, with a search box, results and a user editor
-  var adminPanel = browser.component({
-    searchUsers: function () {
+  let adminPanel = browser.component({
+    searchUsers() {
       return this.find('.search');
     },
-    userResult: function (name) {
+    userResult(name) {
       // find a user in the results by their name
       return this.find('.results .user', {text: name});
-    }
-    userEditor: function () {
+    },
+    userEditor() {
       // return the user editor, scoped to the .user-editor div.
       return this.find('.user-editor').component({
-        name: function () { this.find('.name'); },
-        email: function () { this.find('.email'); },
-        save: function () { this.find('.save'); }
+        name()  { return this.find('.name'); },
+        email() { return this.find('.email'); },
+        save()  { return this.find('.save'); }
       });
     }
   });
 
-  it('can search for, edit and save a user', function () {
-    return adminPanel.searchUsers().typeIn('bar').then(function () {
-      return adminPanel.userResult('Barry').click();
-    }).then(function () {
-      var userEditor = adminPanel.userEditor();
-      return Promise.all([
-        userEditor.name().typeIn('Barry Jones'),
-        userEditor.email().typeIn('barryjones@example.com')
-      ]).then(function () {
-        return userEditor.save().click();
-      });
-    }).then(function () {
-      // verify that the user was saved
-      // use mock-xhr-router!
-    });
+  it('can search for, edit and save a user', async () => {
+    await adminPanel.searchUsers().typeIn('bar');
+    await adminPanel.userResult('Barry').click();
+
+    let userEditor = adminPanel.userEditor();
+    await userEditor.name().typeIn('Barry Jones');
+    await userEditor.email().typeIn('barryjones@example.com');
+
+    await userEditor.save().click();
+
+    // verify that the user was saved
   });
 });
 ```
