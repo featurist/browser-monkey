@@ -3,6 +3,14 @@ var retry = require('trytryagain');
 
 describe('actions', function(){
   describe('clicking', function () {
+    domTest('stack trace', function(browser, dom){
+      return browser.find('div')
+        .click()
+        .assertStackTrace(__filename);
+    }, {
+      mochaOnly: true
+    });
+
     domTest('should eventually click an element', function (browser, dom, $) {
       var promise = browser.find('.element').click();
       var clicked = false;
@@ -92,6 +100,14 @@ describe('actions', function(){
   });
 
   describe('select', function(){
+    domTest('stack trace', function(browser, dom){
+      return browser.find('div')
+        .select({text: 'Text'})
+        .assertStackTrace(__filename);
+    }, {
+      mochaOnly: true
+    });
+
     describe('text', function(){
       domTest('respects timeout option', function(browser, dom, $){
         var promise = browser.find('.element').select({text: 'Second', timeout: 3 });
@@ -223,6 +239,14 @@ describe('actions', function(){
   });
 
   describe('submit', function () {
+    domTest('stack trace', function(browser, dom){
+      return browser.find('div')
+        .submit()
+        .assertStackTrace(__filename);
+    }, {
+      mochaOnly: true
+    });
+
     domTest('should submit the form', function (browser, dom) {
       var submitted = false;
       var promise = browser.find('input').submit();
@@ -252,6 +276,14 @@ describe('actions', function(){
   });
 
   describe('typeIn', function(){
+    domTest('stack trace', function(browser, dom){
+      return browser.find('input')
+        .typeIn('hello')
+        .assertStackTrace(__filename);
+    }, {
+      mochaOnly: true
+    });
+
     [
       '<input class="element"></input>',
       '<input class="element" type="text"></input>',
@@ -297,6 +329,15 @@ describe('actions', function(){
           expect(firedEvents).to.eql(['input']);
         });
       });
+    });
+  });
+  describe('typeInHtml', function(){
+    domTest('stack trace', function(browser, dom){
+      return browser.find('input')
+        .typeInHtml('<p>hello</p>')
+        .assertStackTrace(__filename);
+    }, {
+      mochaOnly: true
     });
   });
 

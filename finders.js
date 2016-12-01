@@ -1,5 +1,4 @@
 var retry = require('trytryagain');
-var trace = require('./trace');
 var Options = require('./options');
 var expectOneElement = require('./expectOneElement');
 
@@ -231,20 +230,14 @@ module.exports = {
   resolve: function(options) {
     var self = this;
     var defaultTimeout = this.get('timeout') || 1000;
-    var retryOptions = Options.remove(options, ['timeout', 'interval', 'trace']);
+    var retryOptions = Options.remove(options, ['timeout', 'interval']);
     retryOptions.timeout = retryOptions.timeout || defaultTimeout;
-    var traceOption = retryOptions.hasOwnProperty('trace')? retryOptions.trace: true;
 
     var result = retry(retryOptions, function() {
       return self.findElements(options);
     });
 
-    traceOption = false;
-    if (traceOption) {
-      return trace(result);
-    } else {
-      return result;
-    }
+    return result;
   },
 
   notResolve: function(options) {

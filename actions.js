@@ -1,5 +1,6 @@
 var debug = require('debug')('browser-monkey');
 var sendkeys = require('./sendkeys');
+var errorHandler = require('./errorHandler');
 
 module.exports = {
   focus: function(element, options) {
@@ -35,7 +36,7 @@ module.exports = {
       element.trigger('mousedown');
       element.trigger('mouseup');
       element.trigger('click');
-    });
+    }).catch(errorHandler(new Error()));
   },
 
   select: function(options) {
@@ -59,7 +60,7 @@ module.exports = {
       });
 
       selectElement.trigger('change');
-    });
+    }).catch(errorHandler(new Error()));
   },
 
   typeIn: function(text, options) {
@@ -74,7 +75,7 @@ module.exports = {
       self.focus(element, options);
       self.handleEvent({type: 'typing', text: text, element: element});
       return sendkeys(element, text);
-    });
+    }).catch(errorHandler(new Error()));
   },
 
   submit: function(options) {
@@ -85,7 +86,7 @@ module.exports = {
       self.focus(element, options);
       self.handleEvent({type: 'submit', element: element});
       return element.trigger('submit');
-    });
+    }).catch(errorHandler(new Error()));
   },
 
   typeInHtml: function(html, options) {
@@ -96,7 +97,7 @@ module.exports = {
       debug('typeInHtml', element, html);
       self.handleEvent({type: 'typing html', html: html, element: element});
       return sendkeys.html(element, html);
-    });
+    }).catch(errorHandler(new Error()));
   },
 
 

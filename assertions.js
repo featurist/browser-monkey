@@ -1,5 +1,6 @@
 var Options = require('./options');
 var expectOneElement = require('./expectOneElement');
+var errorHandler = require('./errorHandler');
 
 module.exports = {
   is: function (css) {
@@ -12,11 +13,14 @@ module.exports = {
   },
 
   shouldExist: function (options) {
-    return this.resolve(options).then(function () {});
+    var error = new Error();
+    return this.resolve(options)
+      .catch(errorHandler(new Error()));
   },
 
   shouldNotExist: function (options) {
-    return this.notResolve(options);
+    return this.notResolve(options)
+      .catch(errorHandler(new Error()));
   },
 
   has: function(options) {
@@ -43,7 +47,8 @@ module.exports = {
     });
 
     assertions.push(this.addFinder(this.createElementTester(options)).shouldExist(resolveOptions));
-    return Promise.all(assertions);
+    return Promise.all(assertions)
+      .catch(errorHandler(new Error()));
   },
 
   shouldHaveElement: function(fn, options) {

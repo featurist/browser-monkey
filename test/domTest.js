@@ -19,6 +19,10 @@ function domTest(testName, testCb, options){
   if (isNode || (options.hasOwnProperty('html') && !options.html)) {
     runHtml = xit;
   }
+  if (!isNode && options.hasOwnProperty('mochaOnly') && options.mochaOnly) {
+    runHtml = xit;
+    runVDom = xit;
+  }
 
   runTests(testName, function(){
     runHtml('HTML', function(){
