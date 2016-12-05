@@ -1,7 +1,9 @@
 var debug = require('debug')('browser-monkey');
 var sendkeys = require('./sendkeys');
 var errorHandler = require('./errorHandler');
-
+function notSillyBlankIEObject(element){
+  return Object.keys(element).length > 0;
+}
 module.exports = {
   focus: function(element, options) {
     var focus = typeof options == 'object' && options.hasOwnProperty('focus')? options.focus: true;
@@ -14,7 +16,7 @@ module.exports = {
       }
 
       var activeElement = document.activeElement;
-      if (activeElement && !$(activeElement).is(':focus')) {
+      if (activeElement && !$(activeElement).is(':focus') && notSillyBlankIEObject(activeElement)) {
         $(activeElement).trigger('blur');
       }
       document.activeElement = element;

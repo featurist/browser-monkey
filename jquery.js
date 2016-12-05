@@ -13,8 +13,6 @@ function dispatchEvent(element, eventType){
     } else {
       event = document.createEvent("Event");
       event.initEvent(eventType, true, true);
-      event.eventType = eventType;
-      event.eventName = eventType;
       element.dispatchEvent(event);
     }
   }
