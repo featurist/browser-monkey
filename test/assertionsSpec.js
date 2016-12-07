@@ -163,6 +163,22 @@ describe('assertions', function(){
       ]);
     });
 
+    domTest('error has a tip with suggestions for how to fix it', function(browser, dom){
+      dom.insert('<span>abc</span>');
+      dom.insert('<span>bac</span>');
+      dom.insert('<span>cba</span>');
+
+      return browser.find('span').shouldHave({
+        text: [
+          'cba',
+          'abc',
+          'bac',
+        ]
+      }).catch(function(error) {
+        expect(error.message).to.include('\nThe text was found but in a different order than specified - maybe you need some sorting?');
+      });
+    });
+
     domTest('finds an element with exact value', function (browser, dom) {
       var bad = browser.find('.element1 input').shouldHave({exactValue: 'some t'});
       var good = browser.find('.element1 input').shouldHave({exactValue: 'some text'});
@@ -246,6 +262,14 @@ describe('assertions', function(){
         dom.eventuallyInsert('<select class="element"><option></option><option>Mr</option><option>Mrs</option></select>');
 
         return promise;
+      });
+
+      domTest('fails to find exact text', function(browser, dom){
+        var promise = browser.find('option').shouldHave({exactText: ['', 'Mr', 'Mrs']});
+
+        dom.eventuallyInsert('<select><option>Optional</option><option>Mr</option><option>Mrs</option></select>');
+
+        return expect(promise).to.be.rejected;
       });
     });
 

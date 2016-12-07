@@ -18,10 +18,33 @@ function assertElementProperties($, elements, expected, getProperty, exact) {
 
     expect(actualTexts.length, 'expected ' + JSON.stringify(actualTexts) + ' to respectively contain ' + JSON.stringify(expected)).to.eql(expected.length);
 
+
+    var comparer = exact == true ?
+      function(a, b) { return a == b; } :
+      function(a, b) { return a.indexOf(b) != -1}
+
+    var found = [];
+    var actuals = actualTexts.slice();
     expected.forEach(function (expected, index) {
-      var actualText = actualTexts[index];
-      assertion(actualText, expected);
+      var actualFound;
+      for (var actualIndex=0; actualIndex<actualTexts.length; actualIndex++) {
+        var actual = actualTexts[actualIndex];
+        if (comparer(actual, expected)) {
+          actualFound = actual;
+          found[actualIndex] = expected;
+          break;
+        }
+      }
     });
+
+    try {
+      expect(found).to.eql(expected)
+    } catch(e) {
+      if (found.slice().sort().toString() == expected.slice().sort().toString()) {
+        e.message += '\nThe text was found but in a different order than specified - maybe you need some sorting?';
+      }
+      throw e;
+    }
   } else {
     var elementText = getProperty($(elements));
     assertion(elementText, expected);
@@ -122,7 +145,6 @@ module.exports = {
       button.find("img").toArray().filter(function(img) {
         return typeof $(img).attr('alt') == 'string' && $(img).attr('alt').indexOf(label) > -1;
       }).length > 0
-      
       }
     });
 
