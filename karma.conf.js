@@ -31,12 +31,22 @@ module.exports = function(config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      'test/global.js': ['browserify'],
+      'test/global.js': ['browserify', 'env'],
       'test/**/*Spec.js': ['browserify']
     },
 
+    envPreprocessor: [
+      'BM_TIMEOUT',
+    ],
+
     browserify: {
       debug: true
+    },
+
+    client: {
+      mocha: {
+        timeout: 0
+      }
     },
 
     // test results reporter to use

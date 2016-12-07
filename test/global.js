@@ -5,6 +5,7 @@ var chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 
 global.expect = chai.expect;
+global.timeout = parseInt(typeof window == 'object' && window.__env__.BM_TIMEOUT || 100);
 
 Promise.prototype.assertStackTrace = function(file) {
   return this.then(function(){
