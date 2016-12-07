@@ -37,7 +37,6 @@ describe('hyperdom integration', function(){
     browser = browser.scope(vdom);
     var vquery = require('vdom-query')
     browser.set({$: vquery, visibleOnly: false, document: {}});
-    var vdomToHtml = require('vdom-to-html');
 
     return browser.find('.toggle').click().then(function(){
       return browser.find('span', {text: 'hello'}).shouldExist();
