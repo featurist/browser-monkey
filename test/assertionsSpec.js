@@ -31,6 +31,26 @@ describe('assertions', function(){
 
       return promise;
     });
+
+    domTest('stack trace', function(browser, dom){
+      dom.insert('<div></div>');
+
+      return browser.find('div')
+        .shouldNotExist()
+        .assertStackTrace(__filename);
+    }, {
+      mochaOnly: true
+    });
+  });
+
+  describe('shouldExist', function(){
+    domTest('stack trace', function(browser, dom){
+      return browser.find('div')
+        .shouldExist()
+        .assertStackTrace(__filename);
+    }, {
+      mochaOnly: true
+    });
   });
 
   describe('is', function () {
@@ -95,6 +115,15 @@ describe('assertions', function(){
   });
 
   describe('shouldHave', function () {
+    domTest('stack trace', function(browser, dom){
+      dom.insert('<div>hello</div>');
+      return browser.find('div')
+        .shouldHave({text: 'something'})
+        .assertStackTrace(__filename);
+    }, {
+      mochaOnly: true
+    });
+
     domTest('eventually finds an element and asserts that it has text', function (browser, dom) {
       var good = browser.find('.element').shouldHave({text: 'some t'});
       var bad = browser.find('.element').shouldHave({text: 'sme t'});
