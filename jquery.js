@@ -5,15 +5,15 @@ function dispatchEvent(element, eventType){
   if (eventType === 'click') {
     element.click();
   } else {
-    if (document.createEventObject) {
+    if (document.createEvent) {
+      event = document.createEvent("Event");
+      event.initEvent(eventType, true, true);
+      element.dispatchEvent(event);
+    } else {
       event = document.createEventObject();
       event.eventType = eventType;
       event.eventName = eventType;
       element.fireEvent("on" + event.eventType, event);
-    } else {
-      event = document.createEvent("Event");
-      event.initEvent(eventType, true, true);
-      element.dispatchEvent(event);
     }
   }
 }

@@ -112,6 +112,14 @@ var browsers = {
     os_version : 'El Capitan',
     resolution : '1024x768'
   },
+  'browserstack-ie10': {
+    base: 'BrowserStack',
+    browser : 'IE',
+    browser_version : '10.0',
+    os : 'Windows',
+    os_version : '8',
+    resolution : '1024x768'
+  },
   'browserstack-ie11': {
     base: 'BrowserStack',
     browser : 'IE',
