@@ -25,7 +25,7 @@
     "karma-mocha-reporter": "2.2.0",
     "lie": "^3.0.1",
     "mocha": "3.1.2",
-    "vdom-query": "https://github.com/dereke/vdom-query/archive/rewrite-like-jquery.tar.gz",
+    "vdom-query": "https://github.com/featurist/vdom-query",
     "virtual-dom": "^2.1.1",
     "watchify": "^3.7.0"
   },
