@@ -6,15 +6,17 @@ if (isBrowser) {
 
   require('./app/angular');
   require('./app/hyperdom');
+  require('./app/react');
 
   [
     'hyperdom',
-    'angular'
+    'angular',
+    'react'
   ].forEach(appType => {
     var WebApp = require('./app/'+appType);
     var monkeyBuilder = mount[appType];
 
-    describe(`mount ${appType}`, () => {
+    describe.only(`mount ${appType}`, () => {
       var monkey, app;
 
       beforeEach(() => {

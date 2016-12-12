@@ -106,5 +106,24 @@ module.exports = {
         }
       }
     });
+  },
+
+  react: function() {
+    var React = require('react')
+    var ReactDOM = require('react-dom')
+
+    return new Mount({
+      stopApp: function() {
+
+      },
+      startApp: function() {
+        var div = createTestDiv()
+        ReactDOM.render(React.createElement(this.app.constructor, null), div)
+
+        if (runningInBrowser) {
+          this.browser = createBrowser(document.body);
+        }
+      }
+    })
   }
 }

@@ -36,6 +36,8 @@
     "karma-mocha-reporter": "2.2.0",
     "lie": "^3.0.1",
     "mocha": "3.1.2",
+    "react": "^15.4.1",
+    "react-dom": "^15.4.1",
     "vdom-query": "https://github.com/featurist/vdom-query",
     "vinehill": "^0.4.1",
     "virtual-dom": "^2.1.1",
