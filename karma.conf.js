@@ -42,7 +42,7 @@ module.exports = function(config) {
     browserify: {
       debug: true,
       extensions: ['.jsx'],
-      transform: ['babelify'],
+      transform: ['babelify', [require('./removeStrictFromSend'), {global: true}]],
     },
 
     client: {
@@ -105,9 +105,9 @@ var browsers = {
   'browserstack-safari': {
     base: 'BrowserStack',
     browser : 'Safari',
-    browser_version : '9.1',
+    browser_version : '10',
     os : 'OS X',
-    os_version : 'El Capitan',
+    os_version : 'Sierra',
     resolution : '1024x768'
   },
   'browserstack-safari-ios': {

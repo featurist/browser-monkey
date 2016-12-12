@@ -8,11 +8,6 @@ function isSupportedBrowser(){
       return false;
     }
 
-    console.log('***************')
-    console.log(browser.name)
-    if (browser.name === 'safari' || browser.name === 'ios') {
-      return false;
-    }
     return true;
   }
 }
@@ -33,7 +28,7 @@ if (isSupportedBrowser()) {
     var WebApp = require('./app/'+appType);
     var monkeyBuilder = mount[appType];
 
-    describe.only(`mount ${appType}`, () => {
+    describe(`mount ${appType}`, () => {
       var monkey, app;
 
       beforeEach(() => {
