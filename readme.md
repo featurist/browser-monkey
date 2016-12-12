@@ -83,22 +83,38 @@ Browser monkey comes with a handy way of doing this for popular web frameworks (
 
 ```js
 var mount = require('browser-monkey/mount');
+```
 
+**hyperdom**
+where YourHyperdomApp is a class that has a render method. [see here](test/app/hyperdom.jsx) for an example
 
-// for hyperdom
-// where YourHyperdomApp is a class that has a render method. [see here](test/app/hyperdom.js) for an example
-
+```js
 var monkey =  mount.hyperdom()
   .withApp(() => new YourHyperdomApp())
   .start()
+```
 
-// for angular
-// where YourAngularApp is a class with fields 'directiveName' and 'moduleName' [see here](test/app/angular.js) for an example
-var monkey =  mount.hyperdom()
+**angular**
+where YourAngularApp is a class with fields 'directiveName' and 'moduleName' [see here](test/app/angular.js) for an example
+
+```js
+var monkey =  mount.angular()
   .withApp(() => new YourAngularApp())
   .start()
+```
 
+**react**
+where YourReactApp is a react class [see here](test/app/react.jsx) for an example
 
+```js
+var monkey =  mount.react()
+  .withApp(() => new YourReactApp())
+  .start()
+```
+
+and then you can use the monkey
+
+```js
 monkey.browser.find('h1').shouldHave({text: 'Hello World'});
 ```
 
