@@ -1,7 +1,6 @@
 /** @jsx hyperdom.jsx */
 var httpism = require('httpism/browser');
 var hyperdom = require('hyperdom');
-var html = hyperdom.html;
 
 module.exports = class WebApp {
   constructor() {

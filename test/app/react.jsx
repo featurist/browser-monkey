@@ -1,8 +1,8 @@
 /** @jsx */
 
+const httpism = require('httpism/browser')
 const React = require('react')
 const ReactDOM = require('react-dom')
-const httpism = require('httpism')
 
 class WebApp extends React.Component {
   constructor() {
