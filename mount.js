@@ -1,5 +1,5 @@
 var runningInBrowser = !require('is-node');
-var createBrowser = require('./create');
+var createMonkey = require('./create');
 var VineHill = require('vinehill');
 var window = require('global');
 var document = window.document;
@@ -55,8 +55,12 @@ Mount.prototype.withApp = function(getApp) {
 Mount.prototype.start = function() {
   this.vinehill.start();
   this.app = this.getApp();
-  this.startApp();
-  return this;
+  var monkey = this.startApp();
+  monkey.set({
+    app: this.app,
+    mount: this,
+  })
+  return monkey;
 }
 
 Mount.prototype.stop = function(){
@@ -75,7 +79,7 @@ module.exports = {
         div.setAttribute(app.directiveName, '');
         angular.bootstrap(div, [app.moduleName]);
 
-        this.browser = createBrowser(document.body);
+        return createMonkey(document.body);
       }
     });
   },
@@ -94,15 +98,16 @@ module.exports = {
         var app = this.app;
 
         if (runningInBrowser) {
-          this.browser = createBrowser(document.body);
           hyperdom.append(createTestDiv(), app);
+          return createMonkey(document.body);
         } else {
           var vdom = hyperdom.html('body');
 
-          this.browser = createBrowser(vdom);
-          this.browser.set({$: vquery, visibleOnly: false, document: {}});
+          var monkey = createMonkey(vdom);
+          monkey.set({$: vquery, visibleOnly: false, document: {}});
 
           hyperdom.appendVDom(vdom, app, { requestRender: setTimeout, window: window });
+          return monkey;
         }
       }
     });
@@ -120,9 +125,7 @@ module.exports = {
         var div = createTestDiv()
         ReactDOM.render(React.createElement(this.app.constructor, null), div)
 
-        if (runningInBrowser) {
-          this.browser = createBrowser(document.body);
-        }
+        return createMonkey(document.body);
       }
     })
   }

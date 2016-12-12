@@ -79,7 +79,7 @@ localStorage['debug'] = 'browser-monkey';
 
 Typically you will need to mount your application into the DOM before running your tests.
 
-Browser monkey comes with a handy way of doing this for popular web frameworks (currently hyperdom and angular are supported)
+Browser monkey comes with a handy way of doing this for popular web frameworks
 
 ```js
 var mount = require('browser-monkey/mount');
@@ -115,7 +115,7 @@ var monkey =  mount.react()
 and then you can use the monkey
 
 ```js
-monkey.browser.find('h1').shouldHave({text: 'Hello World'});
+monkey.find('h1').shouldHave({text: 'Hello World'});
 ```
 
 The mount functions (hyperdom/angular etc.) return a `Mount` object with the following chainable functions:
@@ -125,10 +125,12 @@ The mount functions (hyperdom/angular etc.) return a `Mount` object with the fol
  * start - starts the application and returns a `monkey`
  * stop - stops the application and performs any cleanup necessary
 
-The `monkey` has the following properties:
+The `monkey` is a normal browser monkey object which the has the following additional options:
 
- * browser - a browser monkey object that scoped to your application
+ * mount - the mount object used to mount the app (useful for unmounting later)
  * app - the application passed to withApp
+
+you can retrieve these options using the options api eg. `monkey.get('app')`
 
 # api
 

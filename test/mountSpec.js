@@ -4,11 +4,13 @@ var isBrowser = !require('is-node');
 function isSupportedBrowser(){
   if (isBrowser) {
     var browser = require('detect-browser');
-    if (browser.name === 'ie' && parseInt(browser.version.substring(0, 2)) <= 10) {
+    if (browser.name === 'ie' && parseInt(browser.version.match(/(\d+)./)[1]) <= 10) {
       return false;
     }
 
-    if (browser.name === 'safari') {
+    console.log('***************')
+    console.log(browser.name)
+    if (browser.name === 'safari' || browser.name === 'ios') {
       return false;
     }
     return true;
@@ -31,7 +33,7 @@ if (isSupportedBrowser()) {
     var WebApp = require('./app/'+appType);
     var monkeyBuilder = mount[appType];
 
-    describe(`mount ${appType}`, () => {
+    describe.only(`mount ${appType}`, () => {
       var monkey, app;
 
       beforeEach(() => {
@@ -44,10 +46,10 @@ if (isSupportedBrowser()) {
           .start();
       });
 
-      afterEach(() => monkey.stop());
+      afterEach(() => monkey.get('mount').stop());
 
       it('loads some data', () => {
-        return monkey.browser.find('li').shouldHave({text: [
+        return monkey.find('li').shouldHave({text: [
           'browser-monkey',
           'hyperdom',
           'vinehill',
@@ -55,7 +57,7 @@ if (isSupportedBrowser()) {
       });
 
       it('exposes the app', () => {
-        expect(monkey.app).to.equal(app);
+        expect(monkey.get('app')).to.equal(app);
       });
     });
   });
