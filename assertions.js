@@ -13,7 +13,6 @@ module.exports = {
   },
 
   shouldExist: function (options) {
-    var error = new Error();
     return this.resolve(options)
       .catch(errorHandler(new Error()));
   },

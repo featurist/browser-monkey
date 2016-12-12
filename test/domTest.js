@@ -42,7 +42,7 @@ function domTest(testName, testCb, options){
         $: vquery,
         visibleOnly: false,
         document: {},
-        timeout: 100
+        timeout: global.timeout || 100
       });
 
       var virtualDom = createVDom(body);
