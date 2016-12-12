@@ -5,23 +5,18 @@ var html = hyperdom.html;
 
 module.exports = class WebApp {
   constructor() {
-    var self = this;
-    this.model = {
-      frameworks: []
-    };
-
-    httpism.get('/api/frameworks').then(response => {
-      self.model.frameworks = response.body;
-      self.model.refresh();
-    });
+    this.frameworks = []
   }
 
+  onload() {
+    return httpism.get('/api/frameworks').then(response => {
+      this.frameworks = response.body
+    })
+  }
 
   render() {
-    this.model.refresh = html.refresh;
-
     return <ul>
-      {this.model.frameworks.map(name => <li>{name}</li>)}
+      {this.frameworks.map(name => <li>{name}</li>)}
     </ul>
   }
 }
