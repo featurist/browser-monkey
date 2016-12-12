@@ -16,7 +16,7 @@ if (isBrowser) {
     var WebApp = require('./app/'+appType);
     var monkeyBuilder = mount[appType];
 
-    describe.only(`mount ${appType}`, () => {
+    describe(`mount ${appType}`, () => {
       var monkey, app;
 
       beforeEach(() => {
