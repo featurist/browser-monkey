@@ -1,6 +1,21 @@
 var expect = require('chai').expect
 var isBrowser = !require('is-node');
-if (isBrowser) {
+
+function isSupportedBrowser(){
+  if (isBrowser) {
+    var browser = require('detect-browser');
+    if (browser.name === 'ie' && parseInt(browser.version.substring(0, 2)) <= 10) {
+      return false;
+    }
+
+    if (browser.name === 'safari') {
+      return false;
+    }
+    return true;
+  }
+}
+
+if (isSupportedBrowser()) {
   var mount = require('../mount');
   var expressApp= require('./app/server');
 

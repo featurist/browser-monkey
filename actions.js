@@ -19,7 +19,7 @@ module.exports = {
       if (activeElement && !$(activeElement).is(':focus') && notSillyBlankIEObject(activeElement)) {
         $(activeElement).trigger('blur');
       }
-      if (document.toString() !== '[object HTMLDocument]'){
+      if (['[object Document]', '[object HTMLDocument]'].indexOf(document.toString()) === -1){
         document.activeElement = element;
       }
       $(element).focus();
