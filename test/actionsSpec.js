@@ -83,7 +83,7 @@ describe('actions', function(){
       var clicked;
       var buttonState = 'disabled';
 
-      button = dom.insert('<button disabled>a button</button>');
+      var button = dom.insert('<button disabled>a button</button>');
       button.on('click', function () {
         clicked = buttonState;
       });

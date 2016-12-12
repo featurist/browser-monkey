@@ -75,6 +75,45 @@ Or to be more specific:
 localStorage['debug'] = 'browser-monkey';
 ```
 
+# mount
+
+Typically you will need to mount your application into the DOM before running your tests.
+
+Browser monkey comes with a handy way of doing this for popular web frameworks (currently hyperdom and angular are supported)
+
+```js
+var mount = require('browser-monkey/mount');
+
+
+// for hyperdom
+// where YourHyperdomApp is a class that has a render method. [see here](test/app/hyperdom.js) for an example
+
+var monkey =  mount.hyperdom()
+  .withApp(() => new YourHyperdomApp())
+  .start()
+
+// for angular
+// where YourAngularApp is a class with fields 'directiveName' and 'moduleName' [see here](test/app/angular.js) for an example
+var monkey =  mount.hyperdom()
+  .withApp(() => new YourAngularApp())
+  .start()
+
+
+monkey.browser.find('h1').shouldHave({text: 'Hello World'});
+```
+
+The mount functions (hyperdom/angular etc.) return a `Mount` object with the following chainable functions:
+
+ * withApp - accepts a single function as a parameter that returns an object containing the application
+ * withServer - allows you to route http requests to an express server using [Vinehill](https://www.npmjs.com/package/vinehill)
+ * start - starts the application and returns a `monkey`
+ * stop - stops the application and performs any cleanup necessary
+
+The `monkey` has the following properties:
+
+ * browser - a browser monkey object that scoped to your application
+ * app - the application passed to withApp
+
 # api
 
 The API is made up of three concepts: scopes, actions and assertions.
