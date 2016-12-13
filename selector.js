@@ -4,7 +4,7 @@ var global = require('global');
 function Selector(selector, finders, options) {
   this._selector = selector;
   this._finders = finders || [];
-  this._options = options || { visibleOnly: true, $: require('./jquery'), document: global.document };
+  this._options = options || { timeout: 1000, visibleOnly: true, $: require('./jquery'), document: global.document };
   this._handlers = [];
   this._elementTesters = elementTester;
 }

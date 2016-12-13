@@ -11,13 +11,15 @@ describe('options', function () {
 
   it('can overide default timeout', function(){
     var browser = create();
+    var defaultTimeout = browser.get('timeout');
     browser.set({timeout: 10});
     var start = new Date();
 
     return browser.find('.doesnt-exist').shouldExist().catch(function(){
       var end = new Date();
       var duration = end - start;
-      expect(duration).to.be.below(50);
+      expect(duration).to.be.above(browser.get('timeout'));
+      expect(duration).to.be.below(defaultTimeout);;
     });
   });
 });
