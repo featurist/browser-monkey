@@ -85,7 +85,7 @@ Browser monkey comes with a handy way of doing this for popular web frameworks
 where YourHyperdomApp is a class that has a render method. [see here](test/app/hyperdom.jsx) for an example
 
 ```js
-var monkey = require('browser-monkey/mount/hyperdom')
+var monkey = require('browser-monkey/hyperdom')
   .withApp(() => new YourHyperdomApp())
   .start()
 ```
@@ -94,7 +94,7 @@ var monkey = require('browser-monkey/mount/hyperdom')
 where YourAngularApp is a class with fields 'directiveName' and 'moduleName' [see here](test/app/angular.js) for an example
 
 ```js
-var monkey = require('browser-monkey/mount/angular')
+var monkey = require('browser-monkey/angular')
   .withApp(() => new YourAngularApp())
   .start()
 ```
@@ -103,7 +103,7 @@ var monkey = require('browser-monkey/mount/angular')
 where YourReactApp is a react class [see here](test/app/react.jsx) for an example
 
 ```js
-var monkey = require('browser-monkey/mount/react')
+var monkey = require('browser-monkey/react')
   .withApp(() => new YourReactApp())
   .start()
 ```

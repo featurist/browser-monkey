@@ -13,9 +13,9 @@ function isSupportedBrowser(){
 }
 
 if (isSupportedBrowser()) {
-  require('../mount/angular');
-  require('../mount/hyperdom');
-  require('../mount/react');
+  require('../angular');
+  require('../hyperdom');
+  require('../react');
 
   require('./app/angular');
   require('./app/hyperdom');
@@ -29,7 +29,7 @@ if (isSupportedBrowser()) {
     'react'
   ].forEach(appType => {
     var WebApp = require('./app/'+appType);
-    var monkeyBuilder = require('../mount/'+appType);
+    var monkeyBuilder = require('../'+appType);
 
     describe(`mount ${appType}`, () => {
       var monkey, app;

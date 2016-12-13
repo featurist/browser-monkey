@@ -1,7 +1,7 @@
-var Mount = require('./');
+var Mount = require('./mount');
 var React = require('react')
 var ReactDOM = require('react-dom')
-var createMonkey = require('../create');
+var createMonkey = require('./create');
 
 module.exports = function() {
   return new Mount({

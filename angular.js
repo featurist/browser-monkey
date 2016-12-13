@@ -1,5 +1,5 @@
-var Mount = require('./');
-var createMonkey = require('../create');
+var Mount = require('./mount');
+var createMonkey = require('./create');
 
 module.exports = function() {
   return new Mount({
