@@ -13,12 +13,15 @@ function isSupportedBrowser(){
 }
 
 if (isSupportedBrowser()) {
-  var mount = require('../mount');
-  var expressApp= require('./app/server');
+  require('../mount/angular');
+  require('../mount/hyperdom');
+  require('../mount/react');
 
   require('./app/angular');
   require('./app/hyperdom');
   require('./app/react');
+
+  var expressApp= require('./app/server');
 
   [
     'hyperdom',
@@ -26,7 +29,7 @@ if (isSupportedBrowser()) {
     'react'
   ].forEach(appType => {
     var WebApp = require('./app/'+appType);
-    var monkeyBuilder = mount[appType];
+    var monkeyBuilder = require('../mount/'+appType);
 
     describe(`mount ${appType}`, () => {
       var monkey, app;

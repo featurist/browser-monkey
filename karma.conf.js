@@ -89,7 +89,9 @@ module.exports = function(config) {
 
     customLaunchers: browsers,
 
-    browserNoActivityTimeout: 60000
+    browserNoActivityTimeout: 120000,
+    browserDisconnectTimeout: 120000,
+    browserDisconnectTolerance: 3,
   });
 };
 

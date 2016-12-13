@@ -81,15 +81,11 @@ Typically you will need to mount your application into the DOM before running yo
 
 Browser monkey comes with a handy way of doing this for popular web frameworks
 
-```js
-var mount = require('browser-monkey/mount');
-```
-
 **hyperdom**
 where YourHyperdomApp is a class that has a render method. [see here](test/app/hyperdom.jsx) for an example
 
 ```js
-var monkey =  mount.hyperdom()
+var monkey = require('browser-monkey/mount/hyperdom')
   .withApp(() => new YourHyperdomApp())
   .start()
 ```
@@ -98,7 +94,7 @@ var monkey =  mount.hyperdom()
 where YourAngularApp is a class with fields 'directiveName' and 'moduleName' [see here](test/app/angular.js) for an example
 
 ```js
-var monkey =  mount.angular()
+var monkey = require('browser-monkey/mount/angular')
   .withApp(() => new YourAngularApp())
   .start()
 ```
@@ -107,7 +103,7 @@ var monkey =  mount.angular()
 where YourReactApp is a react class [see here](test/app/react.jsx) for an example
 
 ```js
-var monkey =  mount.react()
+var monkey = require('browser-monkey/mount/react')
   .withApp(() => new YourReactApp())
   .start()
 ```
