@@ -1,6 +1,7 @@
 var Mount = require('./mount');
 var hyperdom = require('hyperdom');
 var createMonkey = require('./create');
+var window = require('global');
 
 try{
   var router = require('hyperdom-router');
