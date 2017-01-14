@@ -65,7 +65,10 @@ Mount.createTestDiv = function(){
   document.body.appendChild(div);
   return div;
 }
-Mount.runningInBrowser = !require('is-node');
+Mount.runningInNode =
+  (typeof process !== 'undefined') &&
+  (typeof process.versions.node !== 'undefined') &&
+  (typeof process.versions.electron === 'undefined');
 
 module.exports = Mount;
 
@@ -77,12 +80,12 @@ function addRefreshButton() {
   document.body.appendChild(document.createElement('hr'));
 }
 
-if (Mount.runningInBrowser) {
+if (Mount.runningInNode) {
+  require('./stubBrowser');
+} else {
   if (/\/debug\.html$/.test(window.location.pathname)) {
     localStorage['debug'] = 'browser-monkey';
     addRefreshButton();
   }
-} else {
-  require('./stubBrowser');
 }
 

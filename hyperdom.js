@@ -22,12 +22,9 @@ module.exports = function() {
     startApp: function(){
       var app = this.app;
 
-      if (Mount.runningInBrowser) {
-        hyperdom.append(Mount.createTestDiv(), app);
-        return createMonkey(document.body);
-      } else {
+      if (Mount.runningInNode) {
         try {
-        var vquery = require('vdom-query');
+          var vquery = require('vdom-query');
         } catch (e) {
           throw new Error('you must `npm install vdom-query --save-dev` to run tests in node');
         }
@@ -38,6 +35,9 @@ module.exports = function() {
 
         hyperdom.appendVDom(vdom, app, { requestRender: setTimeout, window: window });
         return monkey;
+      } else {
+        hyperdom.append(Mount.createTestDiv(), app);
+        return createMonkey(document.body);
       }
     }
   });
