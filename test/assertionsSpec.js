@@ -53,6 +53,16 @@ describe('assertions', function(){
     });
   });
 
+  describe('shouldFind', function(){
+    domTest('stack trace', function(browser, dom){
+      return browser
+        .shouldFind('div')
+        .assertStackTrace(__filename);
+    }, {
+      mochaOnly: true
+    });
+  });
+
   describe('is', function () {
     domTest('should eventually find an element if it has a class', function (browser, dom) {
       var good = browser.find('.element').is('.good').shouldExist();
