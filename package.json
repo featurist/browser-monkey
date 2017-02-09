@@ -1,6 +1,6 @@
 {
   "name": "browser-monkey",
-  "version": "1.29.2",
+  "version": "2.0.0",
   "description": "reliable dom testing",
   "main": "index.js",
   "scripts": {
