@@ -34,6 +34,7 @@
     "chai": "3.5.0",
     "debug": "2.2.0",
     "detect-browser": "1.5.0",
+    "finished-promise": "0.0.2",
     "global": "^4.3.0",
     "jquery": "2.2.4",
     "trytryagain": "1.2.0"

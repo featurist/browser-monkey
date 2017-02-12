@@ -106,6 +106,7 @@ module.exports = {
   fill: function(field){
     var isArray = Object.prototype.toString.call(field) === '[object Array]';
     var component = this;
+    var Promise = this.promise()
     return new Promise(function(success, failure){
       if (isArray) {
         var fields = field;

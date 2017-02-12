@@ -1,4 +1,3 @@
-var retry = require('trytryagain');
 var Options = require('./options');
 var expectOneElement = require('./expectOneElement');
 
@@ -233,7 +232,7 @@ module.exports = {
     var retryOptions = Options.remove(options, ['timeout', 'interval']);
     retryOptions.timeout = retryOptions.timeout || defaultTimeout;
 
-    var result = retry(retryOptions, function() {
+    var result = this.retry(retryOptions, function() {
       return self.findElements(options);
     });
 
@@ -243,7 +242,7 @@ module.exports = {
   notResolve: function(options) {
     var self = this;
 
-    return retry(options, function() {
+    return this.retry(options, function() {
       var found = false;
       try {
         self.findElements({allowMultiple: true});
