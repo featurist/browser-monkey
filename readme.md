@@ -540,7 +540,7 @@ would match either a link or button according to their respective rules
 Normally the click action is performed on a scope but you can also provide it with a string `browser.click('monkey')` and it will search for a link or button that matches and perform the click on it.
 
 ## Immediate mode
-Although browser-monkey is designed to retry finding elements and assertions, if you can guarantee there will be no delays due to asynchronous application code or rendering, you may prefer to write synchronous tests. In this case, set the `immediate` to `true`:
+Although browser-monkey is designed to retry finding elements and assertions, if you can guarantee there will be no delays due to asynchronous application code or rendering, you may prefer to write synchronous tests. In this case, set the `immediate` option to `true`:
 
 ```js
 browser.set({ immediate: true })
