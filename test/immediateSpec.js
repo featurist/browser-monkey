@@ -1,17 +1,26 @@
 var domTest = require('./domTest');
 
 describe('.set({ immediate: true })', function () {
-  domTest('makes clicks happen immediately', function (browser, dom, $) {
-    var clicked = false;
+  describe('click', function () {
+    domTest('makes clicks happen immediately', function (browser, dom, $) {
+      var clicked = false;
 
-    dom.insert('<div class="element">red</div>').on('click', function () {
-      clicked = true;
-    })
+      dom.insert('<div class="element">red</div>').on('click', function () {
+        clicked = true;
+      })
 
-    browser.set({ immediate: true });
-    browser.find('.element').click();
-    expect(clicked).to.equal(true);
-  });
+      browser.set({ immediate: true });
+      browser.find('.element').click();
+      expect(clicked).to.equal(true);
+    });
+
+    domTest('throws errors immediately', function (browser, dom, $) {
+      browser.set({ immediate: true });
+      expect(function () {
+        browser.find('.element').click();
+      }).to.throw('expected to find: .element [disabled=false]')
+    });
+  })
 
   domTest('fills a component with supplied values immediately', function(browser, dom){
     browser.set({ immediate: true });
@@ -35,14 +44,21 @@ describe('.set({ immediate: true })', function () {
     expect(dom.el.find('.name').val()).to.equal('Joe');
   });
 
-  domTest('throws errors immediately', function (browser, dom, $) {
-    browser.set({ immediate: true });
-    try {
-      browser.find('.element').click();
-    } catch (error) {
-      expect(error.message).to.equal("expected to find: .element [disabled=false]")
-      return
-    }
-    throw new Error("Expected an error")
-  });
+  describe('shouldHave', function () {
+    domTest('tests text values immediately', function (browser, dom, $) {
+      dom.insert('<div class="element">red</div>')
+
+      browser.set({ immediate: true });
+      browser.find('.element').shouldHave({text: 'red'});
+    });
+
+    domTest('throws on failure immediately', function (browser, dom, $) {
+      dom.insert('<div class="element">red</div>')
+
+      browser.set({ immediate: true });
+      expect(function () {
+        browser.find('.element').shouldHave({text: 'blue'});
+      }).to.throw('AssertionError: expected element to contain "blue" but contained "red"')
+    });
+  })
 });
