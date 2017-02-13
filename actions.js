@@ -42,6 +42,11 @@ module.exports = {
   },
 
   select: function(options) {
+    if (typeof options == 'string') {
+      var o = arguments[1] || {};
+      o.text = options;
+      return this.select(o);
+    }
     var $ = this.get('$');
     var self = this;
 
