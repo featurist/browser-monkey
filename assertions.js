@@ -18,6 +18,11 @@ module.exports = {
       .catch(errorHandler(new Error()));
   },
 
+  shouldFind: function (selector, findOptions, existOptions) {
+    return this.find(selector, findOptions)
+      .shouldExist(existOptions)
+  },
+
   shouldNotExist: function (options) {
     return this.notResolve(options)
       .catch(errorHandler(new Error()));

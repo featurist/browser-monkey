@@ -9,6 +9,14 @@ describe('find', function () {
     return promise;
   });
 
+  domTest('should eventually find an element, when collapsed into shouldFind(selector)', function (browser, dom) {
+    var promise = browser.shouldFind('.element');
+
+    dom.eventuallyInsert('<div class="element"></div>');
+
+    return promise;
+  });
+
   domTest('should eventually find an element using a filter', function (browser, dom) {
     var promise = browser.find('.element').filter(function (element) {
       return element.hasClass('correct');
