@@ -407,8 +407,13 @@ scope.submit().then(function () {
 Returns a promise that resolves once the element has been found and the matching item selected from the select box
 
 ```js
-scope.select({text: 'Text of option'}).then(function () {
-});
+scope.select({text: 'Text of option'})
+```
+
+or
+
+```js
+scope.select('Text of option')
 ```
 
 Example:
@@ -436,6 +441,7 @@ scope.select([options]);
 ```
 
 * `options.text` - a string, text to match against the options text, this will also match partial text
+* `options` could also just be the text of the string to match
 
 ## fill
 It can be tedious to fill out forms using `typeIn`, `select`, etc.
