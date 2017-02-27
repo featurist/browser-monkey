@@ -335,6 +335,22 @@ would match:
 </div>
 ```
 
+```js
+browser.find('img').shouldHave({
+  attributes: [
+    {src: '/monkey1.jpg', alt: 'first monkey'},
+    {src: '/monkey2.jpg', alt: 'second monkey'},
+  ]
+})
+```
+
+would match:
+
+```html
+<img src="/monkey1.jpg" alt="first monkey">
+<img src="/monkey2.jpg" alt="second monkey">
+```
+
 * `options.text` - a string, expects the resolved scope to contain the text. If an array of strings, expects the elements to have the same number of elements as there are strings in the array, and expects each string to be found in each respective element's text.
 * `options.exactText` - a string, expects the resolved scope to have the exact text. If an array of strings, expects the elements to have the same number of elements as there are strings in the array, and expects each string to equal each respective element's text.
 * `options.css` - a CSS string. Expects the resolved element to be matched by the CSS selector. Note that it won't match if the element contains other elements that match the CSS selector. So if we have `{css: '.class'}` then we expect the resolved element to have a class `class`.
@@ -344,7 +360,7 @@ would match:
 * `options.html` - a string, expects the resolved element to have the html. An array expects the same number of elements, each with the respective html.
 * `options.length` - a number, expects there to be this number of elements
 * `options.elements` - a function, which is passed the resolved elements, return truthy for a match, falsey for a failure.
-* `options.attributes` - an object representing the attributes that should appear on an element, `shouldHave({ attributes: { href: '/home' } })` would match `<a href="/home"></a>`
+* `options.attributes` - an object or an array of objects representing the attributes that should appear on one or more elements, `shouldHave({ attributes: { href: '/home' } })` would match `<a href="/home"></a>`
 * `options.message` - the error message
 * `options.timeout` - length of time to wait for the element (1000ms)
 * `options.interval` - time between testing the dom (10ms)
