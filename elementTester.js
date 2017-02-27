@@ -112,11 +112,22 @@ module.exports = {
     var $ = this.get('$');
     var elements = $el.toArray();
 
-    elements.forEach(function(el){
-      Object.keys(attributes).forEach(function(attributeKey){
-        expect($(el).attr(attributeKey)).to.equal(attributes[attributeKey]);
+    if (attributes instanceof Array) {
+      expect(elements.length).to.equal(attributes.length, 'expected the matched elements to be the same length as the expected attributes')
+      elements.forEach(function(el, index){
+        var attributesForElement = attributes[index];
+        Object.keys(attributesForElement).forEach(function(attributeKey){
+          expect($(el).attr(attributeKey)).to.equal(attributesForElement[attributeKey]);
+        });
       });
-    });
+
+    } else {
+      elements.forEach(function(el){
+        Object.keys(attributes).forEach(function(attributeKey){
+          expect($(el).attr(attributeKey)).to.equal(attributes[attributeKey]);
+        });
+      });
+    }
   },
 
   label: function($el, message, label) {
