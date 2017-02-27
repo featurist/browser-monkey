@@ -255,6 +255,28 @@ describe('assertions', function(){
       ]);
     });
 
+    domTest('verifies array of attributes are present', function(browser, dom){
+      dom.insert('<div><img src="/a"/><img src="/b"/><img src="/c"/></div>');
+      var good = browser.find('img').shouldHave({
+        attributes: [
+          {src: '/a'},
+          {src: '/b'},
+          {src: '/c'},
+        ]
+      });
+      var bad = browser.find('img').shouldHave({
+        attributes: [
+          {src: '/c'},
+          {src: '/a'},
+          {src: '/b'},
+        ]
+      });
+      return Promise.all([
+        good,
+        expect(bad).to.be.rejected
+      ]);
+    });
+
     describe('exactText', function(){
       domTest('eventually finds elements that have the exact array of text', function(browser, dom){
         var promise = browser.find('.element option').shouldHave({exactText: ['', 'Mr', 'Mrs']});
