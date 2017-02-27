@@ -236,7 +236,7 @@ var scopeUnderElement = scope.scope(element | selector | anotherScope);
 Wait for an element to exist.
 
 ```js
-var promise = scope.shouldExist([options]);
+var promise = browser.find('.selector').shouldExist([options]);
 ```
 
 * `options.timeout` - length of time to wait for the element (1000ms)
@@ -244,6 +244,14 @@ var promise = scope.shouldExist([options]);
 * `options.allowMultiple` - allow multiple elements to be found, default just one
 
 Returns a promise that resolves when the element exists, or is rejected if the timeout expires.
+
+## shouldFind
+
+As an alternative to `browser.find('.selector').shouldExist()` you can also do:
+
+```js
+browser.shouldFind('.selector')
+````
 
 ## shouldNotExist
 
