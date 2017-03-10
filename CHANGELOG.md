@@ -5,6 +5,10 @@
 - synchronous tests #59 @joshski  
 - framework specific mounting #54 @dereke
 
+## [2.4.1] - 2017-03-10
+### Fixed
+ - fixed IE compatability bug @dereke
+
 ## [2.4.0] - 2017-03-10
 ### Fixed
  - issue matching multiple occurences of the same text @dereke
