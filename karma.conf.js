@@ -10,7 +10,7 @@ module.exports = function(config) {
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['browserify', 'mocha'],
+    frameworks: ['browserify', 'mocha', 'server-side'],
 
 
     // list of files / patterns to load in the browser
@@ -92,6 +92,10 @@ module.exports = function(config) {
     browserNoActivityTimeout: 120000,
     browserDisconnectTimeout: 120000,
     browserDisconnectTolerance: 3,
+
+    proxies: {
+      '/iframe-test/': 'http://localhost:4572/'
+    }
   });
 };
 

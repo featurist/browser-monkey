@@ -108,6 +108,15 @@ var reactMonkey = require('browser-monkey/react')
 var monkey = hyperdomMonkey(new YourReactApp())
 ```
 
+**iframe**
+You can also use browser-monkey to do full integration testing.
+Just give it the url of your web server
+
+```js
+var iframeMonkey = require('browser-monkey/iframe')
+var monkey = iframeMonkey('http://your-app.example')
+```
+
 and then you can use the monkey
 
 ```js
