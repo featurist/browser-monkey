@@ -158,6 +158,14 @@ describe('assertions', function(){
       ]);
     });
 
+    domTest('finds duplicate text when asserting array of text', function (browser, dom) {
+      dom.insert('<div class="element1">a</div>');
+      dom.insert('<div class="element1">a</div>');
+
+      return browser.find('.element1').shouldHave({text: ['a', 'a']});
+    });
+
+
     domTest('eventually finds an element and asserts that it has value', function (browser, dom) {
       var good1 = browser.find('.element1 input').shouldHave({value: 'some t'});
       var good2 = browser.find('.element2 input').shouldHave({value: 0});

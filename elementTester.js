@@ -24,18 +24,15 @@ function assertElementProperties($, elements, expected, getProperty, exact) {
       function(a, b) { return a.indexOf(b) != -1}
 
     var found = [];
-    var actuals = actualTexts.slice();
-    expected.forEach(function (expected, index) {
-      var actualFound;
-      for (var actualIndex=0; actualIndex<actualTexts.length; actualIndex++) {
-        var actual = actualTexts[actualIndex];
-        if (comparer(actual, expected)) {
-          actualFound = actual;
-          found[actualIndex] = expected;
-          break;
-        }
+    expected.forEach(function(value) {
+      var foundValue = actualTexts.find(function(actual) {
+        return comparer(actual, value)
+      })
+      if (foundValue != undefined) {
+        actualTexts.splice(actualTexts.indexOf(foundValue), 1)
+        found.push(value)
       }
-    });
+    })
 
     try {
       expect(found).to.eql(expected)
