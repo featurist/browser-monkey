@@ -85,27 +85,27 @@ Browser monkey comes with a handy way of doing this for popular web frameworks
 where YourHyperdomApp is a class that has a render method. [see here](test/app/hyperdom.jsx) for an example
 
 ```js
-var monkey = require('browser-monkey/hyperdom')
-  .withApp(() => new YourHyperdomApp())
-  .start()
+var hyperdomMonkey = require('browser-monkey/hyperdom')
+var monkey = hyperdomMonkey(new YourHyperdomApp())
 ```
 
 **angular**
 where YourAngularApp is a class with fields 'directiveName' and 'moduleName' [see here](test/app/angular.js) for an example
 
 ```js
-var monkey = require('browser-monkey/angular')
-  .withApp(() => new YourAngularApp())
-  .start()
+var angularMonkey = require('browser-monkey/angular')
+var monkey = angularMonkey({
+  directiveName: 'best-frameworks',
+  moduleName: 'FrameworksApp'
+})
 ```
 
 **react**
 where YourReactApp is a react class [see here](test/app/react.jsx) for an example
 
 ```js
-var monkey = require('browser-monkey/react')
-  .withApp(() => new YourReactApp())
-  .start()
+var reactMonkey = require('browser-monkey/react')
+var monkey = hyperdomMonkey(new YourReactApp())
 ```
 
 and then you can use the monkey

@@ -3,8 +3,8 @@ var React = require('react')
 var ReactDOM = require('react-dom')
 var createMonkey = require('./create');
 
-module.exports = function() {
-  return new Mount({
+module.exports = function(app) {
+  return new Mount(app, {
     stopApp: function() {
     },
     startApp: function() {
@@ -13,5 +13,5 @@ module.exports = function() {
 
       return createMonkey(document.body);
     }
-  })
+  }).start()
 }

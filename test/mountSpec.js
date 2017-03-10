@@ -21,8 +21,6 @@ if (isSupportedBrowser()) {
   require('./app/hyperdom');
   require('./app/react');
 
-  var expressApp= require('./app/server');
-
   [
     'hyperdom',
     'angular',
@@ -35,23 +33,18 @@ if (isSupportedBrowser()) {
       var monkey, app;
 
       beforeEach(() => {
-        monkey = monkeyBuilder()
-          .withServer('http://localhost:1234', expressApp)
-          .withApp(() => {
-            app = new WebApp();
-            return app;
-          })
-          .start();
+        app = new WebApp();
+        monkey = monkeyBuilder(app)
       });
 
       afterEach(() => monkey.get('mount').stop());
 
       it('loads some data', () => {
-        return monkey.find('li').shouldHave({text: [
-          'browser-monkey',
-          'hyperdom',
-          'vinehill',
-        ]})
+        return monkey.find('.message').shouldHave({text: 'default'}).then(() => {
+          return monkey.find('button').click();
+        }).then(() => {
+          return monkey.find('.message').shouldHave({text: 'hello browser-monkey'})
+        })
       });
 
       it('exposes the app', () => {

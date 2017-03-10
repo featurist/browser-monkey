@@ -4,18 +4,17 @@ var hyperdom = require('hyperdom');
 
 module.exports = class WebApp {
   constructor() {
-    this.frameworks = []
+    this.message = 'default';
   }
 
-  onload() {
-    return httpism.get('/api/frameworks').then(response => {
-      this.frameworks = response.body
-    })
+  hello () {
+    this.message = 'hello browser-monkey';
   }
 
   render() {
-    return <ul>
-      {this.frameworks.map(name => <li>{name}</li>)}
-    </ul>
+    return <div>
+      <button onclick={() => this.hello()}>press me</button>
+      <div class="message">{this.message}</div>
+    </div>
   }
 }

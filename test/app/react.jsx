@@ -7,19 +7,18 @@ const ReactDOM = require('react-dom')
 class WebApp extends React.Component {
   constructor() {
     super()
-    this.state = { frameworks: [] }
+    this.state = { message: 'default' }
   }
 
-  componentDidMount() {
-    httpism.get('/api/frameworks').then(response => {
-      this.setState({ frameworks: response.body })
-    })
+  hello () {
+    this.setState({message : 'hello browser-monkey'})
   }
 
   render() {
-    return <ul>
-      {this.state.frameworks.map(name => <li key={name}>{name}</li>)}
-    </ul>
+    return <div>
+      <button onClick={() => this.hello()}>press me</button>
+      <div className="message">{this.state.message}</div>
+    </div>
   }
 }
 
