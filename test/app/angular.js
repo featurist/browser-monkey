@@ -19,9 +19,7 @@ angular
     }
   });
 
-module.exports = class WebApp {
-  constructor() {
-    this.directiveName = 'best-frameworks';
-    this.moduleName = 'FrameworksApp';
-  }
+module.exports = {
+  directiveName: 'best-frameworks',
+  moduleName: 'FrameworksApp'
 }

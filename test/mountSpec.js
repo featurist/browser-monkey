@@ -13,27 +13,15 @@ function isSupportedBrowser(){
 }
 
 if (isSupportedBrowser()) {
-  require('../angular');
-  require('../hyperdom');
-  require('../react');
+  testMount('angular', require('./app/angular'), require('../angular'));
+  testMount('hyperdom', new (require('./app/hyperdom')), require('../hyperdom'));
+  testMount('react', new (require('./app/react')), require('../react'));
 
-  require('./app/angular');
-  require('./app/hyperdom');
-  require('./app/react');
-
-  [
-    'hyperdom',
-    'angular',
-    'react'
-  ].forEach(appType => {
-    var WebApp = require('./app/'+appType);
-    var monkeyBuilder = require('../'+appType);
-
+  function testMount(appType, app, monkeyBuilder) {
     describe(`mount ${appType}`, () => {
-      var monkey, app;
+      var monkey
 
       beforeEach(() => {
-        app = new WebApp();
         monkey = monkeyBuilder(app)
       });
 
@@ -51,5 +39,6 @@ if (isSupportedBrowser()) {
         expect(monkey.get('app')).to.equal(app);
       });
     });
-  });
+  }
 }
+
