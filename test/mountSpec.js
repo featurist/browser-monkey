@@ -18,7 +18,7 @@ if (isSupportedBrowser()) {
   testMount('hyperdom', new (require('./app/hyperdom')), require('../hyperdom'));
   testMount('react', new (require('./app/react')), require('../react'));
 
-  context('iframe', () => {
+  context.only('iframe', () => {
     var app;
     before(() => {
       return server.run(function() {
