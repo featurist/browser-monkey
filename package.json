@@ -31,6 +31,7 @@
     "watchify": "^3.7.0"
   },
   "dependencies": {
+    "array.prototype.find": "^2.0.3",
     "chai": "3.5.0",
     "debug": "2.6.1",
     "detect-browser": "1.5.0",

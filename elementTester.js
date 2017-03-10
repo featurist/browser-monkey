@@ -1,6 +1,7 @@
 var chai = require('chai');
 var expect = chai.expect;
 var elementsToString = require('./elementsToString');
+require('array.prototype.find').shim();
 
 function assertElementProperties($, elements, expected, getProperty, exact) {
   function assertion(actual, expected) {
