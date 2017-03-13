@@ -2,6 +2,7 @@ var Mount = require('./mount');
 var hyperdom = require('hyperdom');
 var createMonkey = require('./create');
 var window = require('global');
+var createTestDiv = require('./createTestDiv')
 
 module.exports = function(app, options) {
   return new Mount(app, {
@@ -24,7 +25,8 @@ module.exports = function(app, options) {
         hyperdom.appendVDom(vdom, app, { requestRender: setTimeout, window: window });
         return monkey;
       } else {
-        hyperdom.append(Mount.createTestDiv(), app, options);
+        var testDiv = createTestDiv()
+        hyperdom.append(testDiv, app, options);
         return createMonkey(document.body);
       }
     }

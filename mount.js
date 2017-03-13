@@ -8,11 +8,13 @@ function Mount(app, options) {
 }
 
 Mount.prototype.start = function() {
-  var monkey = this.startApp();
+  var monkey = this.startApp()
+
   monkey.set({
     app: this.app,
     mount: this,
   })
+
   return monkey;
 }
 
@@ -20,16 +22,6 @@ Mount.prototype.stop = function(){
   this.stopApp();
 }
 
-Mount.createTestDiv = function(){
-  const body = window.document.body
-  while (body.firstChild) {
-    body.removeChild(body.firstChild)
-  }
-  var container = window.document.createElement('div')
-  body.appendChild(container)
-
-  return container;
-}
 Mount.runningInNode =
   (typeof process !== 'undefined') &&
   (typeof process.versions.node !== 'undefined') &&

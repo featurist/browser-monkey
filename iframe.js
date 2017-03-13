@@ -2,6 +2,7 @@ var debug = require('debug')('browser-monkey:angular')
 var Mount = require('./mount');
 var createMonkey = require('./create');
 var hobostyle = require('hobostyle');
+var createTestDiv = require('./createTestDiv');
 var addressBarInterval;
 
 module.exports = function(url) {
@@ -9,7 +10,7 @@ module.exports = function(url) {
     stopApp: function(){},
     startApp: function(){
       debug('Mounting iframe: ' + url)
-      var div = Mount.createTestDiv();
+      var div = createTestDiv();
       var addressBar = document.createElement('div');
       addressBar.innerText = url;
       addressBar.className = 'address-bar';
