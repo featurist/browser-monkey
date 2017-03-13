@@ -3,12 +3,14 @@ var hyperdom = require('hyperdom');
 var createMonkey = require('./create');
 var window = require('global');
 var createTestDiv = require('./createTestDiv')
+var setTestUrl = require('./setTestUrl')
 
 module.exports = function(app, options) {
   return new Mount(app, {
     stopApp: function(){
     },
     startApp: function(){
+      var router = typeof options == 'object' && options.hasOwnProperty('router')? options.router: undefined;
       var app = this.app;
 
       if (Mount.runningInNode) {
@@ -22,12 +24,13 @@ module.exports = function(app, options) {
         var monkey = createMonkey(vdom);
         monkey.set({$: vquery, visibleOnly: false, document: {}});
 
-        hyperdom.appendVDom(vdom, app, { requestRender: setTimeout, window: window });
+        hyperdom.appendVDom(vdom, app, { requestRender: setTimeout, window: window, router: router });
         return monkey;
       } else {
         var testDiv = createTestDiv()
-        hyperdom.append(testDiv, app, options);
-        return createMonkey(document.body);
+        setTestUrl(options)
+        hyperdom.append(testDiv, app, { requestRender: setTimeout, router: router });
+        return createMonkey(testDiv);
       }
     }
   }).start();
