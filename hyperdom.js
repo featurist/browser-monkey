@@ -3,7 +3,7 @@ var hyperdom = require('hyperdom');
 var createMonkey = require('./create');
 var window = require('global');
 
-module.exports = function(app) {
+module.exports = function(app, options) {
   return new Mount(app, {
     stopApp: function(){
     },
@@ -24,7 +24,7 @@ module.exports = function(app) {
         hyperdom.appendVDom(vdom, app, { requestRender: setTimeout, window: window });
         return monkey;
       } else {
-        hyperdom.append(Mount.createTestDiv(), app);
+        hyperdom.append(Mount.createTestDiv(), app, options);
         return createMonkey(document.body);
       }
     }
