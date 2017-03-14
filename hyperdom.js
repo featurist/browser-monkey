@@ -11,6 +11,9 @@ module.exports = function(app, options) {
     },
     startApp: function(){
       var router = typeof options == 'object' && options.hasOwnProperty('router')? options.router: undefined;
+      if (router) {
+        router.reset()
+      }
       var app = this.app;
 
       if (Mount.runningInNode) {
