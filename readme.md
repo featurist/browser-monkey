@@ -105,7 +105,7 @@ where YourReactApp is a react class [see here](test/app/react.jsx) for an exampl
 
 ```js
 var reactMonkey = require('browser-monkey/react')
-var monkey = hyperdomMonkey(new YourReactApp())
+var monkey = reactMonkey(new YourReactApp())
 ```
 
 **iframe**
