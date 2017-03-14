@@ -10,9 +10,8 @@ module.exports = function(app, options) {
     stopApp: function(){
     },
     startApp: function(){
-      var router = typeof options == 'object' && options.hasOwnProperty('router')? options.router: undefined;
-      if (router) {
-        router.reset()
+      if (options && options.router) {
+        options.router.reset()
       }
       var app = this.app;
 
@@ -27,12 +26,12 @@ module.exports = function(app, options) {
         var monkey = createMonkey(vdom);
         monkey.set({$: vquery, visibleOnly: false, document: {}});
 
-        hyperdom.appendVDom(vdom, app, { requestRender: setTimeout, window: window, router: router });
+        hyperdom.appendVDom(vdom, app, Object.assign({ requestRender: setTimeout, window: window }, options));
         return monkey;
       } else {
         var testDiv = createTestDiv()
         setTestUrl(options)
-        hyperdom.append(testDiv, app, { requestRender: setTimeout, router: router });
+        hyperdom.append(testDiv, app, Object.assign({ requestRender: setTimeout }, options));
         return createMonkey(testDiv);
       }
     }
