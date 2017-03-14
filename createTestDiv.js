@@ -1,7 +1,7 @@
 var div
 
 module.exports = function() {
-  if (div) {
+  if (div && div.parentNode) {
     div.parentNode.removeChild(div);
   }
 
