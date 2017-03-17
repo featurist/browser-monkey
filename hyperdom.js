@@ -3,7 +3,7 @@ var hyperdom = require('hyperdom');
 var createMonkey = require('./create');
 var window = require('global');
 var createTestDiv = require('./createTestDiv')
-var setTestUrl = require('./setTestUrl')
+var extend = require('lowscore/extend')
 
 module.exports = function(app, options) {
   return new Mount(app, {
@@ -26,12 +26,14 @@ module.exports = function(app, options) {
         var monkey = createMonkey(vdom);
         monkey.set({$: vquery, visibleOnly: false, document: {}});
 
-        hyperdom.appendVDom(vdom, app, Object.assign({ requestRender: setTimeout, window: window }, options));
+        hyperdom.appendVDom(vdom, app, extend({ requestRender: setTimeout, window: window }, options));
         return monkey;
       } else {
         var testDiv = createTestDiv()
-        setTestUrl(options)
-        hyperdom.append(testDiv, app, Object.assign({ requestRender: setTimeout }, options));
+        if (options && (options.hash || options.url) && options.router) {
+          options.router.push(options.url || options.hash)
+        }
+        hyperdom.append(testDiv, app, extend({ requestRender: setTimeout }, options));
         return createMonkey(testDiv);
       }
     }

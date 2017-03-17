@@ -1,11 +1,12 @@
 var href = window.location.href
 var hobostyle = require('hobostyle')
+var extend = require('lowscore/extend')
 
 module.exports = function refreshButton(_options) {
-  var options = Object.assign({
+  var options = extend({
     style: true,
     class: 'browser-monkey-reload'
-  }, _options)
+  }, _options || {})
 
   if (options.style) {
     hobostyle.style(
