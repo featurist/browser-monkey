@@ -95,9 +95,9 @@ var browsers = {
   'browserstack-firefox': {
     base: 'BrowserStack',
     browser : 'Firefox',
-    browser_version : '47.0',
-    os : 'OS X',
-    os_version : 'El Capitan',
+    browser_version : '52.0',
+    os : 'Windows',
+    os_version : '10',
     resolution : '1024x768'
   },
   'browserstack-safari': {
@@ -105,7 +105,7 @@ var browsers = {
     browser : 'Safari',
     browser_version : '9.1',
     os : 'OS X',
-    os_version : 'El Capitan',
+    os_version : 'Sierra',
     resolution : '1024x768'
   },
   'browserstack-safari-ios': {
@@ -114,12 +114,20 @@ var browsers = {
     os : 'ios',
     os_version : '9.1',
   },
-  'browserstack-chrome': {
+  'browserstack-windows-chrome': {
+    base: 'BrowserStack',
+    browser : 'Chrome',
+    browser_version : '52.0',
+    os : 'Windows',
+    os_version : '10',
+    resolution : '1024x768'
+  },
+  'browserstack-osx-chrome': {
     base: 'BrowserStack',
     browser : 'Chrome',
     browser_version : '52.0',
     os : 'OS X',
-    os_version : 'El Capitan',
+    os_version : 'Sierra',
     resolution : '1024x768'
   },
   'browserstack-ie9': {
