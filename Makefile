@@ -5,7 +5,6 @@ test:
 	karma start
 
 test-all:
-	export BM_TIMEOUT=5000
 	mocha
 	karma start --single-run --browsers browserstack-windows-chrome
 	karma start --single-run --browsers browserstack-osx-chrome
