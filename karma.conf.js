@@ -47,13 +47,21 @@ module.exports = function(config) {
 };
 
 var browsers = {
-  'browserstack-firefox': {
+  'browserstack-windows-firefox': {
     base: 'BrowserStack',
     browser : 'Firefox',
     browser_version : '52.0',
     os : 'Windows',
     os_version : '10',
-    resolution : '1024x768'
+    resolution : '1280x1024'
+  },
+  'browserstack-osx-firefox': {
+    base: 'BrowserStack',
+    browser : 'Firefox',
+    browser_version : '52.0',
+    os : 'OS X',
+    os_version : 'Sierra',
+    resolution : '1280x1024'
   },
   'browserstack-safari': {
     base: 'BrowserStack',
@@ -61,7 +69,7 @@ var browsers = {
     browser_version : '9.1',
     os : 'OS X',
     os_version : 'El Capitan',
-    resolution : '1024x768'
+    resolution : '1280x1024'
   },
   'browserstack-safari-ios': {
     base: 'BrowserStack',
@@ -75,7 +83,7 @@ var browsers = {
     browser_version : '52.0',
     os : 'Windows',
     os_version : '10',
-    resolution : '1024x768'
+    resolution : '1280x1024'
   },
   'browserstack-osx-chrome': {
     base: 'BrowserStack',
@@ -83,7 +91,7 @@ var browsers = {
     browser_version : '52.0',
     os : 'OS X',
     os_version : 'Sierra',
-    resolution : '1024x768'
+    resolution : '1280x1024'
   },
   'browserstack-ie9': {
     base: 'BrowserStack',
@@ -91,7 +99,7 @@ var browsers = {
     browser_version : '9.0',
     os : 'Windows',
     os_version : '7',
-    resolution : '1024x768'
+    resolution : '1280x1024'
   },
   'browserstack-ie10': {
     base: 'BrowserStack',
@@ -99,7 +107,7 @@ var browsers = {
     browser_version : '10.0',
     os : 'Windows',
     os_version : '8',
-    resolution : '1024x768'
+    resolution : '1280x1024'
   },
   'browserstack-ie11': {
     base: 'BrowserStack',
@@ -107,13 +115,13 @@ var browsers = {
     browser_version : '11.0',
     os : 'Windows',
     os_version : '10',
-    resolution : '1024x768'
+    resolution : '1280x1024'
   },'browserstack-edge': {
     base: 'BrowserStack',
     browser : 'Edge',
     browser_version : '13.0',
     os : 'Windows',
     os_version : '10',
-    resolution : '1024x768'
+    resolution : '1280x1024'
   },
 };
