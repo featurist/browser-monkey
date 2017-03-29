@@ -5,7 +5,12 @@ var h = hyperdom.html;
 
 describe('hyperdom integration', function(){
   it('should find things rendered by hyperdom', function(){
-    function render(model){
+    function App (model) {
+      this.model = model
+    }
+
+    App.prototype.render = function () {
+      var model = this.model
       function renderMessage(){
         if(model.show) {
           return h('span', 'hello');
@@ -33,7 +38,7 @@ describe('hyperdom integration', function(){
     var vdom = h('div');
 
     var model = {};
-    hyperdom.appendVDom(vdom, render, model, { requestRender: setTimeout, window: {} });
+    hyperdom.appendVDom(vdom, new App(model), { requestRender: setTimeout, window: {} });
     browser = browser.scope(vdom);
     var vquery = require('vdom-query')
     browser.set({$: vquery, visibleOnly: false, document: {}});
