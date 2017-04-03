@@ -83,7 +83,7 @@ describe('actions', function(){
       var clicked;
       var buttonState = 'disabled';
 
-      button = dom.insert('<button disabled>a button</button>');
+      var button = dom.insert('<button disabled>a button</button>');
       button.on('click', function () {
         clicked = buttonState;
       });
@@ -119,8 +119,33 @@ describe('actions', function(){
         return expect(promise).to.be.rejected;
       });
 
-      domTest('should eventually select an option element using the text', function(browser, dom, $){
+      domTest('respects timeout option, when passed separately from text', function(browser, dom, $){
+        var promise = browser.find('.element').select('Second', {timeout: 3 });
+
+        dom.eventuallyInsert(
+          $('<select class="element"><option>First</option><option>Second</option></select>')
+        , 6);
+
+        return expect(promise).to.be.rejectedWith('expected to find: .element select option {"timeout":3,"text":"Second"}');
+      });
+
+      domTest('eventually selects an option element using the text', function(browser, dom, $){
         var promise = browser.find('.element').select({text: 'Second'});
+        var selectedItem = undefined;
+
+        dom.eventuallyInsert(
+          $('<select class="element"><option>First</option><option>Second</option></select>').on('change', function () {
+            selectedItem = $(this).find('option[selected]').text();
+          })
+        );
+
+        return promise.then(function () {
+          expect(selectedItem).to.equal('Second');
+        });
+      });
+
+      domTest('eventually selects an option element using the text, when text is passed as a string', function(browser, dom, $){
+        var promise = browser.find('.element').select('Second');
         var selectedItem = undefined;
 
         dom.eventuallyInsert(

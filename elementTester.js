@@ -1,6 +1,7 @@
 var chai = require('chai');
 var expect = chai.expect;
 var elementsToString = require('./elementsToString');
+require('array.prototype.find').shim();
 
 function assertElementProperties($, elements, expected, getProperty, exact) {
   function assertion(actual, expected) {
@@ -24,18 +25,15 @@ function assertElementProperties($, elements, expected, getProperty, exact) {
       function(a, b) { return a.indexOf(b) != -1}
 
     var found = [];
-    var actuals = actualTexts.slice();
-    expected.forEach(function (expected, index) {
-      var actualFound;
-      for (var actualIndex=0; actualIndex<actualTexts.length; actualIndex++) {
-        var actual = actualTexts[actualIndex];
-        if (comparer(actual, expected)) {
-          actualFound = actual;
-          found[actualIndex] = expected;
-          break;
-        }
+    expected.forEach(function(value) {
+      var foundValue = actualTexts.find(function(actual) {
+        return comparer(actual, value)
+      })
+      if (foundValue != undefined) {
+        actualTexts.splice(actualTexts.indexOf(foundValue), 1)
+        found.push(value)
       }
-    });
+    })
 
     try {
       expect(found).to.eql(expected)
@@ -112,11 +110,22 @@ module.exports = {
     var $ = this.get('$');
     var elements = $el.toArray();
 
-    elements.forEach(function(el){
-      Object.keys(attributes).forEach(function(attributeKey){
-        expect($(el).attr(attributeKey)).to.equal(attributes[attributeKey]);
+    if (attributes instanceof Array) {
+      expect(elements.length).to.equal(attributes.length, 'expected the matched elements to be the same length as the expected attributes')
+      elements.forEach(function(el, index){
+        var attributesForElement = attributes[index];
+        Object.keys(attributesForElement).forEach(function(attributeKey){
+          expect($(el).attr(attributeKey)).to.equal(attributesForElement[attributeKey]);
+        });
       });
-    });
+
+    } else {
+      elements.forEach(function(el){
+        Object.keys(attributes).forEach(function(attributeKey){
+          expect($(el).attr(attributeKey)).to.equal(attributes[attributeKey]);
+        });
+      });
+    }
   },
 
   label: function($el, message, label) {

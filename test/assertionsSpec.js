@@ -53,6 +53,16 @@ describe('assertions', function(){
     });
   });
 
+  describe('shouldFind', function(){
+    domTest('stack trace', function(browser, dom){
+      return browser
+        .shouldFind('div')
+        .assertStackTrace(__filename);
+    }, {
+      mochaOnly: true
+    });
+  });
+
   describe('is', function () {
     domTest('should eventually find an element if it has a class', function (browser, dom) {
       var good = browser.find('.element').is('.good').shouldExist();
@@ -147,6 +157,14 @@ describe('assertions', function(){
         expect(bad).to.be.rejected
       ]);
     });
+
+    domTest('finds duplicate text when asserting array of text', function (browser, dom) {
+      dom.insert('<div class="element1">a</div>');
+      dom.insert('<div class="element1">a</div>');
+
+      return browser.find('.element1').shouldHave({text: ['a', 'a']});
+    });
+
 
     domTest('eventually finds an element and asserts that it has value', function (browser, dom) {
       var good1 = browser.find('.element1 input').shouldHave({value: 'some t'});
@@ -248,6 +266,28 @@ describe('assertions', function(){
         attributes: {
           'class': 'other'
         }
+      });
+      return Promise.all([
+        good,
+        expect(bad).to.be.rejected
+      ]);
+    });
+
+    domTest('verifies array of attributes are present', function(browser, dom){
+      dom.insert('<div><img src="/a"/><img src="/b"/><img src="/c"/></div>');
+      var good = browser.find('img').shouldHave({
+        attributes: [
+          {src: '/a'},
+          {src: '/b'},
+          {src: '/c'},
+        ]
+      });
+      var bad = browser.find('img').shouldHave({
+        attributes: [
+          {src: '/c'},
+          {src: '/a'},
+          {src: '/b'},
+        ]
       });
       return Promise.all([
         good,

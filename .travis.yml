@@ -1,3 +1,4 @@
+script: make test-all
 language: node_js
 node_js:
   - node

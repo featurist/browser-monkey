@@ -1,4 +1,4 @@
-# browser monkey [![npm version](https://img.shields.io/npm/v/browser-monkey.svg)](https://www.npmjs.com/package/browser-monkey) [![npm](https://img.shields.io/npm/dm/browser-monkey.svg)](https://www.npmjs.com/package/browser-monkey) [![Build Status](https://travis-ci.org/featurist/browser-monkey.svg?branch=master)](https://travis-ci.org/featurist/browser-monkey)
+# browser monkey [![npm version](https://img.shields.io/npm/v/browser-monkey.svg)](https://www.npmjs.com/package/browser-monkey) [![npm](https://img.shields.io/npm/dm/browser-monkey.svg)](https://www.npmjs.com/package/browser-monkey) [![Build Status](https://travis-ci.org/featurist/browser-monkey.svg?branch=master)](https://travis-ci.org/featurist/browser-monkey) [![Gitter chat](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/featurist/stack)
 
 Reliable DOM testing
 
@@ -74,6 +74,68 @@ Or to be more specific:
 ```js
 localStorage['debug'] = 'browser-monkey';
 ```
+
+# mount
+
+Typically you will need to mount your application into the DOM before running your tests.
+
+Browser monkey comes with a handy way of doing this for popular web frameworks
+
+**hyperdom**
+where YourHyperdomApp is a class that has a render method. [see here](test/app/hyperdom.jsx) for an example
+
+```js
+var hyperdomMonkey = require('browser-monkey/hyperdom')
+var monkey = hyperdomMonkey(new YourHyperdomApp())
+```
+
+**angular**
+where YourAngularApp is a class with fields 'directiveName' and 'moduleName' [see here](test/app/angular.js) for an example
+
+```js
+var angularMonkey = require('browser-monkey/angular')
+var monkey = angularMonkey({
+  directiveName: 'best-frameworks',
+  moduleName: 'FrameworksApp'
+})
+```
+
+**react**
+where YourReactApp is a react class [see here](test/app/react.jsx) for an example
+
+```js
+var reactMonkey = require('browser-monkey/react')
+var monkey = reactMonkey(new YourReactApp())
+```
+
+**iframe**
+You can also use browser-monkey to do full integration testing.
+Just give it the url of your web server
+
+```js
+var iframeMonkey = require('browser-monkey/iframe')
+var monkey = iframeMonkey('http://your-app.example')
+```
+
+and then you can use the monkey
+
+```js
+monkey.find('h1').shouldHave({text: 'Hello World'});
+```
+
+The mount functions (hyperdom/angular etc.) return a `Mount` object with the following chainable functions:
+
+ * withApp - accepts a single function as a parameter that returns an object containing the application
+ * withServer - allows you to route http requests to an express server using [Vinehill](https://www.npmjs.com/package/vinehill)
+ * start - starts the application and returns a `monkey`
+ * stop - stops the application and performs any cleanup necessary
+
+The `monkey` is a normal browser monkey object which the has the following additional options:
+
+ * mount - the mount object used to mount the app (useful for unmounting later)
+ * app - the application passed to withApp
+
+you can retrieve these options using the options api eg. `monkey.get('app')`
 
 # api
 
@@ -236,7 +298,7 @@ var scopeUnderElement = scope.scope(element | selector | anotherScope);
 Wait for an element to exist.
 
 ```js
-var promise = scope.shouldExist([options]);
+var promise = browser.find('.selector').shouldExist([options]);
 ```
 
 * `options.timeout` - length of time to wait for the element (1000ms)
@@ -244,6 +306,14 @@ var promise = scope.shouldExist([options]);
 * `options.allowMultiple` - allow multiple elements to be found, default just one
 
 Returns a promise that resolves when the element exists, or is rejected if the timeout expires.
+
+## shouldFind
+
+As an alternative to `browser.find('.selector').shouldExist()` you can also do:
+
+```js
+browser.shouldFind('.selector')
+````
 
 ## shouldNotExist
 
@@ -327,6 +397,22 @@ would match:
 </div>
 ```
 
+```js
+browser.find('img').shouldHave({
+  attributes: [
+    {src: '/monkey1.jpg', alt: 'first monkey'},
+    {src: '/monkey2.jpg', alt: 'second monkey'},
+  ]
+})
+```
+
+would match:
+
+```html
+<img src="/monkey1.jpg" alt="first monkey">
+<img src="/monkey2.jpg" alt="second monkey">
+```
+
 * `options.text` - a string, expects the resolved scope to contain the text. If an array of strings, expects the elements to have the same number of elements as there are strings in the array, and expects each string to be found in each respective element's text.
 * `options.exactText` - a string, expects the resolved scope to have the exact text. If an array of strings, expects the elements to have the same number of elements as there are strings in the array, and expects each string to equal each respective element's text.
 * `options.css` - a CSS string. Expects the resolved element to be matched by the CSS selector. Note that it won't match if the element contains other elements that match the CSS selector. So if we have `{css: '.class'}` then we expect the resolved element to have a class `class`.
@@ -336,7 +422,7 @@ would match:
 * `options.html` - a string, expects the resolved element to have the html. An array expects the same number of elements, each with the respective html.
 * `options.length` - a number, expects there to be this number of elements
 * `options.elements` - a function, which is passed the resolved elements, return truthy for a match, falsey for a failure.
-* `options.attributes` - an object representing the attributes that should appear on an element, `shouldHave({ attributes: { href: '/home' } })` would match `<a href="/home"></a>`
+* `options.attributes` - an object or an array of objects representing the attributes that should appear on one or more elements, `shouldHave({ attributes: { href: '/home' } })` would match `<a href="/home"></a>`
 * `options.message` - the error message
 * `options.timeout` - length of time to wait for the element (1000ms)
 * `options.interval` - time between testing the dom (10ms)
@@ -399,8 +485,13 @@ scope.submit().then(function () {
 Returns a promise that resolves once the element has been found and the matching item selected from the select box
 
 ```js
-scope.select({text: 'Text of option'}).then(function () {
-});
+scope.select({text: 'Text of option'})
+```
+
+or
+
+```js
+scope.select('Text of option')
 ```
 
 Example:
@@ -428,6 +519,7 @@ scope.select([options]);
 ```
 
 * `options.text` - a string, text to match against the options text, this will also match partial text
+* `options` could also just be the text of the string to match
 
 ## fill
 It can be tedious to fill out forms using `typeIn`, `select`, etc.

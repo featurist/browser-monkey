@@ -13,9 +13,13 @@ module.exports = {
   },
 
   shouldExist: function (options) {
-    var error = new Error();
     return this.resolve(options)
       .catch(errorHandler(new Error()));
+  },
+
+  shouldFind: function (selector, findOptions, existOptions) {
+    return this.find(selector, findOptions)
+      .shouldExist(existOptions)
   },
 
   shouldNotExist: function (options) {

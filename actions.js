@@ -19,7 +19,9 @@ module.exports = {
       if (activeElement && !$(activeElement).is(':focus') && notSillyBlankIEObject(activeElement)) {
         $(activeElement).trigger('blur');
       }
-      document.activeElement = element;
+      if (['[object Document]', '[object HTMLDocument]'].indexOf(document.toString()) === -1){
+        document.activeElement = element;
+      }
       $(element).focus();
     }
   },
@@ -42,6 +44,11 @@ module.exports = {
   },
 
   select: function(options) {
+    if (typeof options == 'string') {
+      var o = arguments[1] || {};
+      o.text = options;
+      return this.select(o);
+    }
     var $ = this.get('$');
     var self = this;
 
