@@ -207,15 +207,15 @@ module.exports = {
         selector instanceof Element &&
         selector.tagName == 'IFRAME'
       ) {
-        return selector.contentDocument.body;
+        return selector.contentDocument;
       } else if (
         selector &&
         typeof selector.prop === 'function' &&
         selector.prop('tagName') === 'IFRAME'
       ) {
-        return selector[0].contentDocument.body;
+        return selector[0].contentDocument;
       } else {
-        return selector || 'body';
+        return selector || 'html';
       }
     }
 
