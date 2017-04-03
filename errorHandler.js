@@ -8,6 +8,8 @@ BrowserMonkeyError.prototype.constructor = BrowserMonkeyError;
 
 module.exports = function(error) {
   return function(e) {
-    throw new BrowserMonkeyError(e.message, error.stack);;
+    var bmError = new BrowserMonkeyError(e.message, error.stack);
+    bmError.internalError = e;
+    throw bmError;
   }
 }
