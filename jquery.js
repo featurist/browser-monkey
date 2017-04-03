@@ -21,7 +21,8 @@ function dispatchEvent(element, eventType){
 if (jquery.fn) {
   jquery.fn.extend({
     innerText: function(){
-      return this[0].innerText || this[0].textContent;
+      var el = this[0].body || this[0];
+      return el.innerText || el.textContent;
     },
 
     trigger: function(eventType){
