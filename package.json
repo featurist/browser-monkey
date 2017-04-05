@@ -4,7 +4,7 @@
   "description": "reliable dom testing",
   "main": "index.js",
   "scripts": {
-    "test": "mocha && karma start --single-run"
+    "test": "standard && mocha && karma start --single-run"
   },
   "engines": {
     "node": "7.6.0"
@@ -42,6 +42,7 @@
     "react": "^15.4.1",
     "react-dom": "^15.4.1",
     "server-destroy": "^1.0.1",
+    "standard": "^10.0.0",
     "vdom-query": "https://github.com/featurist/vdom-query",
     "virtual-dom": "^2.1.1",
     "watchify": "^3.7.0"
@@ -58,6 +59,9 @@
     "jquery": "^3.2.1",
     "lowscore": "^1.12.1",
     "trytryagain": "1.2.0"
+  },
+  "standard": {
+    "env": ["mocha"]
   },
   "browserify": {
     "transform": [

@@ -1,4 +1,4 @@
-var angular = require('angular');
+var angular = require('angular')
 
 angular
   .module('FrameworksApp', [])
@@ -10,14 +10,14 @@ angular
         <button ng-click="hello()">press me</button>
         <div class="message">{{message}}</div>
       </div>`
-    };
-  })
-  .controller('FrameworksController', function($scope){
-    $scope.message = 'default';
-    $scope.hello = function () {
-      $scope.message = 'hello browser-monkey';
     }
-  });
+  })
+  .controller('FrameworksController', function ($scope) {
+    $scope.message = 'default'
+    $scope.hello = function () {
+      $scope.message = 'hello browser-monkey'
+    }
+  })
 
 module.exports = {
   directiveName: 'best-frameworks',

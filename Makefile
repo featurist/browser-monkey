@@ -5,6 +5,7 @@ test:
 	karma start
 
 test-all:
+	standard
 	mocha
 	karma start --single-run --browsers browserstack-osx-chrome
 	karma start --single-run --browsers browserstack-osx-firefox

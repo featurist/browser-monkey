@@ -1,26 +1,28 @@
-var window = require('global');
+var window = require('global')
 
-var registeredEvents = {};
-var pushState, replaceState;
+var registeredEvents = {}
+var pushState, replaceState
 
-pushState = replaceState = function(state, title, url) {
+pushState = replaceState = function (state, title, url) {
   window.location.pathname = url;
-  (registeredEvents['onpopstate'] || []).forEach(function(cb) { cb({}); });
-};
+  (registeredEvents['onpopstate'] || []).forEach(function (cb) {
+    cb()
+  })
+}
 
-window.location = window.location || {};
-window.location.pathname = window.location.pathname || '/';
-window.location.origin = window.location.origin || '';
-window.location.search = window.location.search || '';
+window.location = window.location || {}
+window.location.pathname = window.location.pathname || '/'
+window.location.origin = window.location.origin || ''
+window.location.search = window.location.search || ''
 window.history = {
   pushState: pushState,
-  replaceState: replaceState,
-};
+  replaceState: replaceState
+}
 
-window.addEventListener = function(eventName, cb) {
-  eventName = 'on'+eventName;
+window.addEventListener = function (eventName, cb) {
+  eventName = 'on' + eventName
   if (!registeredEvents[eventName]) {
-    registeredEvents[eventName] = [];
+    registeredEvents[eventName] = []
   }
-  registeredEvents[eventName].push(cb);
-};
+  registeredEvents[eventName].push(cb)
+}

@@ -1,20 +1,19 @@
 /** @jsx hyperdom.jsx */
-var httpism = require('httpism/browser');
-var hyperdom = require('hyperdom');
+var hyperdom = require('hyperdom')
 
 module.exports = class WebApp {
-  constructor() {
-    this.message = 'default';
+  constructor () {
+    this.message = 'default'
   }
 
   hello () {
-    this.message = 'hello browser-monkey';
+    this.message = 'hello browser-monkey'
   }
 
-  render() {
+  render () {
     return <div>
       <button onclick={() => this.hello()}>press me</button>
-      <div class="message">{this.message}</div>
+      <div class='message'>{this.message}</div>
     </div>
   }
 }

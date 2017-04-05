@@ -1,4 +1,4 @@
-module.exports = function(options) {
+module.exports = function (options) {
   if (options) {
     if (options.hash !== undefined) {
       window.location.hash = options.hash
