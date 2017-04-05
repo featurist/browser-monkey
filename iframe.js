@@ -1,8 +1,8 @@
 var debug = require('debug')('browser-monkey:angular')
-var Mount = require('./mount')
+var Mount = require('./lib/mount')
 var createMonkey = require('./create')
 var hobostyle = require('hobostyle')
-var createTestDiv = require('./createTestDiv')
+var createTestDiv = require('./lib/createTestDiv')
 var addressBarInterval
 
 module.exports = function (url) {

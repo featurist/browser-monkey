@@ -3,7 +3,7 @@ var createVDom = require('./createVDom')
 var isNode = require('detect-node')
 var h = require('virtual-dom/h')
 var vquery = require('vdom-query')
-var jquery = require('../jquery')
+var jquery = require('../lib/jquery')
 var createBrowser = require('../create')
 
 function domTest (testName, testCb, options) {
