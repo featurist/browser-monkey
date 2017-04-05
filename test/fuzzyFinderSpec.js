@@ -1,3 +1,4 @@
+var demand = require('must')
 var domTest = require('./domTest');
 
 describe('fuzzy finders', function() {
@@ -37,7 +38,7 @@ describe('fuzzy finders', function() {
       return Promise.all(labels.map(function(label) {
         return browser.click(label);
       })).then(function() {
-        expect(clicks.sort()).to.eql(['button_seven', 'button_six', 'link_one']);
+        demand(clicks.sort()).to.eql(['button_seven', 'button_six', 'link_one']);
       });
     });
   });
@@ -49,7 +50,7 @@ describe('fuzzy finders', function() {
       return Promise.all(labels.map(function(label) {
         return browser.linkOrButton(label).click();
       })).then(function() {
-        expect(clicks.sort()).to.eql(['button_eight', 'button_two', 'link_four']);
+        demand(clicks.sort()).to.eql(['button_eight', 'button_two', 'link_four']);
       });
     });
   });
@@ -58,35 +59,35 @@ describe('fuzzy finders', function() {
     domTest('finds anchors by text', function (browser, dom, $) {
       var clicks = domSetup(dom, $);
       return browser.link('Link One').click().then(function() {
-        expect(clicks).to.eql(['link_one']);
+        demand(clicks).to.eql(['link_one']);
       });
     });
 
     domTest('finds anchors by id', function (browser, dom, $) {
       var clicks = domSetup(dom, $);
       return browser.link('link_two').click().then(function() {
-        expect(clicks).to.eql(['link_two']);
+        demand(clicks).to.eql(['link_two']);
       });
     });
 
     domTest('finds anchors by title', function (browser, dom, $) {
       var clicks = domSetup(dom, $);
       return browser.link('Link Three').click().then(function() {
-        expect(clicks).to.eql(['link_three']);
+        demand(clicks).to.eql(['link_three']);
       });
     });
 
     domTest('finds anchors by nested img alt', function (browser, dom, $) {
       var clicks = domSetup(dom, $);
       return browser.link('Link Four').click().then(function() {
-        expect(clicks).to.eql(['link_four']);
+        demand(clicks).to.eql(['link_four']);
       });
     });
 
     domTest('finds anchors inside elements', function (browser, dom, $) {
       var clicks = domSetup(dom, $);
       return browser.find('#container').link('Fifth Link').click().then(function() {
-        expect(clicks).to.eql(['link_five']);
+        demand(clicks).to.eql(['link_five']);
       });
     });
 
@@ -107,14 +108,14 @@ describe('fuzzy finders', function() {
     domTest('finds button elements by text', function (browser, dom, $) {
       var clicks = domSetup(dom, $);
       return browser.button('Button One').click().then(function() {
-        expect(clicks).to.eql(['button_one']);
+        demand(clicks).to.eql(['button_one']);
       });
     });
 
     domTest('finds button elements by id', function (browser, dom, $) {
       var clicks = domSetup(dom, $);
       return browser.button('button_two').click().then(function() {
-        expect(clicks).to.eql(['button_two']);
+        demand(clicks).to.eql(['button_two']);
       });
     });
 
@@ -126,7 +127,7 @@ describe('fuzzy finders', function() {
     domTest('finds button elements by value substring', function (browser, dom, $) {
       var clicks = domSetup(dom, $);
       return browser.button('Three').click().then(function() {
-        expect(clicks).to.eql(['button_three']);
+        demand(clicks).to.eql(['button_three']);
       });
     });
 
@@ -138,35 +139,35 @@ describe('fuzzy finders', function() {
     domTest('finds button elements by title substring', function (browser, dom, $) {
       var clicks = domSetup(dom, $);
       return browser.button('Four').click().then(function() {
-        expect(clicks).to.eql(['button_four']);
+        demand(clicks).to.eql(['button_four']);
       });
     });
 
     domTest('finds input elements by title substring', function (browser, dom, $) {
       var clicks = domSetup(dom, $);
       return browser.button('Five').click().then(function() {
-        expect(clicks).to.eql(['button_five']);
+        demand(clicks).to.eql(['button_five']);
       });
     });
 
     domTest('finds button elements by nested image alt substring', function (browser, dom, $) {
       var clicks = domSetup(dom, $);
       return browser.button('Six').click().then(function() {
-        expect(clicks).to.eql(['button_six']);
+        demand(clicks).to.eql(['button_six']);
       });
     });
 
     domTest('finds input[type=reset] elements', function (browser, dom, $) {
       var clicks = domSetup(dom, $);
       return browser.button('Seven').click().then(function() {
-        expect(clicks).to.eql(['button_seven']);
+        demand(clicks).to.eql(['button_seven']);
       });
     });
 
     domTest('finds input[type=button] elements', function (browser, dom, $) {
       var clicks = domSetup(dom, $);
       return browser.button('Eight').click().then(function() {
-        expect(clicks).to.eql(['button_eight']);
+        demand(clicks).to.eql(['button_eight']);
       });
     });
   });

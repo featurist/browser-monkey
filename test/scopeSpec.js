@@ -1,3 +1,4 @@
+var demand = require('must')
 var domTest = require('./domTest');
 
 describe('scope', function () {
@@ -6,11 +7,11 @@ describe('scope', function () {
     var blue = dom.insert('<div><div class="element">blue</div></div>');
 
     return browser.scope(red).find('.element').element().then(function (element) {
-      expect($(element).text()).to.equal('red');
+      demand($(element).text()).to.equal('red');
     }).then(function () {
       return browser.scope(blue).find('.element').element();
     }).then(function (element) {
-      expect($(element).text()).to.equal('blue');
+      demand($(element).text()).to.equal('blue');
     });
   });
 
@@ -19,11 +20,11 @@ describe('scope', function () {
     var blue = dom.insert('<div class="blue"><div class="element">blue</div></div>');
 
     return browser.scope(browser.find('.red')).find('.element').element().then(function (element) {
-      expect($(element).text()).to.equal('red');
+      demand($(element).text()).to.equal('red');
     }).then(function () {
       return browser.scope(browser.find('.blue')).find('.element').element();
     }).then(function (element) {
-      expect($(element).text()).to.equal('blue');
+      demand($(element).text()).to.equal('blue');
     });
   });
 });

@@ -1,3 +1,4 @@
+var demand = require('must')
 var domTest = require('./domTest');
 
 describe('.set({ immediate: true })', function () {
@@ -11,14 +12,14 @@ describe('.set({ immediate: true })', function () {
 
       browser.set({ immediate: true });
       browser.find('.element').click();
-      expect(clicked).to.equal(true);
+      demand(clicked).to.equal(true);
     });
 
     domTest('throws errors immediately', function (browser, dom, $) {
       browser.set({ immediate: true });
-      expect(function () {
+      demand(function () {
         browser.find('.element').click();
-      }).to.throw('expected to find: .element [disabled=false]')
+      }).throw('expected to find: .element [disabled=false]')
     });
   })
 
@@ -40,8 +41,8 @@ describe('.set({ immediate: true })', function () {
       { name: 'title', action: 'select', options: {exactText: 'Mr'}},
       { name: 'name', action: 'typeIn', options: {text: 'Joe'}}
     ])
-    expect(dom.el.find('.title').val()).to.equal('Mr');
-    expect(dom.el.find('.name').val()).to.equal('Joe');
+    demand(dom.el.find('.title').val()).to.equal('Mr');
+    demand(dom.el.find('.name').val()).to.equal('Joe');
   });
 
   describe('shouldHave', function () {
@@ -56,9 +57,9 @@ describe('.set({ immediate: true })', function () {
       dom.insert('<div class="element">red</div>')
 
       browser.set({ immediate: true });
-      expect(function () {
+      demand(function () {
         browser.find('.element').shouldHave({text: 'blue'});
-      }).to.throw('AssertionError: expected element to contain "blue" but contained "red"')
+      }).throw(/expected element to contain \"blue\" but contained \"red\"/)
     });
   })
 });

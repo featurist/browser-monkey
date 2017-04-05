@@ -1,3 +1,5 @@
+var assert = require('assert')
+var demand = require('must')
 var domTest = require('./domTest');
 
 describe('assertions', function(){
@@ -16,7 +18,7 @@ describe('assertions', function(){
 
       return Promise.all([
         good,
-        expect(bad).to.be.rejected
+        demand(bad).reject.with.error()
       ]);
     });
 
@@ -76,7 +78,7 @@ describe('assertions', function(){
         }, 10);
       }, 10);
 
-      return Promise.all([good, expect(bad).to.be.rejected]);
+      return Promise.all([good, demand(bad).reject.with.error()]);
     });
   });
 
@@ -108,7 +110,7 @@ describe('assertions', function(){
 
     return Promise.all([
       good,
-      expect(bad).to.be.rejected
+      demand(bad).reject.with.error()
     ]);
   });
 
@@ -142,7 +144,7 @@ describe('assertions', function(){
 
       return Promise.all([
         good,
-        expect(bad).to.be.rejected
+        demand(bad).reject.with.error()
       ]);
     });
 
@@ -154,7 +156,7 @@ describe('assertions', function(){
 
       return Promise.all([
         good,
-        expect(bad).to.be.rejected
+        demand(bad).reject.with.error()
       ]);
     });
 
@@ -177,7 +179,7 @@ describe('assertions', function(){
       return Promise.all([
         good1,
         good2,
-        expect(bad).to.be.rejected
+        demand(bad).reject.with.error()
       ]);
     });
 
@@ -193,7 +195,7 @@ describe('assertions', function(){
           'bac',
         ]
       }).catch(function(error) {
-        expect(error.message).to.include('\nThe text was found but in a different order than specified - maybe you need some sorting?');
+        demand(error.message).to.include('\nThe text was found but in a different order than specified - maybe you need some sorting?');
       });
     });
 
@@ -205,7 +207,7 @@ describe('assertions', function(){
 
       return Promise.all([
         good,
-        expect(bad).to.be.rejected
+        demand(bad).reject.with.error()
       ]);
     });
 
@@ -220,7 +222,7 @@ describe('assertions', function(){
 
       return Promise.all([
         good,
-        expect(bad).to.be.rejected
+        demand(bad).reject.with.error()
       ]);
     });
 
@@ -269,7 +271,7 @@ describe('assertions', function(){
       });
       return Promise.all([
         good,
-        expect(bad).to.be.rejected
+        demand(bad).reject.with.error()
       ]);
     });
 
@@ -291,7 +293,7 @@ describe('assertions', function(){
       });
       return Promise.all([
         good,
-        expect(bad).to.be.rejected
+        demand(bad).reject.with.error()
       ]);
     });
 
@@ -309,7 +311,7 @@ describe('assertions', function(){
 
         dom.eventuallyInsert('<select><option>Optional</option><option>Mr</option><option>Mrs</option></select>');
 
-        return expect(promise).to.be.rejected;
+        return demand(promise).reject.with.error()
       });
     });
 
@@ -337,7 +339,7 @@ describe('assertions', function(){
         }, 20);
 
         return Promise.all([
-          expect(good).to.be.rejected
+          demand(good).reject.with.error()
         ]);
       });
 
@@ -353,7 +355,7 @@ describe('assertions', function(){
 
         return Promise.all([
           good,
-          expect(bad).to.be.rejected
+          demand(bad).reject.with.error()
         ]);
       });
 
@@ -365,7 +367,7 @@ describe('assertions', function(){
 
         return Promise.all([
           good,
-          expect(bad).to.be.rejected
+          demand(bad).reject.with.error()
         ]);
       });
     });
@@ -379,8 +381,8 @@ describe('assertions', function(){
 
       return Promise.all([
         good,
-        expect(bad1).to.be.rejected,
-        expect(bad2).to.be.rejected
+        demand(bad1).reject.with.error(),
+        demand(bad2).reject.with.error()
       ]);
     });
 
@@ -393,8 +395,8 @@ describe('assertions', function(){
 
       return Promise.all([
         good,
-        expect(bad1).to.be.rejected,
-        expect(bad2).to.be.rejected
+        demand(bad1).reject.with.error(),
+        demand(bad2).reject.with.error()
       ]);
     });
 
@@ -407,8 +409,8 @@ describe('assertions', function(){
 
       return Promise.all([
         good,
-        expect(bad1).to.be.rejected,
-        expect(bad2).to.be.rejected
+        demand(bad1).reject.with.error(),
+        demand(bad2).reject.with.error()
       ]);
     });
 
@@ -421,21 +423,22 @@ describe('assertions', function(){
 
       return Promise.all([
         good,
-        expect(bad1).to.be.rejected
+        demand(bad1).reject.with.error()
       ]);
     });
 
     domTest('eventually finds an element and asserts that it passes an assertion', function (browser, dom, $) {
       var good1 = browser.find('.element').shouldHaveElement(function (element) {
-        expect(element.text()).to.equal('a');
+        assert.equal(element.text(), 'a');
       });
 
       var bad1 = browser.find('.multi').shouldHaveElement(function (element) {
-        expect(element.text()).to.equal('b');
+        assert.equal(element.text(), 'b');
       });
 
       var bad2 = browser.find('.element').shouldHaveElement(function (element) {
-        expect(element.text()).to.equal('b');
+        debugger
+        assert.equal(element.text(), 'b');
       });
 
       var element = dom.insert('<div class="element"></div>');
@@ -448,8 +451,8 @@ describe('assertions', function(){
 
       return Promise.all([
         good1,
-        expect(bad1).to.be.rejectedWith('expected to find exactly one element'),
-        expect(bad2).to.be.rejectedWith("expected 'a' to equal 'b'")
+        demand(bad1).reject.with.error(/expected to find exactly one element/),
+        demand(bad2).reject.with.error("'a' == 'b'")
       ]);
     });
 
@@ -459,7 +462,7 @@ describe('assertions', function(){
           return $(element).attr('data-x');
         });
 
-        expect(xs).to.eql(['one', 'two', 'three']);
+        assert.deepEqual(xs, ['one', 'two', 'three']);
       });
 
       var bad1 = browser.find('.element').shouldHaveElements(function (elements) {
@@ -467,7 +470,7 @@ describe('assertions', function(){
           return $(element).attr('data-x');
         });
 
-        expect(xs).to.eql(['one', 'two']);
+        assert.deepEqual(xs, ['one', 'two']);
       });
 
       dom.eventuallyInsert('<div class="element" data-x="one"></div>');
@@ -476,7 +479,7 @@ describe('assertions', function(){
 
       return Promise.all([
         good1,
-        expect(bad1).to.be.rejectedWith("expected [ 'one', 'two', 'three' ]")
+        demand(bad1).reject.with.error(/\[ 'one', 'two', 'three' \]/)
       ]);
     });
   });

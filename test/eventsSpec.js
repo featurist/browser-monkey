@@ -1,3 +1,4 @@
+var demand = require('must')
 var retry = require('trytryagain');
 var domTest = require('./domTest');
 
@@ -13,7 +14,7 @@ describe('events', function(){
       })
 
     return browser.find('.input').typeIn('first').then(function(){
-      expect(firedEvents).to.eql([
+      demand(firedEvents).to.eql([
         'change'
       ])
     });
@@ -28,7 +29,7 @@ describe('events', function(){
       });
 
     return browser.find('.input').typeIn('123').then(function(){
-      expect(firedEvents).to.eql([
+      demand(firedEvents).to.eql([
         'input',
         'input',
         'input'
@@ -52,7 +53,7 @@ describe('events', function(){
       return browser.find('.change').typeIn('second');
     }).then(function () {
       return retry(function(){
-        expect(firedEvents).to.eql([
+        demand(firedEvents).to.eql([
           'change',
           'blur'
         ]);
@@ -74,7 +75,7 @@ describe('events', function(){
       return browser.find('button').click();
     }).then(function(){
       return retry(function(){
-        expect(blurred).to.be.true;
+        demand(blurred).to.eql(true);
       });
     });
   });
@@ -93,7 +94,7 @@ describe('events', function(){
       return browser.find('select').select({text: 'one'});
     }).then(function(){
       return retry(function(){
-        expect(blurred).to.be.true;
+        demand(blurred).to.eql(true);
       });
     });
   });
@@ -107,9 +108,9 @@ describe('events', function(){
       return browser.on(function (e) {
         event = e;
       }).find('button').click().then(function () {
-        expect(event, 'expected event to fire').to.not.be.undefined;
-        expect(event.type).to.equal('click');
-        expect(event.element[0]).to.equal(button[0]);
+        demand(event).to.not.equal(undefined)
+        demand(event.type).to.equal('click');
+        demand(event.element[0]).to.equal(button[0]);
       });
     });
 
@@ -121,10 +122,10 @@ describe('events', function(){
       return browser.on(function (e) {
         event = e;
       }).find('input').typeIn('some text').then(function () {
-        expect(event, 'expected event to fire').to.not.be.undefined;
-        expect(event.type).to.equal('typing');
-        expect(event.text).to.equal('some text');
-        expect(event.element[0]).to.equal(input[0]);
+        demand(event).to.not.equal(undefined)
+        demand(event.type).to.equal('typing');
+        demand(event.text).to.equal('some text');
+        demand(event.element[0]).to.equal(input[0]);
       });
     });
 
@@ -136,10 +137,10 @@ describe('events', function(){
       return browser.on(function (e) {
         event = e;
       }).find('div.editor').typeInHtml('some <b>html</b>').then(function () {
-        expect(event, 'expected event to fire').to.not.be.undefined;
-        expect(event.type).to.equal('typing html');
-        expect(event.html).to.equal('some <b>html</b>');
-        expect(event.element[0]).to.equal(editorDiv[0]);
+        demand(event).to.not.equal(undefined)
+        demand(event.type).to.equal('typing html');
+        demand(event.html).to.equal('some <b>html</b>');
+        demand(event.element[0]).to.equal(editorDiv[0]);
       });
     });
 
@@ -151,11 +152,11 @@ describe('events', function(){
       return browser.on(function (e) {
         event = e;
       }).find('select').select({text: 'one'}).then(function () {
-        expect(event, 'expected event to fire').to.not.be.undefined;
-        expect(event.type).to.equal('select option');
-        expect(event.value).to.equal('one');
-        expect(event.optionElement[0]).to.equal(select.find('option')[0]);
-        expect(event.element[0]).to.equal(select[0]);
+        demand(event).to.not.equal(undefined)
+        demand(event.type).to.equal('select option');
+        demand(event.value).to.equal('one');
+        demand(event.optionElement[0]).to.equal(select.find('option')[0]);
+        demand(event.element[0]).to.equal(select[0]);
       });
     });
   });

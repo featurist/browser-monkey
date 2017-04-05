@@ -1,3 +1,4 @@
+var demand = require('must')
 var retry = require('trytryagain');
 var browser = require('..');
 var hyperdom = require('hyperdom');
@@ -49,7 +50,7 @@ describe('hyperdom integration', function(){
       return browser.find('input').typeIn({text: 'monkey'});
     }).then(function(){
       return retry(function(){
-        expect(model.name).to.equal('monkey');
+        demand(model.name).to.equal('monkey');
       });
     }).then(function(){
       return browser.find('select').select({text: 'Female'});

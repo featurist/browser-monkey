@@ -9,7 +9,7 @@ BrowserMonkeyError.prototype.constructor = BrowserMonkeyError;
 module.exports = function(error) {
   return function(e) {
     var bmError = new BrowserMonkeyError(e.message, error.stack);
-    bmError.internalError = e;
+    //bmError.internalError = e;
     throw bmError;
   }
 }

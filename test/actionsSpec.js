@@ -1,3 +1,5 @@
+var AssertionError = require('assert').AssertionError
+var demand = require('must')
 var domTest = require('./domTest');
 var retry = require('trytryagain');
 
@@ -22,7 +24,7 @@ describe('actions', function(){
       );
 
       return promise.then(function () {
-        expect(clicked).to.equal(true);
+        demand(clicked).to.equal(true);
       });
     });
 
@@ -38,7 +40,7 @@ describe('actions', function(){
       });
 
       return browser.find('.element').click().then(function () {
-        expect(events).to.eql(['mousedown', 'mouseup', 'click']);
+        demand(events).to.eql(['mousedown', 'mouseup', 'click']);
       });
     });
 
@@ -54,7 +56,7 @@ describe('actions', function(){
       });
 
       return browser.find('.inner-element').click().then(function () {
-        expect(events).to.eql(['mousedown', 'mouseup', 'click']);
+        demand(events).to.eql(['mousedown', 'mouseup', 'click']);
       });
     }, {vdom: false});
 
@@ -74,7 +76,7 @@ describe('actions', function(){
       }, 10);
 
       return promise.then(function () {
-        expect(clicked).to.equal('enabled');
+        demand(clicked).to.equal('enabled');
       });
     });
 
@@ -94,7 +96,7 @@ describe('actions', function(){
       }, 10);
 
       return promise.then(function () {
-        expect(clicked).to.equal('enabled');
+        demand(clicked).to.equal('enabled');
       });
     });
   });
@@ -116,7 +118,7 @@ describe('actions', function(){
           $('<select class="element"><option>First</option><option>Second</option></select>')
         , 6);
 
-        return expect(promise).to.be.rejected;
+        return demand(promise).reject.with.error()
       });
 
       domTest('respects timeout option, when passed separately from text', function(browser, dom, $){
@@ -126,7 +128,7 @@ describe('actions', function(){
           $('<select class="element"><option>First</option><option>Second</option></select>')
         , 6);
 
-        return expect(promise).to.be.rejectedWith('expected to find: .element select option {"timeout":3,"text":"Second"}');
+        return demand(promise).reject.with.error('expected to find: .element select option {"timeout":3,"text":"Second"}');
       });
 
       domTest('eventually selects an option element using the text', function(browser, dom, $){
@@ -140,7 +142,7 @@ describe('actions', function(){
         );
 
         return promise.then(function () {
-          expect(selectedItem).to.equal('Second');
+          demand(selectedItem).to.equal('Second');
         });
       });
 
@@ -155,7 +157,7 @@ describe('actions', function(){
         );
 
         return promise.then(function () {
-          expect(selectedItem).to.equal('Second');
+          demand(selectedItem).to.equal('Second');
         });
       });
 
@@ -170,7 +172,7 @@ describe('actions', function(){
         );
 
         return promise.then(function () {
-          expect(selectedItem).to.equal('Second');
+          demand(selectedItem).to.equal('Second');
         });
       });
 
@@ -182,7 +184,7 @@ describe('actions', function(){
         });
 
         return browser.find('select').select({text: 'Item'}).then(function(){
-          expect(selectedItem).to.equal('1');
+          demand(selectedItem).to.equal('1');
         });
       });
 
@@ -199,7 +201,7 @@ describe('actions', function(){
         }, 20);
 
         return promise.then(function () {
-          expect(selectedItem).to.equal('Second');
+          demand(selectedItem).to.equal('Second');
         });
       });
 
@@ -208,13 +210,13 @@ describe('actions', function(){
 
         dom.eventuallyInsert('<select class="element"><option>First</option><option>Second</option></select>');
 
-        return expect(promise).to.be.rejected;
+        return demand(promise).reject.with.error()
       });
 
       domTest('errors when the input is not a select', function(browser, dom){
         var promise = browser.find('.element').select({text: 'Whatevs'});
         dom.eventuallyInsert('<div class="element"></div>');
-        return expect(promise).to.be.rejectedWith('to have css select');
+        return demand(promise).reject.with.error(/to have css select/);
       });
 
       domTest('selects an option using text that is falsy', function(browser, dom, $){
@@ -227,7 +229,7 @@ describe('actions', function(){
 
 
         return promise.then(function () {
-          expect(selectedItem).to.equal('0');
+          demand(selectedItem).to.equal('0');
         });
       });
     });
@@ -243,7 +245,7 @@ describe('actions', function(){
 
 
         return promise.then(function () {
-          expect(selectedItem).to.equal('Mr');
+          demand(selectedItem).to.equal('Mr');
         });
       });
 
@@ -257,7 +259,7 @@ describe('actions', function(){
 
 
         return promise.then(function () {
-          expect(selectedItem).to.equal('0');
+          demand(selectedItem).to.equal('0');
         });
       });
     });
@@ -281,7 +283,7 @@ describe('actions', function(){
       });
 
       return promise.then(function () {
-        expect(submitted).to.be.true;
+        demand(submitted).to.equal(true);
       });
     });
 
@@ -295,7 +297,7 @@ describe('actions', function(){
       });
 
       return promise.then(function () {
-        expect(submitted).to.be.true;
+        demand(submitted).to.be.true;
       });
     }, {vdom: false});
   });
@@ -324,7 +326,7 @@ describe('actions', function(){
         var promise = browser.find('.element').typeIn('1234');
         dom.eventuallyInsert(html);
         return promise.then(function () {
-          expect(dom.el.find('.element').val()).to.equal('1234');
+          demand(dom.el.find('.element').val()).to.equal('1234');
         });
       });
     });
@@ -339,7 +341,7 @@ describe('actions', function(){
       domTest('rejects attempt to type into element: ' + html, function (browser, dom, $) {
         var promise = browser.find('.element').typeIn('whatevs');
         dom.eventuallyInsert(html);
-        return expect(promise).to.be.rejectedWith('Cannot type into ' + $(html).prop('tagName'));
+        return demand(promise).reject.with.error('Cannot type into ' + $(html).prop('tagName'));
       });
     });
 
@@ -350,8 +352,8 @@ describe('actions', function(){
 
       return browser.find('.element').typeIn('').then(function () {
         return retry(function(){
-          expect(dom.el.find('input.element').val()).to.equal('');
-          expect(firedEvents).to.eql(['input']);
+          demand(dom.el.find('input.element').val()).to.equal('');
+          demand(firedEvents).to.eql(['input']);
         });
       });
     });
@@ -375,17 +377,17 @@ describe('actions', function(){
         checked = $(this).prop('checked');
       });
 
-      expect(checkbox.prop('checked')).to.be.false;
+      demand(checkbox.prop('checked')).to.equal(false)
 
       var clicked = browser.find('.checkbox').click();
       return clicked.then(function () {
-        expect(checkbox.prop('checked')).to.be.true;
-        expect(checked).to.be.true;
+        demand(checkbox.prop('checked')).to.equal(true)
+        demand(checked).to.equal(true)
       }).then(function () {
         return browser.find('.checkbox').click();
       }).then(function () {
-        expect(checkbox.prop('checked')).to.be.false;
-        expect(checked).to.be.false;
+        demand(checkbox.prop('checked')).to.equal(false)
+        demand(checked).to.equal(false)
       });
     });
 
@@ -398,17 +400,17 @@ describe('actions', function(){
         checked = $(this).prop('checked');
       });
 
-      expect(checkbox.prop('checked')).to.be.false;
+      demand(checkbox.prop('checked')).to.equal(false)
 
       var clicked = browser.find('label').click();
       return clicked.then(function () {
-        expect(checkbox.prop('checked')).to.be.true;
-        expect(checked).to.be.true;
+        demand(checkbox.prop('checked')).to.equal(true)
+        demand(checked).to.equal(true)
       }).then(function () {
         return browser.find('.checkbox').click();
       }).then(function () {
-        expect(checkbox.prop('checked')).to.be.false;
-        expect(checked).to.be.false;
+        demand(checkbox.prop('checked')).to.equal(false)
+        demand(checked).to.equal(false)
       });
     });
   });
@@ -430,8 +432,8 @@ describe('actions', function(){
         { name: 'title', action: 'select', options: {exactText: 'Mr'}},
         { name: 'name', action: 'typeIn', options: {text: 'Joe'}}
       ]).then(function(){
-        expect(dom.el.find('.title').val()).to.equal('Mr');
-        expect(dom.el.find('.name').val()).to.equal('Joe');
+        demand(dom.el.find('.title').val()).to.equal('Mr');
+        demand(dom.el.find('.name').val()).to.equal('Joe');
       });
     });
 
@@ -456,9 +458,9 @@ describe('actions', function(){
         { typeIn: 'name', options: {text: 'Joe'}},
         { click: 'agree' }
       ]).then(function(){
-        expect(dom.el.find('.title').val()).to.equal('Mrs');
-        expect(dom.el.find('.name').val()).to.equal('Joe');
-        expect(dom.el.find('.agree input').prop('checked')).to.equal(true);
+        demand(dom.el.find('.title').val()).to.equal('Mrs');
+        demand(dom.el.find('.name').val()).to.equal('Joe');
+        demand(dom.el.find('.agree input').prop('checked')).to.equal(true);
       });
     });
 
@@ -482,19 +484,18 @@ describe('actions', function(){
       return component.fill([
         { myAction: 'title' }
       ]).then(function(){
-        expect(myActionRan).to.be.true;
+        demand(myActionRan).to.equal(true)
       });
     });
 
     domTest('throws an error if the action cannot be found', function(browser, dom){
       var component = browser.component({});
-      var error;
 
       var promise = component.fill([
         { actionDoesNotExist: 'name'}
       ]);
 
-      return expect(promise).to.be.rejectedWith('actionDoesNotExist');
+      return demand(promise).reject.to.include('actionDoesNotExist');
     });
 
     domTest('throws an error when trying to call an action on a field which does not exist', function(browser, dom){
@@ -504,7 +505,7 @@ describe('actions', function(){
         { typeIn: 'name'}
       ]);
 
-      return expect(promise).to.be.rejectedWith("Field 'name' does not exist");
+      return demand(promise).reject.to.include("Field 'name' does not exist");
     });
 
     domTest('throws an error if the field does not exist', function(browser, dom){
@@ -514,7 +515,7 @@ describe('actions', function(){
         { name: 'address', action: 'blah' }
       );
 
-      return expect(promise).to.be.rejectedWith("No field 'address' exists on this component");
+      return demand(promise).reject.to.include("No field 'address' exists on this component");
     });
   });
 })

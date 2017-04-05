@@ -1,3 +1,4 @@
+var demand = require('must')
 var domTest = require('./domTest');
 
 describe('find', function () {
@@ -26,7 +27,7 @@ describe('find', function () {
     dom.eventuallyInsert('<div class="element correct"></div>');
 
     return promise.then(function (element) {
-      expect(element.attr('class')).to.equal('element correct');
+      demand(element.attr('class')).to.equal('element correct');
     });
   });
 
@@ -37,7 +38,7 @@ describe('find', function () {
     dom.eventuallyInsert('<div class="element">red</div><div class="element">blue</div><div class="element">green</div>');
 
     return promise.then(function (element) {
-      expect(element.text()).to.equal('green');
+      demand(element.text()).to.equal('green');
     });
   });
 
@@ -49,7 +50,7 @@ describe('find', function () {
     dom.insert('<div class="element"></div>');
     dom.eventuallyInsert('<div class="element"></div>');
 
-    return expect(promise).to.be.rejectedWith('has class "correct"');
+    return demand(promise).reject.with.error(/has class "correct"/);
   });
 
   domTest('should eventually find an element in an iframe', function(browser, dom){
@@ -85,7 +86,7 @@ describe('find', function () {
     dom.insert('<div><span>a</span><span>b</span></div>');
 
     return promise.then(function(elements){
-      expect(elements.length).to.equal(2);
+      demand(elements.length).to.equal(2);
     });
   });
 
@@ -130,7 +131,7 @@ describe('find', function () {
       }, 10);
 
       return promise.then(function (element) {
-        expect(element.hasClass('outer')).to.be.true;
+        demand(element.hasClass('outer')).to.eql(true);
       });
     });
 
@@ -141,7 +142,7 @@ describe('find', function () {
         dom.insert('<div class="outer"><div>bad</div></div>');
       }, 200);
 
-      return expect(promise).to.be.rejectedWith('expected to find: .outer .not-there')
+      return demand(promise).reject.with.error(/expected to find: .outer .not-there/)
     });
 
     domTest('errors with a usable css selector if it cant find an element containing another', function (browser, dom) {
@@ -151,7 +152,7 @@ describe('find', function () {
         dom.insert('<div class="outer"><div>bad</div></div>');
       }, 200);
 
-      return expect(promise).to.be.rejectedWith('expected to find: .outer:has(.not-there)')
+      return demand(promise).reject.with.error('expected to find: .outer:has(.not-there)')
     });
 
     domTest("fails if it can't find an element containing another", function (browser, dom) {
@@ -161,7 +162,7 @@ describe('find', function () {
         dom.insert('<div class="outer"><div>bad</div></div>');
       }, 200);
 
-      return expect(promise).to.be.rejectedWith('expected to find: .outer:has(.inner)');
+      return demand(promise).reject.with.error('expected to find: .outer:has(.inner)');
     });
 
     domTest('errors with a usable css selector if it cant find an element containing another', function (browser, dom) {
@@ -171,7 +172,7 @@ describe('find', function () {
         dom.insert('<div class="outer"><div>bad</div></div>');
       }, 200);
 
-      return expect(promise).to.be.rejectedWith('expected to find: .outer:has(.not-there)')
+      return demand(promise).reject.with.error('expected to find: .outer:has(.not-there)')
     });
 
     domTest("fails if it can't find an element containing another", function (browser, dom) {
@@ -181,7 +182,7 @@ describe('find', function () {
         dom.insert('<div class="outer"><div>bad</div></div>');
       }, 10);
 
-      return expect(promise).to.be.rejected;
+      return demand(promise).reject.with.error()
     });
 
   });
@@ -206,7 +207,7 @@ describe('find', function () {
         var outer = dom.insert('<div class="outer"></div>');
       }, 10);
 
-      return expect(promise).to.be.rejected;
+      return demand(promise).reject.with.error()
     });
   });
 });

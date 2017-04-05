@@ -1,10 +1,7 @@
 require('lie/polyfill');
 
 var chai = require("chai");
-var chaiAsPromised = require("chai-as-promised");
-chai.use(chaiAsPromised);
-
-global.expect = chai.expect;
+var expect = chai.expect;
 global.timeout = parseInt(typeof window == 'object' && window.__env__.BM_TIMEOUT || 200);
 
 Promise.prototype.assertStackTrace = function(file) {

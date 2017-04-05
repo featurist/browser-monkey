@@ -1,3 +1,4 @@
+var demand = require('must')
 var create = require('../create');
 
 describe('options', function () {
@@ -6,7 +7,7 @@ describe('options', function () {
     var parentComponent = browser.find('div').component({});
     parentComponent.set({myOption: 'abc'});
     var childComponent = parentComponent.find('div').component({});
-    expect(childComponent.get('myOption')).to.equal('abc');
+    demand(childComponent.get('myOption')).to.equal('abc');
   });
 
   it('can overide default timeout', function(){
@@ -18,8 +19,8 @@ describe('options', function () {
     return browser.find('.doesnt-exist').shouldExist().catch(function(){
       var end = new Date();
       var duration = end - start;
-      expect(duration).to.be.above(browser.get('timeout'));
-      expect(duration).to.be.below(defaultTimeout);;
+      demand(duration > browser.get('timeout')).to.equal(true)
+      demand(duration < defaultTimeout).to.equal(true)
     });
   });
 });

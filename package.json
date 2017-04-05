@@ -4,7 +4,7 @@
   "description": "reliable dom testing",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --compilers js:babel-register && karma start --single-run"
+    "test": "mocha && karma start --single-run"
   },
   "engines": {
     "node": "7.6.0"
@@ -19,8 +19,7 @@
     "babel-preset-react": "^6.16.0",
     "babel-register": "^6.24.0",
     "babelify": "^7.3.0",
-    "browserify": "^14.1.0",
-    "chai-as-promised": "6.0.0",
+    "browserify": "13.3.0",
     "detect-node": "^2.0.3",
     "express": "^4.15.2",
     "httpism": "^2.6.2",
@@ -39,6 +38,7 @@
     "karma-server-side": "^1.7.0",
     "lie": "3.1.1",
     "mocha": "3.2.0",
+    "must": "^0.13.4",
     "react": "^15.4.1",
     "react-dom": "^15.4.1",
     "server-destroy": "^1.0.1",
