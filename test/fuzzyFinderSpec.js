@@ -53,6 +53,16 @@ describe('fuzzy finders', function () {
         demand(clicks.sort()).to.eql(['button_eight', 'button_two', 'link_four'])
       })
     })
+
+    domTest('finds links or buttons with a substring of the label', function (browser, dom, $) {
+      var labels = ['ink On', 'ink Fou', 'utton On']
+      var clicks = domSetup(dom, $)
+      return Promise.all(labels.map(function (label) {
+        return browser.linkOrButton(label).click()
+      })).then(function () {
+        demand(clicks.sort()).to.eql(['button_one', 'link_four', 'link_one'])
+      })
+    })
   })
 
   describe('.link(label)', function () {
