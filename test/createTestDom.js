@@ -1,5 +1,5 @@
 var $ = require('jquery')
-var createTestDiv = require('../createTestDiv')
+var createTestDiv = require('../lib/createTestDiv')
 
 module.exports = function () {
   var div = createTestDiv()

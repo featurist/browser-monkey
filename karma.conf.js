@@ -23,7 +23,7 @@ module.exports = function (config) {
     browserify: {
       debug: true,
       extensions: ['.jsx'],
-      transform: ['babelify', [require('./removeStrictFromSend'), {global: true}]]
+      transform: ['babelify', [require('./utils/removeStrictFromSend'), {global: true}]]
     },
 
     client: {

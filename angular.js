@@ -1,7 +1,7 @@
 var debug = require('debug')('browser-monkey:angular')
-var Mount = require('./mount')
+var Mount = require('./lib/mount')
 var createMonkey = require('./create')
-var createTestDiv = require('./createTestDiv')
+var createTestDiv = require('./lib/createTestDiv')
 var angular = require('angular')
 
 module.exports = function (app) {
