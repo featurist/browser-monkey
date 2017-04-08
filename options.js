@@ -1,57 +1,56 @@
-function Options(options){
-  this.options = options;
-  this.isOptionsObject = typeof options === 'object';
-  this.validOptions = [];
+function Options (options) {
+  this.options = options
+  this.isOptionsObject = typeof options === 'object'
+  this.validOptions = []
 }
 
-
-Options.get = function(options, propertyName){
+Options.get = function (options, propertyName) {
   if (typeof options === 'object') {
-    var value = options[propertyName];
-    return value;
+    var value = options[propertyName]
+    return value
   }
 }
 
-Options.remove = function(options, propertyNames){
-  var newOptions = {};
+Options.remove = function (options, propertyNames) {
+  var newOptions = {}
 
   if (typeof options === 'object') {
-    propertyNames.forEach(function(propertyName){
-      newOptions[propertyName] = options[propertyName];
-      delete options[propertyName];
-    });
+    propertyNames.forEach(function (propertyName) {
+      newOptions[propertyName] = options[propertyName]
+      delete options[propertyName]
+    })
   }
 
-  return newOptions;
+  return newOptions
 }
 
-Options.default = function(options, defaults){
-  var newOptions = typeof options === 'object' ? options : {};
+Options.default = function (options, defaults) {
+  var newOptions = typeof options === 'object' ? options : {}
 
-  Object.keys(defaults).forEach(function(key){
+  Object.keys(defaults).forEach(function (key) {
     if (!newOptions.hasOwnProperty(key)) {
       newOptions[key] = defaults[key]
     }
-  });
+  })
 
-  return newOptions;
+  return newOptions
 }
 
-Options.prototype.option = function(name) {
-  this.validOptions.push(name);
+Options.prototype.option = function (name) {
+  this.validOptions.push(name)
   if (this.isOptionsObject) {
-    var value = this.options.hasOwnProperty(name)? this.options[name]: undefined;
-    delete this.options[name];
-    return value;
+    var value = this.options.hasOwnProperty(name) ? this.options[name] : undefined
+    delete this.options[name]
+    return value
   }
 }
 
-Options.prototype.validate = function(){
+Options.prototype.validate = function () {
   if (this.isOptionsObject) {
-    var keys = Object.keys(this.options);
+    var keys = Object.keys(this.options)
 
     if (keys.length > 0) {
-      throw new Error('properties ' + keys.join(', ') + ' not recognised, try ' + this.validOptions.join(', '));
+      throw new Error('properties ' + keys.join(', ') + ' not recognised, try ' + this.validOptions.join(', '))
     }
   }
 }

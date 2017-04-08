@@ -1,6 +1,5 @@
-var util = require('util');
-var through = require('through');
-var path = require('path');
+var through = require('through')
+var path = require('path')
 
 // in pre safari 10 send causes a strict mode bug to occur in safari
 // and so can't load vinehill/express apps at all
@@ -9,35 +8,35 @@ var path = require('path');
 // in any browser anymore. will be able to remove this once
 // older versions of safari are less used
 
-function unstrictifySend(file, opts) {
-  opts = opts || {};
-  opts.exclude = ['json'].concat(opts.exclude||[]);
+function unstrictifySend (file, opts) {
+  opts = opts || {}
+  opts.exclude = ['json'].concat(opts.exclude || [])
 
-  var stream = through(write, end);
-  var applied = false;
+  var stream = through(write, end)
+  var applied = false
 
-  var filetype = path.extname(file).replace('.', '');
+  var filetype = path.extname(file).replace('.', '')
   var excluded = (opts.exclude).some(function (excludedExt) {
-    return filetype == excludedExt.replace('.', '');
-  });
+    return filetype === excludedExt.replace('.', '')
+  })
 
-  return stream;
+  return stream
 
-  function write(buf) {
+  function write (buf) {
     if (!applied && !excluded) {
-      applied = true;
+      applied = true
     }
-    if (file.indexOf('send/index.js') != -1) {
+    if (file.indexOf('send/index.js') !== -1) {
       var output = buf.toString().replace(/'use strict'/, '')
       stream.queue(output)
     } else {
-      stream.queue(buf);
+      stream.queue(buf)
     }
   }
 
-  function end() {
-    stream.queue(null);
+  function end () {
+    stream.queue(null)
   }
 }
 
-module.exports = unstrictifySend;
+module.exports = unstrictifySend
