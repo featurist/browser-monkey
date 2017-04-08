@@ -1,6 +1,6 @@
 {
   "name": "browser-monkey",
-  "version": "2.4.1",
+  "version": "2.5.0",
   "description": "reliable dom testing",
   "main": "index.js",
   "scripts": {
@@ -61,7 +61,9 @@
     "trytryagain": "1.2.0"
   },
   "standard": {
-    "env": ["mocha"]
+    "env": [
+      "mocha"
+    ]
   },
   "browserify": {
     "transform": [
