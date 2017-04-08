@@ -1,8 +1,8 @@
-var Mount = require('./mount')
+var Mount = require('./lib/mount')
 var React = require('react')
 var ReactDOM = require('react-dom')
 var createMonkey = require('./create')
-var createTestDiv = require('./createTestDiv')
+var createTestDiv = require('./lib/createTestDiv')
 
 module.exports = function (app) {
   return new Mount(app, {

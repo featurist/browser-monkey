@@ -1,8 +1,8 @@
-var Mount = require('./mount')
+var Mount = require('./lib/mount')
 var hyperdom = require('hyperdom')
 var createMonkey = require('./create')
 var window = require('global')
-var createTestDiv = require('./createTestDiv')
+var createTestDiv = require('./lib/createTestDiv')
 var extend = require('lowscore/extend')
 
 module.exports = function (app, options) {
