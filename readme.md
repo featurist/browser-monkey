@@ -123,13 +123,6 @@ and then you can use the monkey
 monkey.find('h1').shouldHave({text: 'Hello World'});
 ```
 
-The mount functions (hyperdom/angular etc.) return a `Mount` object with the following chainable functions:
-
- * withApp - accepts a single function as a parameter that returns an object containing the application
- * withServer - allows you to route http requests to an express server using [Vinehill](https://www.npmjs.com/package/vinehill)
- * start - starts the application and returns a `monkey`
- * stop - stops the application and performs any cleanup necessary
-
 The `monkey` is a normal browser monkey object which the has the following additional options:
 
  * mount - the mount object used to mount the app (useful for unmounting later)
