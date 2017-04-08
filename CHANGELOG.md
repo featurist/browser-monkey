@@ -1,9 +1,10 @@
 # Change Log
 
-## [Unreleased]
+## [2.5.0 - 2017-04-08]
 ### Added
 - synchronous tests #59 @joshski  
 - framework specific mounting #54 @dereke
+- make browser-monkey search from the root element #65 @dereke
 
 ## [2.4.1] - 2017-03-10
 ### Fixed
