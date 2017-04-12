@@ -10,7 +10,7 @@ Browser Monkey is a DOM assertion library. It helps you write framework agnostic
 
 * timing resistant
 * create rich DSLs for your page structure
-* framework agnostic: works with React, Angular, jQuery, [Plastiq](https://github.com/featurist/plastiq) and many many more.
+* framework agnostic: works with React, Angular, jQuery, [Hyperdom](https://github.com/featurist/hyperdom) and many many more.
 * can simulate text entry and clicks. (please let us know if you need more!)
 * returns promises that resolve when the elements are found.
 
