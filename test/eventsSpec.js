@@ -2,21 +2,27 @@ var demand = require('must')
 var retry = require('trytryagain')
 var domTest = require('./domTest')
 
+function expectProperty (firedEvents, propertyName, expected) {
+  demand(firedEvents.map(function (e) {
+    return e[propertyName]
+  })).to.eql(expected)
+}
+
 describe('events', function () {
   domTest('typeIn element should fire change', function (browser, dom) {
     var firedEvents = []
 
     dom.insert('<input type="text" class="input">')
-      .on('blur', function () {
-        firedEvents.push('blur')
-      }).on('change', function () {
-        firedEvents.push('change')
+      .on('blur', function (e) {
+        firedEvents.push(e)
+      }).on('change', function (e) {
+        firedEvents.push(e)
       })
 
     return browser.find('.input').typeIn('first').then(function () {
-      demand(firedEvents).to.eql([
-        'change'
-      ])
+      var input = dom.el.find('.input')[0]
+      expectProperty(firedEvents, 'type', ['change'])
+      expectProperty(firedEvents, 'target', [input])
     })
   })
 
@@ -24,15 +30,21 @@ describe('events', function () {
     var firedEvents = []
 
     dom.insert('<input type="text" class="input">')
-      .on('input', function () {
-        firedEvents.push('input')
+      .on('input', function (e) {
+        firedEvents.push(e)
       })
 
     return browser.find('.input').typeIn('123').then(function () {
-      demand(firedEvents).to.eql([
+      expectProperty(firedEvents, 'type', [
         'input',
         'input',
         'input'
+      ])
+      var input = dom.el.find('.input')[0]
+      expectProperty(firedEvents, 'target', [
+        input,
+        input,
+        input
       ])
     })
   })
