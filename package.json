@@ -43,7 +43,7 @@
     "react-dom": "^15.4.1",
     "server-destroy": "^1.0.1",
     "standard": "^10.0.0",
-    "vdom-query": "https://github.com/featurist/vdom-query",
+    "vdom-query": "github:featurist/vdom-query",
     "virtual-dom": "^2.1.1",
     "watchify": "^3.7.0"
   },
