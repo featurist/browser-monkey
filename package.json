@@ -63,6 +63,9 @@
   "standard": {
     "env": [
       "mocha"
+    ],
+    "global": [
+      "File"
     ]
   },
   "browserify": {
