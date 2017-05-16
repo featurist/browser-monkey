@@ -520,12 +520,18 @@ describe('actions', function () {
   describe('addFile', function () {
     domTest('can add a file to an element', function (browser, dom) {
       dom.insert('<input type="file" />')
+      var input = dom.el.find('input')[0]
+      var changeEvent
+      input.addEventListener('change', function (e) {
+        changeEvent = e
+      })
+
       var file = new File(['contents'], 'file.txt')
       return browser.find('input').addFile(file).then(function () {
-        var input = dom.el.find('input')[0]
         demand(input.files.length).to.equal(1)
         demand(input.files[0]).to.equal(file)
         demand(input.files.item(0)).to.equal(file)
+        demand(changeEvent.target).to.equal(input)
       })
     }, {vdom: false})
   })
