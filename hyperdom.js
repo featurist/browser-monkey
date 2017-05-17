@@ -17,7 +17,7 @@ module.exports = function (app, options) {
 
       if (Mount.runningInNode) {
         try {
-          var vquery = require('vdom-query')
+          var vquery = require('./lib/vdom-query')
         } catch (e) {
           throw new Error('you must `npm install vdom-query --save-dev` to run tests in node')
         }

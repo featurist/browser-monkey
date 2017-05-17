@@ -41,7 +41,7 @@ describe('hyperdom integration', function () {
     var model = {}
     hyperdom.appendVDom(vdom, new App(model), { requestRender: setTimeout, window: {} })
     browser = browser.scope(vdom)
-    var vquery = require('vdom-query')
+    var vquery = require('../lib/vdom-query')
     browser.set({$: vquery, visibleOnly: false, document: {}})
 
     return browser.find('.toggle').click().then(function () {
