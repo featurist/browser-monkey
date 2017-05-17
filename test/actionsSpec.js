@@ -320,11 +320,16 @@ describe('actions', function () {
     ]
 
     allowedToTypeInto.forEach(function (html) {
-      domTest('eventually enters text into: ' + html, function (browser, dom) {
+      domTest('eventually enters text into: ' + html, function (browser, dom, $) {
         var promise = browser.find('.element').typeIn('1234')
-        dom.eventuallyInsert(html)
+        var focussed = false
+        var $html = $(html).on('focus', function () {
+          focussed = true
+        })
+        dom.eventuallyInsert($html)
         return promise.then(function () {
           demand(dom.el.find('.element').val()).to.equal('1234')
+          demand(focussed).to.equal(true)
         })
       })
     })

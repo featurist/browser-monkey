@@ -2,7 +2,7 @@ var createHDom = require('./createTestDom')
 var createVDom = require('./createVDom')
 var isNode = require('detect-node')
 var h = require('virtual-dom/h')
-var vquery = require('vdom-query')
+var vquery = require('../lib/vdom-query')
 var jquery = require('../lib/jquery')
 var createBrowser = require('../create')
 

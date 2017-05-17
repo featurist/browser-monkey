@@ -1,4 +1,4 @@
-var $ = require('vdom-query')
+var $ = require('../lib/vdom-query')
 
 module.exports = function createVDOM (body) {
   return {
