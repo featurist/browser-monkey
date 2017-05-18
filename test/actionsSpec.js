@@ -529,7 +529,6 @@ describe('actions', function () {
       var file = new File(['contents'], 'file.txt')
       return browser.find('input').addFile(file).then(function () {
         demand(input.files.length).to.equal(1)
-        demand(input.files[0]).to.equal(file)
         demand(input.files.item(0)).to.equal(file)
         demand(changeEvent.target).to.equal(input)
       })
