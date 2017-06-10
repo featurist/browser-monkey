@@ -1,4 +1,5 @@
 var assert = require('assert')
+var expect = require('chai').expect
 var demand = require('must')
 var domTest = require('./domTest')
 
@@ -479,6 +480,25 @@ describe('assertions', function () {
         good1,
         demand(bad1).reject.with.error(/\[ 'one', 'two', 'three' \]/)
       ])
+    })
+
+    domTest('copies error properly', function (browser, dom, $) {
+      var errorThrown
+
+      var good1 = browser.find('.element').shouldHaveElement(function (element) {
+        try {
+          expect($(element).text()).to.eql('not text')
+        } catch (error) {
+          errorThrown = error
+          throw error
+        }
+      })
+
+      dom.eventuallyInsert('<div class="element">text</div>')
+
+      return good1.catch(function (error) {
+        expect(error).to.equal(errorThrown)
+      })
     })
   })
 
