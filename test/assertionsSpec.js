@@ -198,6 +198,22 @@ describe('assertions', function () {
       })
     })
 
+    domTest('error contains actual element text when no match found', function (browser, dom) {
+      dom.insert('<span>abc</span>')
+      dom.insert('<span>bac</span>')
+      dom.insert('<span>c</span>')
+
+      return browser.find('span').shouldHave({
+        text: [
+          'cba',
+          'abc',
+          'bac'
+        ]
+      }).catch(function (error) {
+        demand(error.message).to.include("expected [ 'abc', 'bac', 'c' ]")
+      })
+    })
+
     domTest('finds an element with exact value', function (browser, dom) {
       var bad = browser.find('.element1 input').shouldHave({exactValue: 'some t'})
       var good = browser.find('.element1 input').shouldHave({exactValue: 'some text'})
