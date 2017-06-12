@@ -307,6 +307,18 @@ describe('actions', function () {
       mochaOnly: true
     })
 
+    domTest('object param must have text property', function (browser, dom) {
+      demand(function () {
+        browser.find('input').typeIn({})
+      }).to.throw('typeIn accepts a string or an object with a text property')
+    })
+
+    domTest('fails if param not a string or object', function (browser, dom) {
+      demand(function () {
+        browser.find('input').typeIn(new Date())
+      }).to.throw('typeIn accepts a string or an object with a text property')
+    })
+
     var allowedToTypeInto = [
       '<input class="element"></input>',
       '<input class="element" type="text"></input>',
