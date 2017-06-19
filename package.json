@@ -6,9 +6,6 @@
   "scripts": {
     "test": "standard && mocha && karma start --single-run"
   },
-  "engines": {
-    "node": "7.6.0"
-  },
   "author": "Tim Macfarlane <timmacfarlane@gmail.com>",
   "license": "MIT",
   "devDependencies": {
