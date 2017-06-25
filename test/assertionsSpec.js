@@ -496,6 +496,25 @@ describe('assertions', function () {
         demand(bad1).reject.with.error(/\[ 'one', 'two', 'three' \]/)
       ])
     })
+
+    domTest('copies error properly', function (browser, dom, $) {
+      var errorThrown
+
+      var good1 = browser.find('.element').shouldHaveElement(function (element) {
+        try {
+          assert.equal($(element).text(), 'not text')
+        } catch (error) {
+          errorThrown = error
+          throw error
+        }
+      })
+
+      dom.eventuallyInsert('<div class="element">text</div>')
+
+      return good1.catch(function (error) {
+        assert.equal(error, errorThrown)
+      })
+    })
   })
 
   describe('shouldNotHave', function () {
