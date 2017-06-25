@@ -1,5 +1,4 @@
 var assert = require('assert')
-var expect = require('chai').expect
 var demand = require('must')
 var domTest = require('./domTest')
 
@@ -487,7 +486,7 @@ describe('assertions', function () {
 
       var good1 = browser.find('.element').shouldHaveElement(function (element) {
         try {
-          expect($(element).text()).to.eql('not text')
+          assert.equal($(element).text(), 'not text')
         } catch (error) {
           errorThrown = error
           throw error
@@ -497,7 +496,7 @@ describe('assertions', function () {
       dom.eventuallyInsert('<div class="element">text</div>')
 
       return good1.catch(function (error) {
-        expect(error).to.equal(errorThrown)
+        assert.equal(error, errorThrown)
       })
     })
   })
