@@ -2,6 +2,11 @@ var demand = require('must')
 var domTest = require('./domTest')
 var retry = require('trytryagain')
 
+function expectEventData (input, expected) {
+  Object.keys(expected).forEach(function (key) {
+    demand(input[key]).to.equal(expected[key])
+  })
+}
 describe('actions', function () {
   describe('clicking', function () {
     domTest('stack trace', function (browser, dom) {
@@ -10,6 +15,62 @@ describe('actions', function () {
         .assertStackTrace(__filename)
     }, {
       mochaOnly: true
+    })
+
+    domTest('left click', function (browser, dom, $) {
+      var promise = browser.find('.element').click()
+      var events = {}
+
+      dom.insert(
+        $('<div class="element"></div>')
+        .on('mousedown', function (e) {
+          events.mousedown = e
+        })
+        .on('mouseup', function (e) {
+          events.mouseup = e
+        })
+        .on('click', function (e) {
+          events.click = e
+        })
+      )
+
+      return promise.then(function () {
+        expectEventData(events.mousedown, {which: 1, button: 0})
+        expectEventData(events.mouseup, {which: 1, button: 0})
+        expectEventData(events.click, {which: 1, button: 0})
+      })
+    })
+
+    domTest('right click', function (browser, dom, $) {
+      var promise = browser.find('.element').click({button: 'right'})
+      var events = {}
+
+      dom.insert($('<div class="element"></div>'))
+        .on('mousedown', function (e) {
+          events.mousedown = e
+        })
+
+      return promise.then(function () {
+        expectEventData(events.mousedown, {which: 3, button: 2})
+      })
+    })
+
+    domTest('middle click', function (browser, dom, $) {
+      var promise = browser.find('.element').click({button: 'middle'})
+      var events = {}
+
+      dom.insert($('<div class="element"></div>'))
+        .on('mousedown', function (e) {
+          events.mousedown = e
+        })
+        .on('mouseup', function (e) {
+          events.mouseup = e
+        })
+
+      return promise.then(function () {
+        expectEventData(events.mousedown, {which: 2, button: 1})
+        expectEventData(events.mouseup, {which: 2, button: 1})
+      })
     })
 
     domTest('should eventually click an element', function (browser, dom, $) {

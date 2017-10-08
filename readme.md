@@ -453,6 +453,13 @@ scope.click().then(function () {
 });
 ```
 
+Defaults to simulating a left click event, but you can change it by passing the button parameter
+
+```js
+scope.click({button: 'middle'})
+scope.click({button: 'right'})
+```
+
 ## typeIn
 
 Returns a promise that resolves once the element has been found and the text has been entered.
