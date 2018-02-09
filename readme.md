@@ -633,3 +633,6 @@ browser.click('Yummy')
 browser.click('Banana')
 browser.shouldHave({ text: 'Delicious' })
 ```
+
+## We're Hiring!
+Featurist provides full stack, feature driven development teams. Want to join us? Check out [our career opportunities](https://www.featurist.co.uk/careers/).
