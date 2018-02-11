@@ -633,3 +633,7 @@ browser.click('Yummy')
 browser.click('Banana')
 browser.shouldHave({ text: 'Delicious' })
 ```
+
+## We're hiring!
+
+Join our remote team and help us build amazing software. Check out [our career opportunities](https://www.featurist.co.uk/careers/).
