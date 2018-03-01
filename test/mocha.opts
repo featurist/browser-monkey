@@ -1,1 +1,0 @@
---require ./test/global --compilers js:babel-register

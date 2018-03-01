@@ -1,5 +1,7 @@
+require('babel-polyfill')
 var demand = require('must')
 var domTest = require('./domTest')
+var retry = require('trytryagain')
 
 describe('find', function () {
   domTest('should eventually find an element', function (browser, dom) {
@@ -206,6 +208,48 @@ describe('find', function () {
       }, 10)
 
       return demand(promise).reject.with.error()
+    })
+  })
+
+  describe.only('map', function () {
+    domTest('can map element values into objects', function (browser, dom) {
+      var promise = browser.find('.content').map(function (element) {
+        return {
+          a: element.find('.a').text(),
+          b: element.find('.b').text()
+        }
+      }).assert(function (content) {
+        demand(content).to.eql({
+          a: 'Aye',
+          b: 'Bee'
+        })
+      })
+
+      setTimeout(function () {
+        dom.insert('<div class="content"><div class="a">Aye</div><div class="b">Bee</div></div>')
+      }, 10)
+
+      return promise
+    })
+
+    domTest('can map element values into objects', function (browser, dom) {
+      var promise = browser.find('.content').map(function (element) {
+        return {
+          a: element.find('.a').text(),
+          b: element.find('.b').text()
+        }
+      }).assert(function (content) {
+        demand(content).to.eql({
+          a: 'Axe',
+          b: 'Bee'
+        })
+      })
+
+      setTimeout(function () {
+        dom.insert('<div class="content"><div class="a">Aye</div><div class="b">Bee</div></div>')
+      }, 10)
+
+      return demand(promise).reject.with.error('Axe')
     })
   })
 })

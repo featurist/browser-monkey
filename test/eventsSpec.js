@@ -37,8 +37,14 @@ describe('events', function () {
     })
   })
 
+  function assertBrowserHasFocus () {
+    demand(document.hasFocus(), 'the browser must be in focus for this test!').to.equal(true)
+  }
+
   domTest('typeIn element should fire change and then blur event on input', function (browser, dom) {
     var firedEvents = []
+
+    assertBrowserHasFocus()
 
     dom.insert('<input type="text" class="input" />')
     dom.insert('<input type="text" class="change" />')
@@ -64,6 +70,8 @@ describe('events', function () {
   domTest('click element should fire blur event on input', function (browser, dom) {
     var blurred = false
 
+    assertBrowserHasFocus()
+
     dom.insert('<input type="text" class="input" />')
     dom.insert('<button>button</button>')
 
@@ -82,6 +90,8 @@ describe('events', function () {
 
   domTest('select element should fire blur event on input', function (browser, dom, $) {
     var blurred = false
+
+    assertBrowserHasFocus()
 
     dom.insert('<select><option>one</option></select>')
     dom.insert('<input type="text" class="input"></input>')
