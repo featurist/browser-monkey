@@ -1,8 +1,20 @@
+console.log('here')
+var describeAssemblies = require('./describeAssemblies')
+const DomAssembly = require('./assemblies/DomAssembly')
 var demand = require('must')
 var domTest = require('./domTest')
 var retry = require('trytryagain')
 
 describe('actions', function () {
+  describeAssemblies([DomAssembly], function (Assembly) {
+    var assembly
+    var browser
+
+    beforeEach(function () {
+      assembly = new Assembly()
+      browser = assembly.browserMonkey()
+    })
+
   describe('clicking', function () {
     domTest('stack trace', function (browser, dom) {
       return browser.find('div')
@@ -12,12 +24,12 @@ describe('actions', function () {
       mochaOnly: true
     })
 
-    domTest('should eventually click an element', function (browser, dom, $) {
+    it('should eventually click an element', function () {
       var promise = browser.find('.element').click()
       var clicked = false
 
-      dom.eventuallyInsert(
-        $('<div class="element"></div>').on('click', function () {
+      assembly.eventuallyInsertHtml(
+        assembly.jQuery('<div class="element"></div>').on('click', function () {
           clicked = true
         })
       )
@@ -27,72 +39,76 @@ describe('actions', function () {
       })
     })
 
-    domTest('sends mousedown mouseup and click events', function (browser, dom) {
+    it('sends mousedown mouseup and click events', function () {
       var events = []
 
-      dom.insert('<div class="element"></div>').on('mousedown', function () {
-        events.push('mousedown')
-      }).on('mouseup', function () {
-        events.push('mouseup')
-      }).on('click', function () {
-        events.push('click')
-      })
+      assembly.insertHtml(
+        assembly.jQuery('<div class="element"></div>').on('mousedown', function () {
+          events.push('mousedown')
+        }).on('mouseup', function () {
+          events.push('mouseup')
+        }).on('click', function () {
+          events.push('click')
+        })
+      )
 
       return browser.find('.element').click().then(function () {
         demand(events).to.eql(['mousedown', 'mouseup', 'click'])
       })
     })
 
-    domTest('mousedown mouseup and click events bubble up to parent', function (browser, dom) {
+    it('mousedown mouseup and click events bubble up to parent', function () {
       var events = []
 
-      dom.insert('<div class="element"><div class="inner-element">inner</div></div>').on('mousedown', function () {
-        events.push('mousedown')
-      }).on('mouseup', function () {
-        events.push('mouseup')
-      }).on('click', function () {
-        events.push('click')
-      })
+      assembly.insertHtml(
+        assembly.jQuery('<div class="element"><div class="inner-element">inner</div></div>').on('mousedown', function () {
+          events.push('mousedown')
+        }).on('mouseup', function () {
+          events.push('mouseup')
+        }).on('click', function () {
+          events.push('click')
+        })
+      )
 
       return browser.find('.inner-element').click().then(function () {
         demand(events).to.eql(['mousedown', 'mouseup', 'click'])
       })
     }, {vdom: false})
 
-    domTest('waits until checkbox is enabled before clicking', function (browser, dom) {
+    it('waits until checkbox is enabled before clicking', function () {
       var promise = browser.find('input[type=checkbox]').click()
       var clicked
       var buttonState = 'disabled'
 
-      var button = dom.insert('<input type=checkbox disabled></input>')
+      var button = assembly.jQuery(assembly.insertHtml('<input type=checkbox disabled></input>'))
       button.on('click', function () {
         clicked = buttonState
       })
 
-      setTimeout(function () {
+      assembly.eventually(function () {
         button.prop('disabled', false)
         buttonState = 'enabled'
-      }, 10)
+      })
 
       return promise.then(function () {
         demand(clicked).to.equal('enabled')
       })
     })
 
-    domTest('waits until button is enabled before clicking', function (browser, dom) {
+    it('waits until button is enabled before clicking', function () {
       var promise = browser.find('button', {text: 'a button'}).click()
       var clicked
       var buttonState = 'disabled'
 
-      var button = dom.insert('<button disabled>a button</button>')
+      var button = assembly.jQuery(assembly.insertHtml('<button disabled>a button</button>'))
       button.on('click', function () {
         clicked = buttonState
       })
 
-      setTimeout(function () {
+      assembly.eventually(function () {
         button.prop('disabled', false)
         buttonState = 'enabled'
-      }, 10)
+      })
 
       return promise.then(function () {
         demand(clicked).to.equal('enabled')
@@ -110,33 +126,13 @@ describe('actions', function () {
     })
 
     describe('text', function () {
-      domTest('respects timeout option', function (browser, dom, $) {
-        var promise = browser.find('.element').select({text: 'Second', timeout: 3})
-
-        dom.eventuallyInsert(
-          $('<select class="element"><option>First</option><option>Second</option></select>')
-        , 6)
-
-        return demand(promise).reject.with.error()
-      })
-
-      domTest('respects timeout option, when passed separately from text', function (browser, dom, $) {
-        var promise = browser.find('.element').select('Second', {timeout: 3})
-
-        dom.eventuallyInsert(
-          $('<select class="element"><option>First</option><option>Second</option></select>')
-        , 6)
-
-        return demand(promise).reject.with.error('expected to find: .element select option {"timeout":3,"text":"Second"}')
-      })
-
-      domTest('eventually selects an option element using the text', function (browser, dom, $) {
+      it('eventually selects an option element using the text', function () {
         var promise = browser.find('.element').select({text: 'Second'})
         var selectedItem
 
-        dom.eventuallyInsert(
-          $('<select class="element"><option>First</option><option>Second</option></select>').on('change', function () {
-            selectedItem = $(this).find('option[selected]').text()
+        assembly.eventuallyInsertHtml(
+          assembly.jQuery('<select class="element"><option>First</option><option>Second</option></select>').on('change', function () {
+            selectedItem = assembly.jQuery(this).find(':selected').text()
           })
         )
 
@@ -145,13 +141,13 @@ describe('actions', function () {
         })
       })
 
-      domTest('eventually selects an option element using the text, when text is passed as a string', function (browser, dom, $) {
+      it('eventually selects an option element using the text, when text is passed as a string', function () {
         var promise = browser.find('.element').select('Second')
         var selectedItem
 
-        dom.eventuallyInsert(
-          $('<select class="element"><option>First</option><option>Second</option></select>').on('change', function () {
-            selectedItem = $(this).find('option[selected]').text()
+        assembly.eventuallyInsertHtml(
+          assembly.jQuery('<select class="element"><option>First</option><option>Second</option></select>').on('change', function () {
+            selectedItem = assembly.jQuery(this).find(':selected').text()
           })
         )
 
@@ -160,13 +156,13 @@ describe('actions', function () {
         })
       })
 
-      domTest('should eventually select an option element using a partial match', function (browser, dom, $) {
+      it('should eventually select an option element using a partial match', function () {
         var promise = browser.find('.element').select({text: 'Seco'})
         var selectedItem
 
-        dom.eventuallyInsert(
-          $('<select class="element"><option>First</option><option>Second</option></select>').on('change', function (e) {
-            selectedItem = $(this).find('option[selected]').text()
+        assembly.eventuallyInsertHtml(
+          assembly.jQuery('<select class="element"><option>First</option><option>Second</option></select>').on('change', function (e) {
+            selectedItem = assembly.jQuery(this).find(':selected').text()
           })
         )
 
@@ -175,56 +171,61 @@ describe('actions', function () {
         })
       })
 
-      domTest('selects the first match if multiple available', function (browser, dom, $) {
+      it('selects the option by index names are ambiguous', function () {
         var selectedItem
 
-        var select = dom.insert('<select><option value="1">Item</option><option value="2">Item</option></select>').on('change', function (e) {
-          selectedItem = select.val()
-        })
+        assembly.eventuallyInsertHtml(
+          assembly.jQuery('<select><option value="1">Item</option><option value="2">Item</option></select>').on('change', function (e) {
+            var select = e.target
+            selectedItem = select.value
+          })
+        )
 
-        return browser.find('select').select({text: 'Item'}).then(function () {
-          demand(selectedItem).to.equal('1')
+        return browser.find('select').select({index: 1}).then(function () {
+          demand(selectedItem).to.equal('2')
         })
       })
 
-      domTest('selects an option that eventually appears', function (browser, dom, $) {
+      it('selects an option that eventually appears', function () {
         var promise = browser.find('.element').select({text: 'Second'})
         var selectedItem
 
-        var select = dom.insert('<select class="element"></select>').on('change', function (e) {
-          selectedItem = $(this).find('option[selected]').text()
-        })
+        var select = assembly.insertHtml(
+          assembly.jQuery('<select class="element"></select>').on('change', function (e) {
+            selectedItem = assembly.jQuery(this).find(':selected').text()
+          })
+        )
 
-        setTimeout(function () {
-          select.append('<option>First</option><option>Second</option>')
-        }, 20)
+        assembly.eventuallyInsertHtml('<option>First</option><option>Second</option>', select)
 
         return promise.then(function () {
           demand(selectedItem).to.equal('Second')
         })
       })
 
-      domTest('errors when the specified option does not exist', function (browser, dom) {
+      it('errors when the specified option does not exist', function () {
         var promise = browser.find('.element').select({text: 'Does not exist'})
 
-        dom.eventuallyInsert('<select class="element"><option>First</option><option>Second</option></select>')
+        assembly.eventuallyInsertHtml('<select class="element"><option>First</option><option>Second</option></select>')
 
         return demand(promise).reject.with.error()
       })
 
-      domTest('errors when the input is not a select', function (browser, dom) {
+      it('errors when the input is not a select', function () {
         var promise = browser.find('.element').select({text: 'Whatevs'})
-        dom.eventuallyInsert('<div class="element"></div>')
-        return demand(promise).reject.with.error(/to have css select/)
+        assembly.eventuallyInsertHtml('<div class="element"></div>')
+        return demand(promise).reject.with.error(/expected one element/)
       })
 
-      domTest('selects an option using text that is falsy', function (browser, dom, $) {
+      it('selects an option using text that is falsy', function () {
         var promise = browser.find('.element').select({text: 0})
         var selectedItem
 
-        dom.insert('<select class="element"><option>0</option><option>1</option></select>').on('change', function (e) {
-          selectedItem = $(this).find('option[selected]').text()
-        })
+        assembly.eventuallyInsertHtml(
+          assembly.jQuery('<select class="element"><option>0</option><option>1</option></select>').on('change', function (e) {
+            selectedItem = assembly.jQuery(this).find(':selected').text()
+          })
+        )
 
         return promise.then(function () {
           demand(selectedItem).to.equal('0')
@@ -233,26 +234,30 @@ describe('actions', function () {
     })
 
     describe('exactText', function () {
-      domTest('should select an option using exact text that would otherwise match multiple options', function (browser, dom, $) {
+      it('should select an option using exact text that would otherwise match multiple options', function () {
         var promise = browser.find('.element').select({exactText: 'Mr'})
         var selectedItem
 
-        dom.insert('<select class="element"><option>Mr</option><option>Mrs</option></select>').on('change', function (e) {
-          selectedItem = $(this).find('option[selected]').text()
-        })
+        assembly.eventuallyInsertHtml(
+          assembly.jQuery('<select class="element"><option>Mr</option><option>Mrs</option></select>').on('change', function (e) {
+            selectedItem = assembly.jQuery(this).find(':selected').text()
+          })
+        )
 
         return promise.then(function () {
           demand(selectedItem).to.equal('Mr')
         })
       })
 
-      domTest('should select an option using exact text that is falsy', function (browser, dom, $) {
-        var promise = browser.find('.element').select({exactText: 0})
+      it('should select an option using exact text that is falsy', function () {
+        var promise = browser.find('.element').select({exactText: ''})
         var selectedItem
 
-        dom.insert('<select class="element"><option>0</option><option>1</option></select>').on('change', function (e) {
-          selectedItem = $(this).find('option[selected]').text()
-        })
+        assembly.eventuallyInsertHtml(
+          assembly.jQuery('<select class="element"><option value="0"></option><option>1</option></select>').on('change', function (e) {
+            selectedItem = assembly.jQuery(this).find(':selected').val()
+          })
+        )
 
         return promise.then(function () {
           demand(selectedItem).to.equal('0')
@@ -270,32 +275,36 @@ describe('actions', function () {
       mochaOnly: true
     })
 
-    domTest('should submit the form', function (browser, dom) {
+    it('should submit the form', function () {
       var submitted = false
       var promise = browser.find('input').submit()
 
-      dom.insert('<form action="#"><input type=text></form>').on('submit', function (ev) {
-        submitted = true
-      })
+      assembly.eventuallyInsertHtml(
+        assembly.jQuery('<form action="#"><input type=text></form>').on('submit', function (ev) {
+          submitted = true
+        })
+      )
 
       return promise.then(function () {
         demand(submitted).to.equal(true)
       })
     })
 
-    domTest('should submit the form when submit button is clicked', function (browser, dom) {
+    it('should submit the form when submit button is clicked', function () {
       var submitted = false
       var promise = browser.find('input').click()
 
-      dom.insert('<form action="#"><input type="submit">submit</input></form>').on('submit', function (ev) {
-        ev.preventDefault()
-        submitted = true
-      })
+      assembly.eventuallyInsertHtml(
+        assembly.jQuery('<form action="#"><input type="submit">submit</input></form>').on('submit', function (ev) {
+          ev.preventDefault()
+          submitted = true
+        })
+      )
 
       return promise.then(function () {
         demand(submitted).to.equal(true)
       })
-    }, {vdom: false})
+    })
   })
 
   describe('typeIn', function () {
@@ -320,11 +329,12 @@ describe('actions', function () {
     ]
 
     allowedToTypeInto.forEach(function (html) {
-      domTest('eventually enters text into: ' + html, function (browser, dom) {
-        var promise = browser.find('.element').typeIn('1234')
-        dom.eventuallyInsert(html)
-        return promise.then(function () {
-          demand(dom.el.find('.element').val()).to.equal('1234')
+      it('eventually enters text into: ' + html, function () {
+        var typeInPromise = browser.find('.element').typeIn('1234')
+        var inputPromise = assembly.eventuallyInsertHtml(html)
+        return Promise.all([typeInPromise, inputPromise]).then(function (elements) {
+          var input = elements[1]
+          demand(input.value).to.equal('1234')
         })
       })
     })
@@ -336,26 +346,33 @@ describe('actions', function () {
     ]
 
     notAllowedToTypeInto.forEach(function (html) {
-      domTest('rejects attempt to type into element: ' + html, function (browser, dom, $) {
+      it('rejects attempt to type into element: ' + html, function () {
         var promise = browser.find('.element').typeIn('whatevs')
-        dom.eventuallyInsert(html)
-        return demand(promise).reject.with.error('Cannot type into ' + $(html).prop('tagName'))
+        var inputPromise = assembly.eventuallyInsertHtml(html)
+        return inputPromise.then(function (input) {
+          return demand(promise).reject.with.error(/expected one element/)
+        })
       })
     })
 
-    domTest('blanks out existing text when typing empty text', function (browser, dom) {
+    it('blanks out existing text when typing empty text', function () {
       var firedEvents = []
-      dom.insert('<input type="text" class="element" value="good bye">')
-      .on('input', function (ev) { firedEvents.push('input') })
+      assembly.insertHtml(
+        assembly.jQuery('<input type="text" class="element" value="good bye">')
+          .on('input', function (ev) {
+            firedEvents.push('input')
+          })
+      )
 
       return browser.find('.element').typeIn('').then(function () {
         return retry(function () {
-          demand(dom.el.find('input.element').val()).to.equal('')
+          demand(assembly.find('input.element').value).to.equal('')
           demand(firedEvents).to.eql(['input'])
         })
       })
     })
   })
+
   describe('typeInHtml', function () {
     domTest('stack trace', function (browser, dom) {
       return browser.find('input')
@@ -367,54 +384,60 @@ describe('actions', function () {
   })
 
   describe('checkboxes', function () {
-    domTest('can check a checkbox by clicking on it', function (browser, dom, $) {
-      var checkbox = dom.insert('<input class="checkbox" type=checkbox>')
+    it('can check a checkbox by clicking on it', function () {
+      var checkbox = assembly.insertHtml('<input class="checkbox" type=checkbox>')
       var checked
 
-      checkbox.on('click', function (ev) {
-        checked = $(this).prop('checked')
+      checkbox.addEventListener('click', function (ev) {
+        checked = checkbox.checked
       })
 
-      demand(checkbox.prop('checked')).to.equal(false)
+      demand(checkbox.checked).to.equal(false)
 
       var clicked = browser.find('.checkbox').click()
       return clicked.then(function () {
-        demand(checkbox.prop('checked')).to.equal(true)
+        demand(checkbox.checked).to.equal(true)
         demand(checked).to.equal(true)
       }).then(function () {
         return browser.find('.checkbox').click()
       }).then(function () {
-        demand(checkbox.prop('checked')).to.equal(false)
+        demand(checkbox.checked).to.equal(false)
         demand(checked).to.equal(false)
       })
     })
 
-    domTest('can check a checkbox by clicking its label', function (browser, dom, $) {
-      dom.insert('<label>Check: <input class="checkbox" type=checkbox></label>')
-      var checkbox = dom.el.find('input')
+    it('can check a checkbox by clicking its label', function () {
+      assembly.insertHtml('<label>Check: <input class="checkbox" type=checkbox></label>')
+      var checkbox = assembly.find('input')
       var checked
 
-      checkbox.on('click', function (ev) {
-        checked = $(this).prop('checked')
+      checkbox.addEventListener('click', function (ev) {
+        checked = checkbox.checked
       })
 
-      demand(checkbox.prop('checked')).to.equal(false)
+      demand(checkbox.checked).to.equal(false)
 
       var clicked = browser.find('label').click()
       return clicked.then(function () {
-        demand(checkbox.prop('checked')).to.equal(true)
+        demand(checkbox.checked).to.equal(true)
         demand(checked).to.equal(true)
       }).then(function () {
         return browser.find('.checkbox').click()
       }).then(function () {
-        demand(checkbox.prop('checked')).to.equal(false)
+        demand(checkbox.checked).to.equal(false)
         demand(checked).to.equal(false)
       })
     })
   })
 
+  describe('field', function () {
+    it('finds the input in the label with the text', () => {
+      
+    })
+  })
+
   describe('fill', function () {
-    domTest('fills a component with the supplied values', function (browser, dom) {
+    it.only('fills a component with the supplied values', function () {
       var component = browser.component({
         title: function () {
           return this.find('.title')
@@ -423,15 +446,15 @@ describe('actions', function () {
           return this.find('.name')
         }
       })
-      dom.eventuallyInsert('<select class="title"><option>Mrs</option><option>Mr</option></select>')
-      dom.eventuallyInsert('<input type="text" class="name"></input>')
+      assembly.eventuallyInsertHtml('<select class="title"><option>Mrs</option><option>Mr</option></select>')
+      assembly.eventuallyInsertHtml('<input type="text" class="name"></input>')
 
       return component.fill([
         {name: 'title', action: 'select', options: {exactText: 'Mr'}},
         {name: 'name', action: 'typeIn', options: {text: 'Joe'}}
       ]).then(function () {
-        demand(dom.el.find('.title').val()).to.equal('Mr')
-        demand(dom.el.find('.name').val()).to.equal('Joe')
+        demand(assembly.find('.title').value).to.equal('Mr')
+        demand(assembly.find('.name').value).to.equal('Joe')
       })
     })
 
@@ -447,9 +470,9 @@ describe('actions', function () {
           return this.find('.agree')
         }
       })
-      dom.eventuallyInsert('<select class="title"><option>Mrs</option><option>Mr</option></select>')
-      dom.eventuallyInsert('<input type="text" class="name"></input>')
-      dom.eventuallyInsert('<label class="agree">Check: <input type="checkbox"></label>')
+      assembly.eventuallyInsertHtml('<select class="title"><option>Mrs</option><option>Mr</option></select>')
+      assembly.eventuallyInsertHtml('<input type="text" class="name"></input>')
+      assembly.eventuallyInsertHtml('<label class="agree">Check: <input type="checkbox"></label>')
 
       return component.fill([
         {select: 'title', text: 'Mrs'},
@@ -477,7 +500,7 @@ describe('actions', function () {
           return this.find('.title')
         }
       })
-      dom.eventuallyInsert('<select class="title"><option>Mrs</option></select>')
+      assembly.eventuallyInsertHtml('<select class="title"><option>Mrs</option></select>')
 
       return component.fill([
         { myAction: 'title' }
@@ -515,5 +538,6 @@ describe('actions', function () {
 
       return demand(promise).reject.with.error("No field 'address' exists on this component")
     })
+  })
   })
 })

@@ -1,255 +1,211 @@
 require('babel-polyfill')
+var describeAssemblies = require('./describeAssemblies')
+const DomAssembly = require('./assemblies/DomAssembly')
 var demand = require('must')
-var domTest = require('./domTest')
-var retry = require('trytryagain')
+const pathUtils = require('path')
 
 describe('find', function () {
-  domTest('should eventually find an element', function (browser, dom) {
+  describeAssemblies([DomAssembly], Assembly => {
+    var assembly
+    var browser
+
+    beforeEach(function () {
+      assembly = new Assembly
+      browser = assembly.browserMonkey()
+    })
+
+  it('should eventually find an element', function () {
     var promise = browser.find('.element').shouldExist()
 
-    dom.eventuallyInsert('<div class="element"></div>')
+    assembly.eventuallyInsertHtml('<div class="element"></div>')
 
     return promise
   })
 
-  domTest('should eventually find an element, when collapsed into shouldFind(selector)', function (browser, dom) {
+  it('should eventually find an element, when collapsed into shouldFind(selector)', function () {
     var promise = browser.shouldFind('.element')
 
-    dom.eventuallyInsert('<div class="element"></div>')
+    assembly.eventuallyInsertHtml('<div class="element"></div>')
 
     return promise
   })
 
-  domTest('should eventually find an element using a filter', function (browser, dom) {
-    var promise = browser.find('.element').filter(function (element) {
-      return element.hasClass('correct')
+  it('should eventually find an element using a filter', async function () {
+    var foundElement = browser.find('.element').filter(function (element) {
+      return element.classList.contains('correct')
     }, 'has class "correct"').element()
 
-    dom.insert('<div class="element"></div>')
-    dom.eventuallyInsert('<div class="element correct"></div>')
+    assembly.insertHtml('<div class="element"></div>')
+    const correctElement = await assembly.eventuallyInsertHtml('<div class="element correct"></div>')
 
-    return promise.then(function (element) {
-      demand(element.attr('class')).to.equal('element correct')
-    })
+    demand(await foundElement).to.equal(correctElement)
   })
 
-  domTest('should eventually find an element with the right text', function (browser, dom) {
+  it('should eventually find an element with the right text', function () {
     var promise = browser.find('.element', {text: 'green'}).element()
 
-    dom.insert('<div class="element"></div>')
-    dom.eventuallyInsert('<div class="element">red</div><div class="element">blue</div><div class="element">green</div>')
+    assembly.insertHtml('<div class="element"></div>')
+    assembly.eventuallyInsertHtml('<div class="element">red</div><div class="element">blue</div><div class="element" id="green">green</div>')
 
     return promise.then(function (element) {
-      demand(element.text()).to.equal('green')
+      demand(element).to.equal(assembly.find('#green'))
     })
   })
 
-  domTest('filter fails with the right message', function (browser, dom) {
+  it('filter fails with the right message', function () {
     var promise = browser.find('.element').filter(function (element) {
-      return element.hasClass('correct')
+      return element.classList.contains('correct')
     }, 'has class "correct"').element()
 
-    dom.insert('<div class="element"></div>')
-    dom.eventuallyInsert('<div class="element"></div>')
+    assembly.insertHtml('<div class="element"></div>')
+    assembly.eventuallyInsertHtml('<div class="element"></div>')
 
     return demand(promise).reject.with.error(/has class "correct"/)
   })
 
-  domTest('should eventually find an element in an iframe', function (browser, dom) {
-    var iframe = document.createElement('iframe')
-    iframe.src = '/base/test/page1.html'
-    iframe.width = 700
-    iframe.height = 1000
-    dom.el.append(iframe)
-    var iframeScope = browser.scope(iframe)
-    return iframeScope.find('a', {text: 'page 2'}).click().then(function () {
-      return Promise.all([
-        iframeScope.find('h1').shouldHave({text: 'Hello World'}),
-        iframeScope.shouldHave({text: 'Hello World'})
-      ])
-    })
-  }, {vdom: false})
+  if (Assembly.hasDom()) {
+    it('should eventually find an element in an iframe', function () {
+      var iframe = document.createElement('iframe')
+      iframe.src = assembly.localUrl(pathUtils.join(__dirname, 'page1.html'))
+      iframe.width = 700
+      iframe.height = 1000
+      assembly.insertHtml(iframe)
+      var iframeScope = browser.scope(iframe)
 
-  domTest('can find things in an iframe', function (browser, dom) {
-    var iframe = document.createElement('iframe')
-    iframe.src = '/base/test/page2.html'
-    iframe.width = 700
-    iframe.height = 1000
-    dom.el.append(iframe)
+      assembly.useNormalRetry()
 
-    return browser.find('iframe').element().then(function (iframe) {
-      return browser.scope(iframe).find('h1', {text: 'Hello World'}).shouldExist()
-    })
-  }, {vdom: false})
+      return iframeScope.find('a', {text: 'page 2'}).click().then(function () {
+        return Promise.all([
+          iframeScope.find('h1').shouldHave({text: 'Hello World'}),
+          iframeScope.shouldHave({text: 'Hello World'})
+        ])
+      })
+    }, {vdom: false})
 
-  domTest('calls a function for each element found', function (browser, dom) {
-    var promise = browser.find('span').elements()
+    it('can find things in an iframe', function () {
+      var iframe = document.createElement('iframe')
+      iframe.src = assembly.localUrl(pathUtils.join(__dirname, 'page2.html'))
+      iframe.width = 700
+      iframe.height = 1000
+      assembly.insertHtml(iframe)
 
-    dom.insert('<div><span>a</span><span>b</span></div>')
+      assembly.useNormalRetry()
 
-    return promise.then(function (elements) {
-      demand(elements.length).to.equal(2)
-    })
-  })
+      return browser.find('iframe').element().then(function (iframe) {
+        return browser.scope(iframe).find('h1', {text: 'Hello World'}).shouldExist()
+      })
+    }, {vdom: false})
+  }
 
   describe('visibility', function () {
-    domTest('should not find an element that is visually hidden', function (browser, dom) {
-      dom.insert('<div class="element">hello <span style="display:none;">world</span></div>')
+    it('should not find an element that is visually hidden', function () {
+      assembly.insertHtml('<div class="element">hello <span style="display:none;">world</span></div>')
+
+      assembly.eventuallyDoNothing()
 
       return browser.find('.element > span').shouldNotExist()
     }, {vdom: false})
 
-    domTest('should find an element that is visually hidden when visibleOnly = false', function (browser, dom) {
-      dom.insert('<div class="element">hello <span style="display:none;">world</span></div>')
+    it('should find an element that is visually hidden when visibleOnly = false', function () {
+      assembly.insertHtml('<div class="element">hello <span style="display:none;">world</span></div>')
 
-      return browser.set({visibleOnly: false}).find('.element > span').shouldExist()
+      assembly.eventuallyDoNothing()
+
+      return browser.options({visibleOnly: false}).find('.element > span').shouldExist()
     })
 
-    domTest('should find elements that are visually hidden because of how html renders them', function (browser, dom) {
-      dom.insert('<select><option>First</option><option>Second</option></select>')
+    it('should find elements that are visually hidden because of how html renders them', function () {
+      assembly.insertHtml('<select><option>First</option><option>Second</option></select>')
+
+      assembly.eventuallyDoNothing()
+
       return browser.find('select option').shouldHave({text: ['First', 'Second']})
     })
   })
 
   describe('containing', function () {
-    domTest('eventually finds an element containing another element', function (browser, dom) {
+    it('eventually finds an element containing another element', function () {
       var promise = browser.find('.outer').containing('.inner').shouldExist()
 
-      setTimeout(function () {
-        dom.insert('<div class="outer"><div>bad</div></div>')
-        dom.insert('<div class="outer"><div class="inner">good</div></div>')
-      }, 10)
+      assembly.eventuallyInsertHtml(
+        '<div class="outer"><div>bad</div></div>' +
+        '<div class="outer"><div class="inner">good</div></div>'
+      )
 
       return promise
     })
 
-    domTest('element returns the outer element', function (browser, dom) {
+    it('element returns the outer element', function () {
       var promise = browser.find('.outer').containing('.inner').element()
 
-      setTimeout(function () {
-        dom.insert('<div class="outer"><div>bad</div></div>')
-        dom.insert('<div class="outer"><div class="inner">good</div></div>')
-      }, 10)
+      assembly.eventuallyInsertHtml(
+        '<div class="outer"><div>bad</div></div>' +
+        '<div id="good" class="outer"><div class="inner">good</div></div>'
+      )
 
       return promise.then(function (element) {
-        demand(element.hasClass('outer')).to.eql(true)
+        demand(element).to.eql(assembly.find('#good'))
       })
     })
 
-    domTest('errors with a usable css selector if it cant find something', function (browser, dom) {
+    it('errors with a usable css selector if it cant find something', function () {
       var promise = browser.find('.outer').find('.not-there').element()
 
-      setTimeout(function () {
-        dom.insert('<div class="outer"><div>bad</div></div>')
-      }, 200)
+      assembly.eventuallyInsertHtml('<div class="outer"><div>bad</div></div>')
 
-      return demand(promise).reject.with.error(/expected to find: .outer .not-there/)
+      return demand(promise).reject.with.error(/expected one element/)
     })
 
-    domTest('errors with a usable css selector if it cant find an element containing another', function (browser, dom) {
+    it('errors with a usable css selector if it cant find an element containing another', function () {
       var promise = browser.find('.outer').containing('.not-there').shouldExist()
 
-      setTimeout(function () {
-        dom.insert('<div class="outer"><div>bad</div></div>')
-      }, 200)
+      assembly.eventuallyInsertHtml('<div class="outer"><div>bad</div></div>')
 
-      return demand(promise).reject.with.error('expected to find: .outer:has(.not-there)')
+      return demand(promise).reject.with.error(/expected some elements/)
     })
 
-    domTest("fails if it can't find an element containing another", function (browser, dom) {
+    it("fails if it can't find an element containing another", function () {
       var promise = browser.find('.outer').containing('.inner').shouldExist()
 
-      setTimeout(function () {
-        dom.insert('<div class="outer"><div>bad</div></div>')
-      }, 200)
+      assembly.eventuallyInsertHtml('<div class="outer"><div>bad</div></div>')
 
-      return demand(promise).reject.with.error('expected to find: .outer:has(.inner)')
+      return demand(promise).reject.with.error(/expected some elements/)
     })
 
-    domTest('errors with a usable css selector if it cant find an element containing another', function (browser, dom) {
+    it('errors with a usable css selector if it cant find an element containing another', function () {
       var promise = browser.find('.outer').containing('.not-there').shouldExist()
 
-      setTimeout(function () {
-        dom.insert('<div class="outer"><div>bad</div></div>')
-      }, 200)
+      assembly.eventuallyInsertHtml('<div class="outer"><div>bad</div></div>')
 
-      return demand(promise).reject.with.error('expected to find: .outer:has(.not-there)')
+      return demand(promise).reject.with.error(/expected some elements/)
     })
 
-    domTest("fails if it can't find an element containing another", function (browser, dom) {
+    it("fails if it can't find an element containing another", function () {
       var promise = browser.find('.outer').containing('.inner').shouldExist()
 
-      setTimeout(function () {
-        dom.insert('<div class="outer"><div>bad</div></div>')
-      }, 10)
+      assembly.eventuallyInsertHtml('<div class="outer"><div>bad</div></div>')
 
       return demand(promise).reject.with.error()
     })
   })
+
   describe('chains', function () {
-    domTest('eventually finds the inner element, even if the outer element exists', function (browser, dom) {
+    it('eventually finds the inner element, even if the outer element exists', function () {
+      assembly.insertHtml('<div class="outer"></div>')
       var promise = browser.find('.outer').find('.inner').shouldExist()
 
-      setTimeout(function () {
-        var outer = dom.insert('<div class="outer"></div>')
-        setTimeout(function () {
-          outer.append('<div class="inner">good</div>')
-        }, 10)
-      }, 10)
+      assembly.eventuallyInsertHtml('<div class="inner">good</div>', '.outer')
 
       return promise
     })
 
-    domTest('fails to find the inner element if it never arrives', function (browser, dom) {
+    it('fails to find the inner element if it never arrives', function () {
       var promise = browser.find('.outer').find('.inner').shouldExist()
 
-      setTimeout(function () {
-        dom.insert('<div class="outer"></div>')
-      }, 10)
+      assembly.eventuallyInsertHtml('<div class="outer"></div>')
 
       return demand(promise).reject.with.error()
     })
   })
-
-  describe.only('map', function () {
-    domTest('can map element values into objects', function (browser, dom) {
-      var promise = browser.find('.content').map(function (element) {
-        return {
-          a: element.find('.a').text(),
-          b: element.find('.b').text()
-        }
-      }).assert(function (content) {
-        demand(content).to.eql({
-          a: 'Aye',
-          b: 'Bee'
-        })
-      })
-
-      setTimeout(function () {
-        dom.insert('<div class="content"><div class="a">Aye</div><div class="b">Bee</div></div>')
-      }, 10)
-
-      return promise
-    })
-
-    domTest('can map element values into objects', function (browser, dom) {
-      var promise = browser.find('.content').map(function (element) {
-        return {
-          a: element.find('.a').text(),
-          b: element.find('.b').text()
-        }
-      }).assert(function (content) {
-        demand(content).to.eql({
-          a: 'Axe',
-          b: 'Bee'
-        })
-      })
-
-      setTimeout(function () {
-        dom.insert('<div class="content"><div class="a">Aye</div><div class="b">Bee</div></div>')
-      }, 10)
-
-      return demand(promise).reject.with.error('Axe')
-    })
   })
 })

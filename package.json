@@ -18,6 +18,8 @@
     "babelify": "^7.3.0",
     "browserify": "13.3.0",
     "detect-node": "^2.0.3",
+    "electron": "^1.8.2",
+    "electron-mocha": "^6.0.1",
     "express": "^4.15.2",
     "httpism": "^2.6.2",
     "hyperdom": "^0.5.0",
