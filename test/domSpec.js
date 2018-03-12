@@ -7,6 +7,7 @@ const elementMatches = require('../lib/elementMatches')
 const elementSubmit = require('../lib/elementSubmit')
 const elementTriggerEvent = require('../lib/elementTriggerEvent')
 const elementEnterText = require('../lib/elementEnterText')
+const elementInnerText = require('../lib/elementInnerText')
 const {expect} = require('chai')
 
 describe('dom', () => {
@@ -17,6 +18,15 @@ describe('dom', () => {
       assembly = new Assembly()
       assembly.div()
     })
+
+    function preventDefaultSubmit (handler) {
+      return e => {
+        if (e.type === 'submit') {
+          e.preventDefault()
+        }
+        return handler(e)
+      }
+    }
 
     describe('submitting', () => {
       it('form with submit button receives submit event when element submitted inside it', () => {
@@ -29,7 +39,7 @@ describe('dom', () => {
         var button = assembly.find('button')
 
         ;['submit', 'keydown', 'keypress', 'click', 'keyup'].forEach(type => {
-          form.addEventListener(type, () => formEvents.push(type))
+          form.addEventListener(type, preventDefaultSubmit(e => formEvents.push(type)))
           input.addEventListener(type, () => inputEvents.push(type))
           button.addEventListener(type, () => buttonEvents.push(type))
         })
@@ -65,7 +75,7 @@ describe('dom', () => {
         var input = assembly.find('input')
 
         ;['submit', 'keydown', 'keypress', 'click', 'keyup'].forEach(type => {
-          form.addEventListener(type, () => formEvents.push(type))
+          form.addEventListener(type, preventDefaultSubmit(e => formEvents.push(type)))
           input.addEventListener(type, () => inputEvents.push(type))
         })
 
@@ -85,6 +95,32 @@ describe('dom', () => {
         ])
 
         assembly.assertElementIsFocussed(input)
+      })
+    })
+
+    describe('innerText', () => {
+      it('normalises innerText removing extra spaces at the end of lines', () => {
+        var element = assembly.insertHtml(`
+          <div>
+            first
+            line
+            <br/>
+            second
+            line
+          </div>
+        `)
+
+        expect(elementInnerText(element)).to.equal('first line\nsecond line')
+      })
+
+      it('normalises innerText removing extra spaces between words', () => {
+        var element = assembly.insertHtml(`
+          <div>
+            two     words
+          </div>
+        `)
+
+        expect(elementInnerText(element)).to.equal('two words')
       })
     })
 
@@ -114,7 +150,7 @@ describe('dom', () => {
         var submit = assembly.find('#submit')
 
         ;['submit'].forEach(type => {
-          element.addEventListener(type, () => events.push(type))
+          element.addEventListener(type, preventDefaultSubmit(() => events.push(type)))
         })
 
         elementClick(submit)
@@ -330,9 +366,9 @@ describe('dom', () => {
         eventTypes.forEach(eventType => {
           element.addEventListener(eventType, function (event) {
             console.log(element.tagName, eventType, event.target.value)
-            // if (eventType === 'submit') {
-              // event.preventDefault()
-            // }
+            if (eventType === 'submit') {
+              event.preventDefault()
+            }
           })
         })
       }

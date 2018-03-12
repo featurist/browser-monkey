@@ -354,7 +354,7 @@ describe('selectors', () => {
           </div>
         `)
 
-        await expect(name).to.reject.with.error('expected one element (found: .container [1], .contact [2], .name [0])')
+        await expect(name).to.reject.with.error('expected one element (found: find: .container [1], find: .contact [2], find: .name [0])')
       })
     })
   })

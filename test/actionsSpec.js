@@ -1,4 +1,3 @@
-console.log('here')
 var describeAssemblies = require('./describeAssemblies')
 const DomAssembly = require('./assemblies/DomAssembly')
 var demand = require('must')
@@ -214,7 +213,7 @@ describe('actions', function () {
       it('errors when the input is not a select', function () {
         var promise = browser.find('.element').select({text: 'Whatevs'})
         assembly.eventuallyInsertHtml('<div class="element"></div>')
-        return demand(promise).reject.with.error(/expected one element/)
+        return demand(promise).reject.with.error(/expected some elements/)
       })
 
       it('selects an option using text that is falsy', function () {
@@ -350,7 +349,7 @@ describe('actions', function () {
         var promise = browser.find('.element').typeIn('whatevs')
         var inputPromise = assembly.eventuallyInsertHtml(html)
         return inputPromise.then(function (input) {
-          return demand(promise).reject.with.error(/expected one element/)
+          return demand(promise).reject.with.error(/expected some elements/)
         })
       })
     })
@@ -437,7 +436,7 @@ describe('actions', function () {
   })
 
   describe('fill', function () {
-    it.only('fills a component with the supplied values', function () {
+    it('fills a component with the supplied values', function () {
       var component = browser.component({
         title: function () {
           return this.find('.title')
@@ -458,7 +457,7 @@ describe('actions', function () {
       })
     })
 
-    domTest('can fill using shortcut syntax', function (browser, dom) {
+    it('can fill using shortcut syntax', function () {
       var component = browser.component({
         title: function () {
           return this.find('.title')
@@ -479,13 +478,13 @@ describe('actions', function () {
         {typeIn: 'name', options: {text: 'Joe'}},
         {click: 'agree'}
       ]).then(function () {
-        demand(dom.el.find('.title').val()).to.equal('Mrs')
-        demand(dom.el.find('.name').val()).to.equal('Joe')
-        demand(dom.el.find('.agree input').prop('checked')).to.equal(true)
+        demand(assembly.find('.title').value).to.equal('Mrs')
+        demand(assembly.find('.name').value).to.equal('Joe')
+        demand(assembly.find('.agree input').checked).to.equal(true)
       })
     })
 
-    domTest('can execute actions on a component', function (browser, dom) {
+    it('can execute actions on a component', function () {
       var myActionRan = false
       var component = browser.component({
         myAction: function () {
@@ -509,7 +508,7 @@ describe('actions', function () {
       })
     })
 
-    domTest('throws an error if the action cannot be found', function (browser, dom) {
+    it('throws an error if the action cannot be found', function () {
       var component = browser.component({})
 
       var promise = component.fill([
@@ -519,7 +518,7 @@ describe('actions', function () {
       return demand(promise).reject.with.error(/actionDoesNotExist/)
     })
 
-    domTest('throws an error when trying to call an action on a field which does not exist', function (browser, dom) {
+    it('throws an error when trying to call an action on a field which does not exist', function () {
       var component = browser.component({})
 
       var promise = component.fill([
@@ -529,7 +528,7 @@ describe('actions', function () {
       return demand(promise).reject.with.error("Field 'name' does not exist")
     })
 
-    domTest('throws an error if the field does not exist', function (browser, dom) {
+    it('throws an error if the field does not exist', function () {
       var component = browser.component({})
 
       var promise = component.fill(

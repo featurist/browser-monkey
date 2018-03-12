@@ -11,6 +11,8 @@ module.exports = class DomAssembly {
   constructor () {
     this.delayedOperations = 0
     this.jQuery = $
+    this.retries = []
+    this.delayedActions = []
   }
 
   div () {
@@ -24,36 +26,45 @@ module.exports = class DomAssembly {
 
     return browserMonkey.scope(this._div).options({
       retry: (retry) => {
-        return this.runRetry(retry)
+        return new Promise((resolve, reject) => {
+          const success = result => {
+            resolve(result)
+            const index = this.retries.indexOf(retrier)
+            if (index !== -1) {
+              this.retries.splice(index, 1)
+            }
+          }
+
+          const retrier = () => {
+            try {
+              success(retry())
+            } catch (e) {
+              reject(e)
+            }
+          }
+
+          this.retries.push(retrier)
+
+          this.tick()
+        })
       }
     })
   }
 
-  async runRetry (fn) {
-    if (!this._normalRetry) {
-      return new Promise((resolve, reject) => {
-        let first = true
-
-        this.retry = () => {
-          try {
-            resolve(fn())
-          } catch (e) {
-            if (!this.delayedOperations && !first) {
-              reject(e)
-            }
-          }
-        }
-        this.retry()
-        first = false
-
-        setTimeout(() => {
-          const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(this)).filter(m => /^eventually/.test(m))
-          reject(new Error('no delayed actions made, use one of ' + methods.join(', ')))
-        }, 1000)
-      })
-    } else {
-      return trytryagain(fn)
+  async tick () {
+    if (this.ticking) {
+      return
     }
+
+    this.ticking = true
+
+    await new Promise(resolve => setTimeout(resolve))
+
+    this.delayedActions.forEach(action => action())
+    this.delayedActions = []
+    this.retries.slice().forEach(retry => retry())
+
+    this.ticking = false
   }
 
   localUrl (path) {
@@ -83,12 +94,10 @@ module.exports = class DomAssembly {
   }
 
   eventually (fn) {
-    this.delayedOperations++
+    this.tick()
     return new Promise(resolve => {
-      setTimeout(() => {
-        this.delayedOperations--
+      this.delayedActions.push(() => {
         var result = fn()
-        this.retry()
         resolve(result)
       })
     })
