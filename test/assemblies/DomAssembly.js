@@ -26,27 +26,31 @@ module.exports = class DomAssembly {
 
     return browserMonkey.scope(this._div).options({
       retry: (retry) => {
-        return new Promise((resolve, reject) => {
-          const success = result => {
-            resolve(result)
-            const index = this.retries.indexOf(retrier)
-            if (index !== -1) {
-              this.retries.splice(index, 1)
+        if (this._normalRetry) {
+          return trytryagain(retry)
+        } else {
+          return new Promise((resolve, reject) => {
+            const success = result => {
+              resolve(result)
+              const index = this.retries.indexOf(retrier)
+              if (index !== -1) {
+                this.retries.splice(index, 1)
+              }
             }
-          }
 
-          const retrier = () => {
-            try {
-              success(retry())
-            } catch (e) {
-              reject(e)
+            const retrier = () => {
+              try {
+                success(retry())
+              } catch (e) {
+                reject(e)
+              }
             }
-          }
 
-          this.retries.push(retrier)
+            this.retries.push(retrier)
 
-          this.tick()
-        })
+            this.tick()
+          })
+        }
       }
     })
   }

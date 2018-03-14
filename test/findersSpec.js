@@ -153,7 +153,7 @@ describe('find', function () {
 
       assembly.eventuallyInsertHtml('<div class="outer"><div>bad</div></div>')
 
-      return demand(promise).reject.with.error(/expected one element/)
+      return demand(promise).reject.with.error(/expected some elements/)
     })
 
     it('errors with a usable css selector if it cant find an element containing another', function () {

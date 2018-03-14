@@ -199,7 +199,7 @@ describe('assertions', function () {
 
       return Promise.all([
         good,
-        demand(bad).reject.with.error(partMatch("expected [ 'some text' ] to deeply equal [ 'some t' ]"))
+        demand(bad).reject.with.error(partMatch("expected [ 'some text' ] to have exact values [ 'some t' ]"))
       ])
     })
 
@@ -244,7 +244,7 @@ describe('assertions', function () {
       })
       return Promise.all([
         good,
-        demand(bad).reject.with.error(partMatch("expected [ { class: null } ] to deeply equal [ { class: 'other' } ]"))
+        demand(bad).reject.with.error(partMatch("expected [ { class: null } ] to have attributes [ { class: 'other' } ]"))
       ])
     })
 
@@ -266,7 +266,7 @@ describe('assertions', function () {
       })
       return Promise.all([
         good,
-        demand(bad).reject.with.error(partMatch("expected [ { src: '/a' }, { src: '/b' }, { src: '/c' } ] to deeply equal [ { src: '/c' }, { src: '/a' }, { src: '/b' } ]"))
+        demand(bad).reject.with.error(partMatch("expected [ { src: '/a' }, { src: '/b' }, { src: '/c' } ] to have attributes [ { src: '/c' }, { src: '/a' }, { src: '/b' } ]"))
       ])
     })
 
@@ -284,7 +284,7 @@ describe('assertions', function () {
 
         assembly.eventuallyInsertHtml('<select><option>Optional</option><option>Mr</option><option>Mrs</option></select>')
 
-        return demand(promise).reject.with.error(partMatch("expected [ 'Optional', 'Mr', 'Mrs' ] to deeply equal [ '', 'Mr', 'Mrs' ]"))
+        return demand(promise).reject.with.error(partMatch("expected [ 'Optional', 'Mr', 'Mrs' ] to have exact inner texts [ '', 'Mr', 'Mrs' ]"))
       })
     })
 
@@ -312,7 +312,7 @@ describe('assertions', function () {
         })
 
         return Promise.all([
-          demand(good).reject.with.error(partMatch('expected [ true, false ] to deeply equal [ true ]'))
+          demand(good).reject.with.error(partMatch('expected checked properties [ true, false ] to equal [ true ]'))
         ])
       })
 
@@ -328,7 +328,7 @@ describe('assertions', function () {
 
         return Promise.all([
           good,
-          demand(bad).reject.with.error(partMatch('expected [ true, false ] to deeply equal [ false, true ]'))
+          demand(bad).reject.with.error(partMatch('expected checked properties [ true, false ] to equal [ false, true ]'))
         ])
       })
 
@@ -340,7 +340,7 @@ describe('assertions', function () {
 
         return Promise.all([
           good,
-          demand(bad).reject.with.error(partMatch('expected [ false ] to deeply equal [ true ]'))
+          demand(bad).reject.with.error(partMatch('expected checked properties [ false ] to equal [ true ]'))
         ])
       })
     })
@@ -396,7 +396,7 @@ describe('assertions', function () {
 
       return Promise.all([
         good,
-        demand(bad1).reject.with.error(partMatch('expected 2 to equal 1'))
+        demand(bad1).reject.with.error(partMatch('expected number of elements found 2 to equal 1'))
       ])
     })
 
