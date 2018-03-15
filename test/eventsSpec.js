@@ -1,12 +1,22 @@
+var describeAssemblies = require('./describeAssemblies')
+const DomAssembly = require('./assemblies/DomAssembly')
 var demand = require('must')
 var retry = require('trytryagain')
-var domTest = require('./domTest')
 
 describe('events', function () {
-  domTest('typeIn element should fire change', function (browser, dom) {
+  describeAssemblies([DomAssembly], function (Assembly) {
+    var assembly
+    var browser
+
+    beforeEach(function () {
+      assembly = new Assembly()
+      browser = assembly.browserMonkey()
+    })
+
+  it('typeIn element should fire change', function () {
     var firedEvents = []
 
-    dom.insert('<input type="text" class="input">')
+    assembly.insertHtml('<input type="text" class="input">')
       .on('blur', function () {
         firedEvents.push('blur')
       }).on('change', function () {
@@ -20,10 +30,10 @@ describe('events', function () {
     })
   })
 
-  domTest('typeIn element should fire input on each character', function (browser, dom) {
+  it('typeIn element should fire input on each character', function () {
     var firedEvents = []
 
-    dom.insert('<input type="text" class="input">')
+    assembly.insertHtml('<input type="text" class="input">')
       .on('input', function () {
         firedEvents.push('input')
       })
@@ -41,15 +51,15 @@ describe('events', function () {
     demand(document.hasFocus(), 'the browser must be in focus for this test!').to.equal(true)
   }
 
-  domTest('typeIn element should fire change and then blur event on input', function (browser, dom) {
+  it('typeIn element should fire change and then blur event on input', function () {
     var firedEvents = []
 
     assertBrowserHasFocus()
 
-    dom.insert('<input type="text" class="input" />')
-    dom.insert('<input type="text" class="change" />')
+    assembly.insertHtml('<input type="text" class="input" />')
+    assembly.insertHtml('<input type="text" class="change" />')
 
-    dom.el.find('.input').on('blur', function (e) {
+    assembly.find('.input').on('blur', function (e) {
       firedEvents.push('blur')
     }).on('change', function () {
       firedEvents.push('change')
@@ -67,15 +77,15 @@ describe('events', function () {
     })
   })
 
-  domTest('click element should fire blur event on input', function (browser, dom) {
+  it('click element should fire blur event on input', function () {
     var blurred = false
 
     assertBrowserHasFocus()
 
-    dom.insert('<input type="text" class="input" />')
-    dom.insert('<button>button</button>')
+    assembly.insertHtml('<input type="text" class="input" />')
+    assembly.insertHtml('<button>button</button>')
 
-    dom.el.find('.input').on('blur', function (e) {
+    assembly.find('.input').on('blur', function (e) {
       blurred = true
     })
 
@@ -88,14 +98,14 @@ describe('events', function () {
     })
   })
 
-  domTest('select element should fire blur event on input', function (browser, dom, $) {
+  it('select element should fire blur event on input', function () {
     var blurred = false
 
     assertBrowserHasFocus()
 
-    dom.insert('<select><option>one</option></select>')
-    dom.insert('<input type="text" class="input"></input>')
-    dom.el.find('input').on('blur', function (e) {
+    assembly.insertHtml('<select><option>one</option></select>')
+    assembly.insertHtml('<input type="text" class="input"></input>')
+    assembly.find('input').on('blur', function (e) {
       blurred = true
     })
 
@@ -109,8 +119,8 @@ describe('events', function () {
   })
 
   describe('callbacks on interaction', function () {
-    domTest('fires events on clicks', function (browser, dom) {
-      var button = dom.insert('<button>a button</button>')
+    it('fires events on clicks', function () {
+      var button = assembly.insertHtml('<button>a button</button>')
 
       var event
 
@@ -123,8 +133,8 @@ describe('events', function () {
       })
     })
 
-    domTest('fires events on typeIn', function (browser, dom) {
-      var input = dom.insert('<input></input>')
+    it('fires events on typeIn', function () {
+      var input = assembly.insertHtml('<input></input>')
 
       var event
 
@@ -138,8 +148,8 @@ describe('events', function () {
       })
     })
 
-    domTest('fires events on typeIn', function (browser, dom) {
-      var editorDiv = dom.insert('<div class="editor"></div>')
+    it('fires events on typeIn', function () {
+      var editorDiv = assembly.insertHtml('<div class="editor"></div>')
 
       var event
 
@@ -153,8 +163,8 @@ describe('events', function () {
       })
     })
 
-    domTest('fires events on select', function (browser, dom) {
-      var select = dom.insert('<select><option>one</option></select>')
+    it('fires events on select', function () {
+      var select = assembly.insertHtml('<select><option>one</option></select>')
 
       var event
 
@@ -168,5 +178,6 @@ describe('events', function () {
         demand(event.element[0]).to.equal(select[0])
       })
     })
+  })
   })
 })

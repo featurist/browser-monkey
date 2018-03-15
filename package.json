@@ -54,7 +54,7 @@
     "debug": "^2.6.3",
     "deep-equal": "1.0.1",
     "detect-browser": "^1.6.2",
-    "finished-promise": "0.0.2",
+    "error-stack-parser": "2.0.1",
     "global": "^4.3.1",
     "hobostyle": "1.0.0",
     "jquery": "^3.2.1",

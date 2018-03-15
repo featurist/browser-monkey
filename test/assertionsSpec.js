@@ -26,7 +26,7 @@ describe('assertions', function () {
 
       return Promise.all([
         good,
-        demand(bad).reject.with.error(/expected no elements/)
+        assembly.assertRejection(bad, 'expected no elements')
       ])
     })
 
@@ -38,36 +38,6 @@ describe('assertions', function () {
       assembly.eventuallyDeleteHtml('.removing')
 
       return promise
-    })
-
-    it('stack trace', function () {
-      assembly.insertHtml('<div></div>')
-
-      return browser.find('div')
-        .shouldNotExist()
-        .assertStackTrace(__filename)
-    }, {
-      mochaOnly: true
-    })
-  })
-
-  describe('shouldExist', function () {
-    it('stack trace', function () {
-      return browser.find('div')
-        .shouldExist()
-        .assertStackTrace(__filename)
-    }, {
-      mochaOnly: true
-    })
-  })
-
-  describe('shouldFind', function () {
-    it('stack trace', function () {
-      return browser
-        .shouldFind('div')
-        .assertStackTrace(__filename)
-    }, {
-      mochaOnly: true
     })
   })
 
@@ -82,7 +52,10 @@ describe('assertions', function () {
         element.classList.add('good')
       })
 
-      return Promise.all([good, demand(bad).reject.with.error(/expected some elements/)])
+      return Promise.all([
+        good,
+        assembly.assertRejection(bad, 'expected some elements')
+      ])
     })
   })
 
@@ -116,7 +89,7 @@ describe('assertions', function () {
 
     return Promise.all([
       good,
-      demand(bad).reject.with.error(/expected some elements/)
+      assembly.assertRejection(bad, 'expected some elements')
     ])
   })
 
@@ -132,15 +105,6 @@ describe('assertions', function () {
   })
 
   describe('shouldHave', function () {
-    it('stack trace', function () {
-      assembly.insertHtml('<div>hello</div>')
-      return browser.find('div')
-        .shouldHave({text: 'something'})
-        .assertStackTrace(__filename)
-    }, {
-      mochaOnly: true
-    })
-
     it('eventually finds an element and asserts that it has text', function () {
       var good = browser.find('.element').shouldHave({text: 'some t'})
       var bad = browser.find('.element').shouldHave({text: 'sme t'})
@@ -149,7 +113,7 @@ describe('assertions', function () {
 
       return Promise.all([
         good,
-        demand(bad).reject.with.error(partMatch("expected [ 'some text' ] to contain [ 'sme t' ]"))
+        assembly.assertRejection(bad, "expected [ 'some text' ] to contain [ 'sme t' ]")
       ])
     })
 
@@ -171,7 +135,7 @@ describe('assertions', function () {
       return Promise.all([
         good1,
         good2,
-        demand(bad).reject.with.error(partMatch("expected [ 'some text' ] to contain [ 'sme t' ]"))
+        assembly.assertRejection(bad, "expected [ 'some text' ] to contain [ 'sme t' ]")
       ])
     })
 
@@ -199,7 +163,7 @@ describe('assertions', function () {
 
       return Promise.all([
         good,
-        demand(bad).reject.with.error(partMatch("expected [ 'some text' ] to have exact values [ 'some t' ]"))
+        assembly.assertRejection(bad, "expected [ 'some text' ] to have exact values [ 'some t' ]")
       ])
     })
 
@@ -214,7 +178,7 @@ describe('assertions', function () {
 
       return Promise.all([
         good,
-        demand(bad).reject.with.error(partMatch("expected [ 'some text' ] to contain [ '' ]"))
+        assembly.assertRejection(bad, "expected [ 'some text' ] to contain [ '' ]")
       ])
     })
 
@@ -244,7 +208,7 @@ describe('assertions', function () {
       })
       return Promise.all([
         good,
-        demand(bad).reject.with.error(partMatch("expected [ { class: null } ] to have attributes [ { class: 'other' } ]"))
+        assembly.assertRejection(bad, "expected [ { class: null } ] to have attributes [ { class: 'other' } ]")
       ])
     })
 
@@ -266,7 +230,7 @@ describe('assertions', function () {
       })
       return Promise.all([
         good,
-        demand(bad).reject.with.error(partMatch("expected [ { src: '/a' }, { src: '/b' }, { src: '/c' } ] to have attributes [ { src: '/c' }, { src: '/a' }, { src: '/b' } ]"))
+        assembly.assertRejection(bad, "expected [ { src: '/a' }, { src: '/b' }, { src: '/c' } ] to have attributes [ { src: '/c' }, { src: '/a' }, { src: '/b' } ]")
       ])
     })
 
@@ -284,7 +248,7 @@ describe('assertions', function () {
 
         assembly.eventuallyInsertHtml('<select><option>Optional</option><option>Mr</option><option>Mrs</option></select>')
 
-        return demand(promise).reject.with.error(partMatch("expected [ 'Optional', 'Mr', 'Mrs' ] to have exact inner texts [ '', 'Mr', 'Mrs' ]"))
+        assembly.assertRejection(promise, "expected [ 'Optional', 'Mr', 'Mrs' ] to have exact inner texts [ '', 'Mr', 'Mrs' ]")
       })
     })
 
@@ -303,7 +267,7 @@ describe('assertions', function () {
       })
 
       it('fails if we expected one checkbox, but found many', function () {
-        var good = browser.find('.checkbox').shouldHave({checked: true})
+        var bad = browser.find('.checkbox').shouldHave({checked: true})
 
         var checkbox = assembly.insertHtml('<input class="checkbox" type=checkbox />')
         assembly.insertHtml('<input class="checkbox" type=checkbox />')
@@ -312,7 +276,7 @@ describe('assertions', function () {
         })
 
         return Promise.all([
-          demand(good).reject.with.error(partMatch('expected checked properties [ true, false ] to equal [ true ]'))
+          assembly.assertRejection(bad, 'expected checked properties [ true, false ] to equal [ true ]')
         ])
       })
 
@@ -328,7 +292,7 @@ describe('assertions', function () {
 
         return Promise.all([
           good,
-          demand(bad).reject.with.error(partMatch('expected checked properties [ true, false ] to equal [ false, true ]'))
+          assembly.assertRejection(bad, 'expected checked properties [ true, false ] to equal [ false, true ]')
         ])
       })
 
@@ -340,7 +304,7 @@ describe('assertions', function () {
 
         return Promise.all([
           good,
-          demand(bad).reject.with.error(partMatch('expected checked properties [ false ] to equal [ true ]'))
+          assembly.assertRejection(bad, 'expected checked properties [ false ] to equal [ true ]')
         ])
       })
     })
@@ -354,8 +318,8 @@ describe('assertions', function () {
 
       return Promise.all([
         good,
-        demand(bad1).reject.with.error(partMatch("expected [ 'first one', 'number 2' ] to contain [ 'one' ]")),
-        demand(bad2).reject.with.error(partMatch("expected [ 'first one', 'number 2' ] to contain [ 'one', 'three' ]"))
+        assembly.assertRejection(bad1, "expected [ 'first one', 'number 2' ] to contain [ 'one' ]"),
+        assembly.assertRejection(bad2, "expected [ 'first one', 'number 2' ] to contain [ 'one', 'three' ]")
       ])
     })
 
@@ -368,8 +332,8 @@ describe('assertions', function () {
 
       return Promise.all([
         good,
-        demand(bad1).reject.with.error(partMatch("expected [ 'first one', 'number 2', '0' ] to contain [ 'one' ]")),
-        demand(bad2).reject.with.error(partMatch("expected [ 'first one', 'number 2', '0' ] to contain [ 'one', 'three' ]"))
+        assembly.assertRejection(bad1, "expected [ 'first one', 'number 2', '0' ] to contain [ 'one' ]"),
+        assembly.assertRejection(bad2, "expected [ 'first one', 'number 2', '0' ] to contain [ 'one', 'three' ]")
       ])
     })
 
@@ -382,8 +346,8 @@ describe('assertions', function () {
 
       return Promise.all([
         good,
-        demand(bad1).reject.with.error(partMatch("expected [ 'div.element.the-class' ] to match css [ '.not-the-class' ]")),
-        demand(bad2).reject.with.error(partMatch("expected [ 'div.element.the-class' ] to match css [ '.not-found' ]"))
+        assembly.assertRejection(bad1, "expected [ 'div.element.the-class' ] to match css [ '.not-the-class' ]"),
+        assembly.assertRejection(bad2, "expected [ 'div.element.the-class' ] to match css [ '.not-found' ]")
       ])
     })
 
@@ -396,7 +360,7 @@ describe('assertions', function () {
 
       return Promise.all([
         good,
-        demand(bad1).reject.with.error(partMatch('expected number of elements found 2 to equal 1'))
+        assembly.assertRejection(bad1, 'expected number of elements found 2 to equal 1')
       ])
     })
 
@@ -423,8 +387,8 @@ describe('assertions', function () {
 
       return Promise.all([
         good1,
-        demand(bad1).reject.with.error(/expected one element/),
-        demand(bad2).reject.with.error(/'a' == 'b'/)
+        assembly.assertRejection(bad1, 'expected one element'),
+        assembly.assertRejection(bad2, "'a' == 'b'")
       ])
     })
 
@@ -451,7 +415,7 @@ describe('assertions', function () {
 
       return Promise.all([
         good1,
-        demand(bad1).reject.with.error(/\[ 'one', 'two', 'three' \]/)
+        assembly.assertRejection(bad1, "[ 'one', 'two', 'three' ]")
       ])
     })
 
@@ -494,7 +458,3 @@ describe('assertions', function () {
   })
   })
 })
-
-function partMatch (str) {
-  return new RegExp(escapeStringRegexp(str))
-}

@@ -6,7 +6,9 @@ const $ = require('jquery')
 const pathUtils = require('path')
 const trytryagain = require('trytryagain')
 const {expect} = require('chai')
-  
+const ErrorStackParser = require('error-stack-parser')
+const inspect = require('object-inspect')
+
 module.exports = class DomAssembly {
   constructor () {
     this.delayedOperations = 0
@@ -127,7 +129,28 @@ module.exports = class DomAssembly {
     expect(document.activeElement).to.equal(element)
   }
 
+  assertRejection (promise, expectedMessage) {
+    const specFile = findSpecFileInStackTrace(new Error())
+    expect(specFile, 'expected to be called from *Spec.js file').to.not.equal(undefined)
+
+    return promise.then(() => {
+      throw new Error('expected rejection')
+    }, e => {
+      const thrownSpecFile = findSpecFileInStackTrace(e)
+      expect(thrownSpecFile, 'expected stack trace to include the test file').to.equal(specFile)
+
+      if (e.message.indexOf(expectedMessage) === -1) {
+        throw new Error('expected error message ' + inspect(e.message) + ' to include ' + inspect(expectedMessage))
+      }
+    })
+  }
+
   static hasDom () {
     return true
   }
+}
+
+function findSpecFileInStackTrace (error) {
+  const stack = ErrorStackParser.parse(error)
+  return stack.map(frame => frame.fileName).find(fileName => /Spec\.js$/.test(fileName))
 }

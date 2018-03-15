@@ -10,7 +10,7 @@ describe('find', function () {
     var browser
 
     beforeEach(function () {
-      assembly = new Assembly
+      assembly = new Assembly()
       browser = assembly.browserMonkey()
     })
 
