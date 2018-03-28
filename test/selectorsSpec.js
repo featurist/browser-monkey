@@ -357,5 +357,72 @@ describe('selectors', () => {
         await expect(name).to.reject.with.error('expected one element (found: find: .container [1], find: .contact [2], find: .name [0])')
       })
     })
+
+    describe('anyOf', () => {
+      it('finds either', async () => {
+        const a = assembly.insertHtml(`
+          <div class="a">A</div>
+        `)
+        const b = assembly.insertHtml(`
+          <div class="b">B</div>
+        `)
+        assembly.insertHtml(`
+          <div class="c">C</div>
+        `)
+
+        const elementsFound = await browserMonkey.anyOf([
+          b => b.find('.a'),
+          b => b.find('.b')
+        ])
+
+        expect(elementsFound).to.eql([a, b])
+      })
+
+      it('throws error with finders used in anyOf', async () => {
+        assembly.insertHtml(`
+          <div class="a">A</div>
+        `)
+        assembly.insertHtml(`
+          <div class="b">B</div>
+        `)
+        assembly.insertHtml(`
+          <div class="c">C</div>
+        `)
+
+        const promise = browserMonkey.anyOf([
+          b => b.find('.a'),
+          b => b.find('.b')
+        ]).find('.child').some()
+
+        return expect(promise).to.reject.with.error('expected some elements (found: anyOf (find: .a [1], or find: .b [1]) [2], find: .child [0])')
+      })
+    })
+
+    describe('race', () => {
+      it('finds the first of two or more selectors', async () => {
+        const promise = browserMonkey.race([
+          b => b.find('.a').some(),
+          b => b.find('.b').some()
+        ])
+
+        const bPromise = assembly.eventuallyInsertHtml('<div class="b"/>')
+
+        const [a, b] = await promise
+
+        expect(a).to.equal(undefined)
+        expect(b).to.eql([await bPromise])
+      })
+
+      it.only('returns descriptions of all queries used when none are successful', async () => {
+        const promise = browserMonkey.race([
+          b => b.find('.a').some(),
+          b => b.find('.b').some()
+        ])
+
+        assembly.eventuallyInsertHtml('<div class="c"/>')
+
+        await promise
+      })
+    })
   })
 })

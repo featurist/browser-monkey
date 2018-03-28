@@ -59,5 +59,52 @@ describe('buttons', function () {
         demand(elements).to.eql([])
       })
     })
+
+    describe('defineButton', () => {
+      it('can define a new button', () => {
+        const button = assembly.insertHtml('<div class="button" value="Login">Login</div>')
+
+        browser.defineButton((name, monkey) => monkey.find('div.button', {exactText: name}))
+
+        return browser.button('Login').then(function (elements) {
+          demand(elements).to.eql([button])
+        })
+      })
+
+      it('can define a new button and still use original button definitions', () => {
+        const button = assembly.insertHtml('<button>Login</button>')
+
+        browser.defineButton((name, monkey) => monkey.find('div.button', {exactText: name}))
+
+        return browser.button('Login').then(function (elements) {
+          demand(elements).to.eql([button])
+        })
+      })
+    })
+
+    describe('clicking a button', () => {
+      it('can click a button', () => {
+        const events = []
+        const button = assembly.insertHtml('<button>Login</button>')
+        button.addEventListener('click', () => events.push('click'))
+
+        return browser.clickButton('Login').then(function () {
+          demand(events).to.eql(['click'])
+        })
+      })
+
+      it('can click a defined button', () => {
+        const events = []
+        const button = assembly.insertHtml('<div class="button" value="Login">Login</div>')
+
+        button.addEventListener('click', () => events.push('click'))
+
+        browser.defineButton((name, monkey) => monkey.find('div.button', {exactText: name}))
+
+        return browser.clickButton('Login').then(function () {
+          demand(events).to.eql(['click'])
+        })
+      })
+    })
   })
 })
