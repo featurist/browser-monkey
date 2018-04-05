@@ -4,7 +4,8 @@
   "description": "reliable dom testing",
   "main": "index.js",
   "scripts": {
-    "test": "standard && mocha && karma start --single-run"
+    "test": "standard && mocha && karma start --single-run",
+    "electron-mocha": "electron-mocha --renderer --require-main test/electronMochaReload.js"
   },
   "author": "Tim Macfarlane <timmacfarlane@gmail.com>",
   "license": "MIT",

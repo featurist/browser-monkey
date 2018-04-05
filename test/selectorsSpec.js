@@ -337,6 +337,43 @@ describe('selectors', () => {
       })
     })
 
+    describe.only('actions', () => {
+      it('actions are only executed once', async () => {
+        let actionExecuted = 0
+
+        assembly.insertHtml(`
+          <div>A</div>
+        `)
+
+        const action = browserMonkey.find('div').action(function () {
+          actionExecuted++
+        })
+
+        await action
+        expect(actionExecuted).to.equal(1)
+        await action
+        expect(actionExecuted).to.equal(1)
+      })
+
+      it('actions return the element or elements they acted on', async () => {
+        const divA = assembly.insertHtml(`
+          <div>A</div>
+        `)
+        const divB = assembly.insertHtml(`
+          <div>B</div>
+        `)
+
+        let givenElements
+        const action = browserMonkey.find('div').action(function (els) {
+          givenElements = els
+        })
+
+        const elements = await action
+        expect(elements).to.eql([divA, divB])
+        expect(givenElements).to.eql([divA, divB])
+      })
+    })
+
     describe('errors', () => {
       it('shows what it was able to map', async () => {
         const name = browserMonkey
@@ -410,10 +447,10 @@ describe('selectors', () => {
         const [a, b] = await promise
 
         expect(a).to.equal(undefined)
-        expect(b).to.eql([await bPromise])
+        expect(b).to.eql(await bPromise)
       })
 
-      it.only('returns descriptions of all queries used when none are successful', async () => {
+      it('returns descriptions of all queries used when none are successful', async () => {
         const promise = browserMonkey.race([
           b => b.find('.a').some(),
           b => b.find('.b').some()
@@ -421,7 +458,7 @@ describe('selectors', () => {
 
         assembly.eventuallyInsertHtml('<div class="c"/>')
 
-        await promise
+        await expect(promise).to.reject.with.error('all queries failed in race (found: race between (expected some elements (found: find: .a [0]), and expected some elements (found: find: .b [0])))')
       })
     })
   })

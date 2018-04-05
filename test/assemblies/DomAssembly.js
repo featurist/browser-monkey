@@ -125,6 +125,12 @@ module.exports = class DomAssembly {
     })
   }
 
+  eventuallyAppendHtml (element, html) {
+    return this.eventually(() => {
+      return $(html).appendTo(element).get(0)
+    })
+  }
+
   assertElementIsFocussed (element) {
     expect(document.activeElement).to.equal(element)
   }
