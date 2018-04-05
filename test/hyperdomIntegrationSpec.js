@@ -3,63 +3,76 @@ var retry = require('trytryagain')
 var browser = require('..')
 var hyperdom = require('hyperdom')
 var h = hyperdom.html
+var isBrowser = !require('is-node')
+var createTestDiv = require('../lib/createTestDiv')
 
-describe('hyperdom integration', function () {
-  it('should find things rendered by hyperdom', function () {
-    function App (model) {
-      this.model = model
-    }
-
-    App.prototype.render = function () {
-      var model = this.model
-      function renderMessage () {
-        if (model.show) {
-          return h('span', 'hello')
-        }
+if (isBrowser) {
+  describe('hyperdom integration', function () {
+    it('should find things rendered by hyperdom', function () {
+      function App (model) {
+        this.model = model
       }
-      return h('div', [
-        h('a.toggle', {
-          onclick: function () {
-            model.show = !model.show
+
+      var other = {
+        former: 'Male'
+      }
+      var fuzzy = {
+        fuzzy: true
+      }
+
+      App.prototype.render = function () {
+        var model = this.model
+        function renderMessage () {
+          if (model.show) {
+            return h('span', 'hello')
           }
-        }),
-        h('input', {type: 'text', binding: [model, 'name']}),
-        h('select', {binding: [model, 'gender']},
-           h('option', 'Select..'),
-           h('option', {value: 'fml'}, 'Female'),
-           h('option', {value: 'ml'}, 'Male')
+        }
+        return h('div', [
+          h('a.toggle', {
+            onclick: function () {
+              model.show = !model.show
+            }
+          }),
+          h('input', {type: 'text', binding: [model, 'name']}),
+          h('select', {binding: [model, 'gender']},
+            h('option', 'Select..'),
+            h('option', {value: 'fml'}, 'Female'),
+            h('option', {value: 'ml'}, 'Male'),
+            h('option', {value: fuzzy}, 'Not sure'),
+            h('option', {value: other}, 'Other')
           ),
-        h('.name', 'Name: ', model.name),
-        h('.gender', 'Gender: ', model.gender),
-        renderMessage()
-      ]
-      )
-    }
+          h('.name', 'Name: ', model.name),
+          h('.gender', 'Gender: ', model.gender),
+          renderMessage()
+        ])
+      }
 
-    var vdom = h('div')
+      var model = {}
+      var dom = createTestDiv()
+      hyperdom.append(dom, new App(model))
+      browser = browser.scope(dom)
 
-    var model = {}
-    hyperdom.appendVDom(vdom, new App(model), { requestRender: setTimeout, window: {} })
-    browser = browser.scope(vdom)
-    var vquery = require('vdom-query')
-    browser.set({$: vquery, visibleOnly: false, document: {}})
-
-    return browser.find('.toggle').click().then(function () {
-      return browser.find('span', {text: 'hello'}).shouldExist()
-    }).then(function () {
-      return browser.find('input').typeIn({text: 'monkey'})
-    }).then(function () {
-      return retry(function () {
-        demand(model.name).to.equal('monkey')
+      return browser.find('.toggle').click().then(function () {
+        return browser.find('span', {text: 'hello'}).shouldExist()
+      }).then(function () {
+        return browser.find('input').typeIn({text: 'monkey'})
+      }).then(function () {
+        return retry(function () {
+          demand(model.name).to.equal('monkey')
+        })
+      }).then(function () {
+        return browser.find('select').select({text: 'Female'})
+      }).then(function () {
+        return browser.find('.name').shouldHave({text: 'monkey'})
+      }).then(function () {
+        return browser.find('.gender').shouldHave({text: 'fml'})
+      }).then(function () {
+        return browser.find('input').shouldHave({value: 'monkey'})
+      }).then(function () {
+        return browser.find('select').select({text: 'Other'})
+      }).then(function () {
+        return browser.find('option:selected').shouldHave({text: 'Other'})
       })
-    }).then(function () {
-      return browser.find('select').select({text: 'Female'})
-    }).then(function () {
-      return browser.find('.name').shouldHave({text: 'monkey'})
-    }).then(function () {
-      return browser.find('.gender').shouldHave({text: 'fml'})
-    }).then(function () {
-      return browser.find('input').shouldHave({value: 'monkey'})
     })
   })
-})
+}
