@@ -6,12 +6,6 @@ var h = hyperdom.html
 var isBrowser = !require('is-node')
 var createTestDiv = require('../lib/createTestDiv')
 
-function wait (ms) {
-  return new Promise((resolve, reject) => {
-    setTimeout(resolve, ms)
-  })
-}
-
 if (isBrowser) {
   describe('hyperdom integration', function () {
     it('should find things rendered by hyperdom', function () {
@@ -77,9 +71,7 @@ if (isBrowser) {
       }).then(function () {
         return browser.find('select').select({text: 'Other'})
       }).then(function () {
-        return wait(100).then(function () {
-          return browser.find('option:selected').shouldHave({text: 'Other'})
-        })
+        return browser.find('option:selected').shouldHave({text: 'Other'})
       })
     })
   })
