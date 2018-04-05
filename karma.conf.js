@@ -95,14 +95,6 @@ var browsers = {
     os_version: 'Sierra',
     resolution: '1280x1024'
   },
-  'browserstack-ie9': {
-    base: 'BrowserStack',
-    browser: 'IE',
-    browser_version: '9.0',
-    os: 'Windows',
-    os_version: '7',
-    resolution: '1280x1024'
-  },
   'browserstack-ie10': {
     base: 'BrowserStack',
     browser: 'IE',
