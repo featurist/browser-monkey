@@ -48,7 +48,6 @@
   },
   "dependencies": {
     "array.prototype.find": "^2.0.3",
-    "browserify-optional": "1.0.0",
     "chai": "3.5.0",
     "debug": "^2.6.3",
     "detect-browser": "^1.6.2",
