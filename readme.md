@@ -20,45 +20,32 @@ Here is an [example project](https://github.com/dereke/web-testing) that demonst
 
 # example
 
-```js
-import createBrowser from 'browser-monkey/create';
+```js codesandbox: basic-example
+import createMonkey from "browser-monkey/create";
+import createTestDiv from "browser-monkey/lib/createTestDiv";
+import hyperdom from "hyperdom";
+import App from "./app";
 
-describe('admin', function () {
-  let browser = createBrowser(document.body);
+describe("beer app", () => {
+  let page;
 
-  // describes the admin panel, with a search box, results and a user editor
-  let adminPanel = browser.component({
-    searchUsers() {
-      return this.find('.search');
-    },
-    userResult(name) {
-      // find a user in the results by their name
-      return this.find('.results .user', {text: name});
-    },
-    userEditor() {
-      // return the user editor, scoped to the .user-editor div.
-      return this.find('.user-editor').component({
-        name()  { return this.find('.name'); },
-        email() { return this.find('.email'); },
-        save()  { return this.find('.save'); }
-      });
-    }
+  beforeEach(() => {
+    const $testContainer = createTestDiv();
+    hyperdom.append($testContainer, new App());
+    page = createMonkey($testContainer);
   });
 
-  it('can search for, edit and save a user', async () => {
-    await adminPanel.searchUsers().typeIn('bar');
-    await adminPanel.userResult('Barry').click();
+  it("greets me", async () => {
+    await page.find("h1").shouldHave({ text: "Hello Lubbers" });
+  });
 
-    let userEditor = adminPanel.userEditor();
-    await userEditor.name().typeIn('Barry Jones');
-    await userEditor.email().typeIn('barryjones@example.com');
-
-    await userEditor.save().click();
-
-    // verify that the user was saved
+  it("shows me beer", async () => {
+    await page.click("Beer");
+    await page.shouldHave({ text: "Punk IPA" });
   });
 });
 ```
+<a href="https://codesandbox.io/api/v1/sandboxes/define?parameters=N4IgZglgNgpgziAXKADgQwMYGs0HMYB0AVnAPYB2SoGFALjObUiMADrkAEHrI5aAtjB6JuIAEYAnUgHc4MCQFp-FLDACeCmAA8BKWDwA07LjwBu8uBArDRARgIAGR4eOiAJvAwSIKWlfI2PABCUrLyHACyKuocYmiWGBwArnB4MBzauvogRpyi_GgQAUiiRR5aBAAWtPxQLnk8cF4-tHA2bHkmIHC0aBK0gSDoEhgwUBxl2lU14woKpCgM9VxdYknQboPDo-NrGxPk5dO1PK4AvrldHouHDBgQ8O2uq6FyisrkqmqDUGj0PcsVjxKmpFhI3KR-D8_vABiBzpd3DBTAARGA3Dzke6PEodFaibZjBRrQ6wCTQ_5w87sM7sEAXbojAD0aBQKAIcEWGGICGQIBojAYTEQIAg_BQpH6HC8MBhUU-MTAUn4okkMjeSmiaiZMphPAA3OwxRKpbr6AAVWEoiCmDhKyGq17yTUK7VQCBiHUSWUWq02g1G8WS2gcEFgiEq-0q4Gg-QRgPkY3BjgAQTZduVogILLZCfYHia3jEMAAFDxi-FWShDBwSwBKDgAXgAfBw8RxYCH0PhDQE8sWwJKYABRTCVEv1put9tcAU9DgAEkpAGE6IVyOFG9LvTDLT1raZ6738WG45CCFWGG4S0vYavGOv5AYOBvpKm2fW68eVt30luzTA8pfDeK5rkU8hfuckF9lwEC0GWIC4N6MCtBwgg1vEahYrWDYtm2zwcGg0iFF2aQEJAhwIZUtg8HWHKVKQSRQG4AASaDmCWwAcPQWi0CIPAsWMUCkBwAAySRiMWEhtCAHBnNBXDyb2rhwQhcAMbIaHpBW5I5IRcBYYkk54TOhHEXBHC_gQGDutgCFBDA8i0d-XBESRllkepjHMWxHFcTxfGiAACkknwcAAkkFKY8HJCmxb2Sn0gYjIYDm7IkFQ_J0EKzBJlKXHVLU-mhnJGYOjG4aQnmG5aCaIYeGAaBMSGNnxHA74oPheSYdh-C0A58jheQg6TqZHiduktCVBAcAEDpLnShQ87epyS1_mZ7lgChGDjsCtC0CgcCIEyOYQAQKChTgKBnTQ_BMqYABMTI6XATK2AAnA9zkEVNM1zY5EhNhtFkrRK5ByDyFBHtSMEcN6twSKNBHerQSQSJwu0gAURQ1gA2gRXCY9RNYCUJIniZJFi0YiJ4IWs-3WHpXEUDZEDYCIxmtr9s19QNEhDSNDYXKIfPUwT3HTbNOni1wAD8oYIW4_p6fjnT4urmNK6YNbc_98i4w4AC6BB8IIdY0-rtM8GKuA1lxcAjCIus6QbxtimkAD6aNQM-0gQG4U0iLYDgOLFMsrIbdbhyIoUNeBmxq5H360uQKdJSlTKTBUGV8gK9CMLlQb5YRbJXqVUaiKe4JVSAvZ5SGaadRXPDZlW1UnZelEQhgSSCIwBAAI5JPIagAMpjDAGC0JKCEAMRtyA5svjAb6N5-vbp1nxxQJlec5SKAA8ACEKIAPLLuaACaQXDqGMzNuwB-FVAD99k_spuK_rC0Affi0LAzYgp9B2BwUeaBDhiFIFoA-TI_4APYN_A-ghejSkqH0OQtBGw8AAKrmgAGIKAABwxSZK_GBlQP5f3IAfSBbg1Bfx_lrCYbgsEgAXs2GBWsqGIMLC0DgDsMCsIEZnW42cZIMJgbw3wZDnqkDoVQ8h996RnDOEAA&query=module%3D%2Fsrc%2Fapp.spec.js" target="_blank" rel="noopener noreferrer">Run this example</a>
 
 # debug
 
