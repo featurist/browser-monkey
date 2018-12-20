@@ -62,6 +62,9 @@
   "standard": {
     "env": [
       "mocha"
+    ],
+    "ignore": [
+      "docs/codesandbox/**/*"
     ]
   },
   "browserify": {
