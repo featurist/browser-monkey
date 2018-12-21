@@ -1,6 +1,6 @@
 module.exports = function (config) {
   config.set({
-    concurrency: 5,
+    concurrency: 1,
     basePath: '',
     frameworks: ['browserify', 'mocha', 'server-side'],
     files: [
