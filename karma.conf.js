@@ -76,14 +76,14 @@ var browsers = {
     base: 'BrowserStack',
     browser: 'Firefox',
     os: 'OS X',
-    os_version: 'Sierra',
+    os_version: 'Mojave',
     resolution: '1280x1024'
   },
   'browserstack-safari': {
     base: 'BrowserStack',
     browser: 'Safari',
     os: 'OS X',
-    os_version: 'Sierra',
+    os_version: 'Mojave',
     resolution: '1280x1024'
   },
   'browserstack-safari-ios': {
@@ -102,21 +102,12 @@ var browsers = {
     base: 'BrowserStack',
     browser: 'Chrome',
     os: 'OS X',
-    os_version: 'Sierra',
-    resolution: '1280x1024'
-  },
-  'browserstack-ie10': {
-    base: 'BrowserStack',
-    browser: 'IE',
-    browser_version: '10.0',
-    os: 'Windows',
-    os_version: '8',
+    os_version: 'Mojave',
     resolution: '1280x1024'
   },
   'browserstack-ie11': {
     base: 'BrowserStack',
     browser: 'IE',
-    browser_version: '11.0',
     os: 'Windows',
     os_version: '10',
     resolution: '1280x1024'
@@ -124,7 +115,6 @@ var browsers = {
   'browserstack-edge': {
     base: 'BrowserStack',
     browser: 'Edge',
-    browser_version: '13.0',
     os: 'Windows',
     os_version: '10',
     resolution: '1280x1024'
