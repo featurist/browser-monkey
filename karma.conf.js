@@ -36,7 +36,9 @@ module.exports = function (config) {
     colors: true,
     logLevel: config.LOG_INFO,
     autoWatch: true,
-    browsers: process.env.BROWSERS === 'all' ? Object.keys(browsers) : ['Chrome'],
+    browsers: process.env.BROWSERS === 'all' ? Object.keys(browsers) : [
+      config.singleRun ? 'Chrome_headless_without_security' : 'Chrome_without_security'
+    ],
 
     browserStack: {
       username: process.env.BROWSERSTACK_USER,
@@ -55,6 +57,14 @@ module.exports = function (config) {
 }
 
 var browsers = {
+  Chrome_without_security: {
+    base: 'Chrome',
+    flags: ['--disable-web-security']
+  },
+  Chrome_headless_without_security: {
+    base: 'ChromeHeadless',
+    flags: ['--disable-web-security']
+  },
   'browserstack-windows-firefox': {
     base: 'BrowserStack',
     browser: 'Firefox',
