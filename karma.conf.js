@@ -36,7 +36,7 @@ module.exports = function (config) {
     colors: true,
     logLevel: config.LOG_INFO,
     autoWatch: true,
-    browsers: process.env.BROWSERS === 'all' ? Object.keys(browsers) : [
+    browsers: process.env.BROWSERS === 'all' ? Object.keys(browsers).slice(1) : [
       config.singleRun ? 'Chrome_headless_without_security' : 'Chrome_without_security'
     ],
 
