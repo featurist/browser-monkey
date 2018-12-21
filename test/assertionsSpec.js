@@ -493,7 +493,7 @@ describe('assertions', function () {
 
       return Promise.all([
         good1,
-        demand(bad1).reject.with.error(/\[\n {2}'one',\n {2}'two',\n {2}'three'\n\]/)
+        demand(bad1).reject.with.error(/\[(\n {2}| )'one',(\n {2}| )'two',(\n {2}| )'three'(\n| )\]/)
       ])
     })
 
