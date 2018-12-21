@@ -412,7 +412,7 @@ would match:
 Assert that there is one element, and that it passes the expectations of a function.
 
 ```js
-const promise = scope.shouldHaveElement(fn, [options]);
+await scope.shouldHaveElement(fn, [options]);
 ```
 
 * `fn` a function that tests the element. The function is repeatedly called until it doesn't throw an exception, or until the timeout.
