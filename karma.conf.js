@@ -1,5 +1,6 @@
 module.exports = function (config) {
   config.set({
+    concurrency: 5,
     basePath: '',
     frameworks: ['browserify', 'mocha', 'server-side'],
     files: [
@@ -85,11 +86,6 @@ var browsers = {
     os: 'OS X',
     os_version: 'Mojave',
     resolution: '1280x1024'
-  },
-  'browserstack-safari-ios': {
-    base: 'BrowserStack',
-    device: 'iPhone 6S',
-    os: 'ios'
   },
   'browserstack-windows-chrome': {
     base: 'BrowserStack',
