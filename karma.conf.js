@@ -1,6 +1,6 @@
 module.exports = function (config) {
   config.set({
-    concurrency: 1,
+    concurrency: process.env.BROWSERS === 'all' ? 2 : Infinity,
     basePath: '',
     frameworks: ['browserify', 'mocha', 'server-side'],
     files: [
