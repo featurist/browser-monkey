@@ -32,7 +32,8 @@ module.exports = function (config) {
         timeout: 0
       }
     },
-    reporters: process.env.BROWSERS ? ['dots'] : ['mocha'],
+    // reporters: process.env.BROWSERS ? ['dots'] : ['mocha'],
+    reporters: ['mocha'],
     port: 9876,
     colors: true,
     logLevel: config.LOG_INFO,
