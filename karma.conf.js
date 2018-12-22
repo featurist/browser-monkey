@@ -1,6 +1,6 @@
 module.exports = function (config) {
   config.set({
-    concurrency: 1,
+    concurrency: 5,
     basePath: '',
     frameworks: ['browserify', 'mocha'],
     files: [
@@ -38,8 +38,8 @@ module.exports = function (config) {
     colors: true,
     logLevel: config.LOG_INFO,
     autoWatch: true,
-    browsers: process.env.BROWSERS === 'all' ? Object.keys(browsers).slice(1) : [
-      config.singleRun ? 'Chrome_headless_without_security' : 'Chrome_without_security'
+    browsers: process.env.BROWSERS === 'all' ? Object.keys(browsers) : [
+      config.singleRun ? 'ChromeHeadless' : 'Chrome'
     ],
 
     browserStack: {
@@ -55,14 +55,6 @@ module.exports = function (config) {
 }
 
 var browsers = {
-  Chrome_without_security: {
-    base: 'Chrome',
-    flags: ['--disable-web-security']
-  },
-  Chrome_headless_without_security: {
-    base: 'ChromeHeadless',
-    flags: ['--disable-web-security']
-  },
   'browserstack-windows-firefox': {
     base: 'BrowserStack',
     browser: 'Firefox',
