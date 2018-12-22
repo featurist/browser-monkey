@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Iframe mount test</title>
+  </head>
+  <body>
+    <div class="message">default</div>
+    <button>press me</button>
+    <script charset="utf-8">
+      document.addEventListener('click', function(e) {
+        if (e.target.innerText === 'press me') {
+          var div = document.querySelector('.message')
+          div.innerText = 'hello browser-monkey'
+        }
+      })
+    </script>
+  </body>
+</html>

@@ -2,12 +2,13 @@ module.exports = function (config) {
   config.set({
     concurrency: process.env.BROWSERS === 'all' ? 2 : Infinity,
     basePath: '',
-    frameworks: ['browserify', 'mocha', 'server-side'],
+    frameworks: ['browserify', 'mocha'],
     files: [
       'test/global.js',
       'test/**/*Spec.js',
       'test/page1.html',
-      'test/page2.html'
+      'test/page2.html',
+      'test/iframe-mount-test.html'
     ],
     exclude: [
       '**/*.sw?'
@@ -50,11 +51,7 @@ module.exports = function (config) {
     customLaunchers: browsers,
     browserNoActivityTimeout: 120000,
     browserDisconnectTimeout: 120000,
-    browserDisconnectTolerance: 3,
-
-    proxies: {
-      '/iframe-test/': 'http://localhost:4572/'
-    }
+    browserDisconnectTolerance: 3
   })
 }
 
