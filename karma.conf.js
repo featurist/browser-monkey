@@ -1,6 +1,6 @@
 module.exports = function (config) {
   config.set({
-    concurrency: process.env.BROWSERS === 'all' ? 2 : Infinity,
+    concurrency: 1,
     basePath: '',
     frameworks: ['browserify', 'mocha'],
     files: [
@@ -33,8 +33,7 @@ module.exports = function (config) {
         timeout: 0
       }
     },
-    // reporters: process.env.BROWSERS ? ['dots'] : ['mocha'],
-    reporters: ['mocha'],
+    reporters: process.env.BROWSERS ? ['dots'] : ['mocha'],
     port: 9876,
     colors: true,
     logLevel: config.LOG_INFO,
