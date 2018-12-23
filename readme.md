@@ -1,4 +1,4 @@
-# browser monkey [![npm version](https://img.shields.io/npm/v/browser-monkey.svg)](https://www.npmjs.com/package/browser-monkey) [![npm](https://img.shields.io/npm/dm/browser-monkey.svg)](https://www.npmjs.com/package/browser-monkey) [![Build Status](https://travis-ci.org/featurist/browser-monkey.svg?branch=master)](https://travis-ci.org/featurist/browser-monkey) [![Gitter chat](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/featurist/stack)
+# browser monkey [![npm version](https://img.shields.io/npm/v/browser-monkey.svg)](https://www.npmjs.com/package/browser-monkey) [![npm](https://img.shields.io/npm/dm/browser-monkey.svg)](https://www.npmjs.com/package/browser-monkey) [![CircleCI](https://circleci.com/gh/featurist/browser-monkey.svg?style=svg)](https://circleci.com/gh/featurist/browser-monkey) [![Gitter chat](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/featurist/stack)
 
 Reliable DOM testing
 
@@ -20,45 +20,32 @@ Here is an [example project](https://github.com/dereke/web-testing) that demonst
 
 # example
 
-```js
-import createBrowser from 'browser-monkey/create';
+```js codesandbox: basic-example
+import createMonkey from "browser-monkey/create";
+import createTestDiv from "browser-monkey/lib/createTestDiv";
+import hyperdom from "hyperdom";
+import App from "./app";
 
-describe('admin', function () {
-  let browser = createBrowser(document.body);
+describe("beer app", () => {
+  let page;
 
-  // describes the admin panel, with a search box, results and a user editor
-  let adminPanel = browser.component({
-    searchUsers() {
-      return this.find('.search');
-    },
-    userResult(name) {
-      // find a user in the results by their name
-      return this.find('.results .user', {text: name});
-    },
-    userEditor() {
-      // return the user editor, scoped to the .user-editor div.
-      return this.find('.user-editor').component({
-        name()  { return this.find('.name'); },
-        email() { return this.find('.email'); },
-        save()  { return this.find('.save'); }
-      });
-    }
+  beforeEach(() => {
+    const $testContainer = createTestDiv();
+    hyperdom.append($testContainer, new App());
+    page = createMonkey($testContainer);
   });
 
-  it('can search for, edit and save a user', async () => {
-    await adminPanel.searchUsers().typeIn('bar');
-    await adminPanel.userResult('Barry').click();
+  it("greets me", async () => {
+    await page.find("h1").shouldHave({ text: "Hello Lubbers" });
+  });
 
-    let userEditor = adminPanel.userEditor();
-    await userEditor.name().typeIn('Barry Jones');
-    await userEditor.email().typeIn('barryjones@example.com');
-
-    await userEditor.save().click();
-
-    // verify that the user was saved
+  it("shows me beer", async () => {
+    await page.click("Beer");
+    await page.shouldHave({ text: "Punk IPA" });
   });
 });
 ```
+<a href="https://codesandbox.io/api/v1/sandboxes/define?parameters=N4IgZglgNgpgziAXKADgQwMYGs0HMYB0AVnAPYB2SoGFALjObUiMADrkAEHrI5aAtjB6JuIAEYAnUgHc4MCQFp-FLDACeCmAA8BKWDwA07LjwBu8uBArDRARgIAGR4eOiAJvAwSIKWlfI2PABCUrLyHACyKuocYmiWGBwArnB4MBzauvogRpyi_GgQAUiiRR5aBAAWtPxQLnk8cF4-tHA2bHkmIHC0aBK0gSDoEhgwUBxl2lU14woKpCgM9VxdYknQboPDo-NrGxPk5dO1PK4AvrldHouHDBgQ8O2uq6FyisrkqmqDUGj0PcsVjxKmpFhI3KR-D8_vABiBzpd3DBTAARGA3Dzke6PEodFaibZjBRrQ6wCTQ_5w87sM7sEAXbojAD0aBQKAIcEWGGICGQIBojAYTEQIAg_BQpH6HC8MBhUU-MTAUn4okkMjeSmiaiZMphPAA3OwxRKpbr6AAVWEoiCmDhKyGq17yTUK7VQCBiHUSWUWq02g1G8WS2gcEFgiEq-0q4Gg-QRgPkY3BjgAQTZduVogILLZCfYHia3jEMAAFDxi-FWShDBwSwBKDgAXgAfBw8RxYCH0PhDQE8sWwJKYABRTCVEv1put9tcAU9DgAEkpAGE6IVyOFG9LvTDLT1raZ6738WG45CCFWGG4S0vYavGOv5AYOBvpKm2fW68eVt30luzTA8pfDeK5rkU8hfuckF9lwEC0GWIC4N6MCtBwgg1vEahYrWDYtm2zwcGg0iFF2aQEJAhwIZUtg8HWHKVKQSRQG4AASaDmCWwAcPQWi0CIPAsWMUCkBwAAySRiMWEhtCAHBnNBXDyb2rhwQhcAMbIaHpBW5I5IRcBYYkk54TOhHEXBHC_gQGDutgCFBDA8i0d-XBESRllkepjHMWxHFcTxfGiAACkknwcAAkkFKY8HJCmxb2Sn0gYjIYDm7IkFQ_J0EKzBJlKXHVLU-mhnJGYOjG4aQnmG5aCaIYeGAaBMSGNnxHA74oPheSYdh-C0A58jheQg6TqZHiduktCVBAcAEDpLnShQ87epyS1_mZ7lgChGDjsCtC0CgcCIEyOYQAQKChTgKBnTQ_BMqYABMTI6XATK2AAnA9zkEVNM1zY5EhNhtFkrRK5ByDyFBHtSMEcN6twSKNBHerQSQSJwu0gAURQ1gA2gRXCY9RNYCUJIniZJFi0YiJ4IWs-3WHpXEUDZEDYCIxmtr9s19QNEhDSNDYXKIfPUwT3HTbNOni1wAD8oYIW4_p6fjnT4urmNK6YNbc_98i4w4AC6BB8IIdY0-rtM8GKuA1lxcAjCIus6QbxtimkAD6aNQM-0gQG4U0iLYDgOLFMsrIbdbhyIoUNeBmxq5H360uQKdJSlTKTBUGV8gK9CMLlQb5YRbJXqVUaiKe4JVSAvZ5SGaadRXPDZlW1UnZelEQhgSSCIwBAAI5JPIagAMpjDAGC0JKCEAMRtyA5svjAb6N5-vbp1nxxQJlec5SKAA8ACEKIAPLLuaACaQXDqGMzNuwB-FVAD99k_spuK_rC0Affi0LAzYgp9B2BwUeaBDhiFIFoA-TI_4APYN_A-ghejSkqH0OQtBGw8AAKrmgAGIKAABwxSZK_GBlQP5f3IAfSBbg1Bfx_lrCYbgsEgAXs2GBWsqGIMLC0DgDsMCsIEZnW42cZIMJgbw3wZDnqkDoVQ8h996RnDOEAA&query=module%3D%2Fsrc%2Fapp.spec.js" target="_blank" rel="noopener noreferrer">Run this example</a>
 
 # debug
 
@@ -85,16 +72,16 @@ Browser monkey comes with a handy way of doing this for popular web frameworks
 where YourHyperdomApp is a class that has a render method. [see here](test/app/hyperdom.jsx) for an example
 
 ```js
-var hyperdomMonkey = require('browser-monkey/hyperdom')
-var monkey = hyperdomMonkey(new YourHyperdomApp())
+const hyperdomMonkey = require('browser-monkey/hyperdom')
+const monkey = hyperdomMonkey(new YourHyperdomApp())
 ```
 
 **angular**
 where YourAngularApp is a class with fields 'directiveName' and 'moduleName' [see here](test/app/angular.js) for an example
 
 ```js
-var angularMonkey = require('browser-monkey/angular')
-var monkey = angularMonkey({
+const angularMonkey = require('browser-monkey/angular')
+const monkey = angularMonkey({
   directiveName: 'best-frameworks',
   moduleName: 'FrameworksApp'
 })
@@ -104,8 +91,8 @@ var monkey = angularMonkey({
 where YourReactApp is a react class [see here](test/app/react.jsx) for an example
 
 ```js
-var reactMonkey = require('browser-monkey/react')
-var monkey = reactMonkey(new YourReactApp())
+const reactMonkey = require('browser-monkey/react')
+const monkey = reactMonkey(new YourReactApp())
 ```
 
 **iframe**
@@ -113,8 +100,8 @@ You can also use browser-monkey to do full integration testing.
 Just give it the url of your web server
 
 ```js
-var iframeMonkey = require('browser-monkey/iframe')
-var monkey = iframeMonkey('http://your-app.example')
+const iframeMonkey = require('browser-monkey/iframe')
+const monkey = iframeMonkey('http://your-app.example')
 ```
 
 and then you can use the monkey
@@ -141,9 +128,9 @@ The API is made up of three concepts: scopes, actions and assertions.
 All scope chains are immutable, so you can reuse portions of a scope chain to build new chains:
 
 ```js
-var details = browser.find('.details'); // finds .details
-var name = details.find('.name');       // finds .details .name
-var email = details.find('.email');     // finds .details .email
+const details = browser.find('.details'); // finds .details
+const name = details.find('.name');       // finds .details .name
+const email = details.find('.email');     // finds .details .email
 ...
 ```
 
@@ -157,7 +144,7 @@ There are some options you can set, which are inherited by inner scopes.
 
 ```js
 scope.set({visibleOnly: false});
-var innerScope = scope.find('input');
+const innerScope = scope.find('input');
 
 innerScope.get('visibleOnly'); // returns false
 ```
@@ -168,7 +155,7 @@ innerScope.get('visibleOnly'); // returns false
 ## find
 
 ```js
-var innerScope = scope.find(css, [options]);
+const innerScope = scope.find(css, [options]);
 ```
 
 Returns a new scope that matches `css`.
@@ -179,7 +166,7 @@ Returns a new scope that matches `css`.
 ## is
 
 ```js
-var scope = scope.is(css);
+const scope = scope.is(css);
 ```
 
 Returns a new scope that ensures that the element found matches the CSS. For example, `scope.find('li').is('.enabled')` ensures that the `<li>` has the class `enabled`.
@@ -189,7 +176,7 @@ Returns a new scope that ensures that the element found matches the CSS. For exa
 ## containing
 
 ```js
-var scope = scope.containing(css, [options]);
+const scope = scope.containing(css, [options]);
 ```
 
 Ensures that the scope contains the `css` and `options.text`, the scope returned still refers to the outer scope. This is useful, for example, in finding list items that contain certain elements, but still referring to the list items.
@@ -223,7 +210,7 @@ browser.find('ul li').containing('h2', {text: 'Second'}).find('a').click();
 ## filter
 
 ```js
-var scope = scope.filter(filter);
+const scope = scope.filter(filter);
 ```
 
 * `filter(element)` a function that takes a DOM element, and returns either truthy or falsey. If truthy, then the element will be considered as part of the scope, if falsey then it won't.
@@ -233,7 +220,7 @@ var scope = scope.filter(filter);
 Represents a component on the page, with methods to access certain elements of the component.
 
 ```js
-var componentScope = scope.component(methods);
+const componentScope = scope.component(methods);
 ```
 
 * `methods` - an object containing functions for scopes of elements inside the component.
@@ -244,7 +231,7 @@ You can create a component from another component too, simply extending the func
 For example, you may have an area on the page that deals with instant messages. You have a list of messages, a text box to enter a new message, and a button to send the message.
 
 ```js
-var messages = browser.component({
+const messages = browser.component({
   messages: function () {
     return this.find('.messages');
   },
@@ -272,7 +259,7 @@ messages.messages().shouldHave({text: ['hi!', 'wassup?']}).then(function () {
 You can reset the starting point for the scope, the element from which all elements are searched for. By default this is the `<body>` element, but you can set it to a more specific element, or indeed another scope.
 
 ```js
-var scopeUnderElement = scope.scope(element | selector | anotherScope);
+const scopeUnderElement = scope.scope(element | selector | anotherScope);
 ```
 
 * `element` - an element. This can be an `<iframe>` element, in which case the scope will be the contents of the iframe.
@@ -280,10 +267,10 @@ var scopeUnderElement = scope.scope(element | selector | anotherScope);
 * `anotherScope` a scope to define where to start this scope. This is useful if you want to set the starting scope of a comonent. E.g.
 
     ```js
-    var component = browser.component({
+    const component = browser.component({
       ... methods ...
     });
-    var componentScope = component.scope(browser.find('.component'));
+    const componentScope = component.scope(browser.find('.component'));
     ```
 
 ## shouldExist
@@ -291,7 +278,7 @@ var scopeUnderElement = scope.scope(element | selector | anotherScope);
 Wait for an element to exist.
 
 ```js
-var promise = browser.find('.selector').shouldExist([options]);
+const promise = browser.find('.selector').shouldExist([options]);
 ```
 
 * `options.timeout` - length of time to wait for the element (1000ms)
@@ -313,7 +300,7 @@ browser.shouldFind('.selector')
 Waits for the element not to exist.
 
 ```js
-var promise = scope.shouldNotExist([options]);
+const promise = scope.shouldNotExist([options]);
 ```
 
 * `options.timeout` - length of time to wait for the element (1000ms)
@@ -326,10 +313,10 @@ Returns a promise that resolves when the element no longer exists, or is rejecte
 Assert that a scope has certain properties.
 
 ```js
-var promise = scope.shouldHave([options]);
+const promise = scope.shouldHave([options]);
 
 //e.g.:
-var promise = browser.find('#topMonkey').shouldHave({ text: 'Olive Baboon' });
+const promise = browser.find('#topMonkey').shouldHave({ text: 'Olive Baboon' });
 ```
 
 would match:
@@ -340,7 +327,7 @@ would match:
 
 or if checking multiple elements:
 ```
-var promise = browser.find('#top5 .monkey-species').shouldHave({ text: [
+const promise = browser.find('#top5 .monkey-species').shouldHave({ text: [
   'Olive Baboon',
   'Patas Monkey',
   'Proboscis Monkey',
@@ -364,7 +351,7 @@ would match:
 You can also match child components:
 
 ```js
-var component = browser.component({
+const component = browser.component({
   airport: function(){
     return this.find('.airport').component({
       date: function(){ return this.find('.date'); }
@@ -425,7 +412,7 @@ would match:
 Assert that there is one element, and that it passes the expectations of a function.
 
 ```js
-var promise = scope.shouldHaveElement(fn, [options]);
+await scope.shouldHaveElement(fn, [options]);
 ```
 
 * `fn` a function that tests the element. The function is repeatedly called until it doesn't throw an exception, or until the timeout.
@@ -437,7 +424,7 @@ var promise = scope.shouldHaveElement(fn, [options]);
 Assert that the elements found in the scope pass an expectation.
 
 ```js
-var promise = scope.shouldHaveElements(fn, [options]);
+const promise = scope.shouldHaveElements(fn, [options]);
 ```
 
 * `fn` a function that tests the elements. The function is repeatedly called until it doesn't throw an exception, or until the timeout.
@@ -497,7 +484,7 @@ Example:
 ```
 
 ```js
-var scope = browser.component({
+const scope = browser.component({
   mySelect: function(){
     return this.find('.my-select');
   }
@@ -519,7 +506,7 @@ It can be tedious to fill out forms using `typeIn`, `select`, etc.
 Fill lets you easily specify fields and actions to run:
 
 ```
-var address = browser.component({
+const address = browser.component({
   street: function(){return this.find('.street');},
   city: function(){return this.find('.city');},
   country: function(){return this.find('.country');},
@@ -587,7 +574,7 @@ scope.element([options]).then(function (element) {
 You can receive an event whenever an interaction is made on the DOM, such as a click or text entry. The event will have the element that is interacted with, the event type and other properties depending on the event type.
 
 ```js
-var scopeWithEvents = scope.on(function (event) {
+const scopeWithEvents = scope.on(function (event) {
   // handle event
 });
 ```

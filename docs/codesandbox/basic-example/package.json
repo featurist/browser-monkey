@@ -1,0 +1,17 @@
+{
+  "name": "browser-monkey-example",
+  "version": "1.0.0",
+  "description": "Browser Monkey basic usage example",
+  "main": "index.html",
+  "scripts": {
+    "start": "parcel index.html --open",
+    "build": "parcel build index.html"
+  },
+  "dependencies": {
+    "browser-monkey": "latest",
+    "hyperdom": "latest"
+  },
+  "devDependencies": {
+    "parcel-bundler": "latest"
+  }
+}
