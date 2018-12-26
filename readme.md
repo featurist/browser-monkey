@@ -188,18 +188,18 @@ For example, find the `li` that contains the `h2` with the text `Second`, and cl
 
 ```html
 <ul>
-	<li>
-		<h2>First</h2>
-        <a href="first">link</a>
-	</li>
-	<li>
-		<h2>Second</h2>
-        <a href="second">link</a>
-	</li>
-	<li>
-		<h2>Third</h2>
-        <a href="third">link</a>
-	</li>
+  <li>
+    <h2>First</h2>
+    <a href="first">link</a>
+  </li>
+  <li>
+    <h2>Second</h2>
+    <a href="second">link</a>
+  </li>
+  <li>
+    <h2>Third</h2>
+    <a href="third">link</a>
+  </li>
 </ul>
 ```
 
