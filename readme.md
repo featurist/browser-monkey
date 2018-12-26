@@ -8,10 +8,10 @@ npm install browser-monkey
 
 Browser Monkey is a DOM assertion library. It helps you write framework agnostic browser tests that are reliable in the face of asynchronous behaviours like animations, AJAX and delayed rendering. It also helps you to write tests that exhibit the semantic meaning of the page, as opposed to a jumble of CSS selectors.
 
-* timing resistant
-* create rich DSLs for your page structure
+* automatically waits for commands and assertions.
+* create rich DSLs for your page structure.
 * framework agnostic: works with React, Angular, jQuery, [Hyperdom](https://github.com/featurist/hyperdom) and many many more.
-* can simulate text entry and clicks. (please let us know if you need more!)
+* can simulate text entry and clicks.
 * returns promises that resolve when the elements are found.
 
 Here is an [example project](https://github.com/dereke/web-testing) that demonstrates how to use browser-monkey with Karma.
@@ -247,11 +247,9 @@ const messages = browser.component({
 You can then use the messages component:
 
 ```js
-messages.messages().shouldHave({text: ['hi!', 'wassup?']}).then(function () {
-  return messages.messageBox().typeIn("just hangin'");
-}).then(function () {
-  return messages.sendButton().click();
-});
+await messages.messages().shouldHave({text: ['hi!', 'wassup?']});
+await messages.messageBox().typeIn("just hangin'");
+await messages.sendButton().click();
 ```
 
 ## scope
@@ -278,7 +276,7 @@ const scopeUnderElement = scope.scope(element | selector | anotherScope);
 Wait for an element to exist.
 
 ```js
-const promise = browser.find('.selector').shouldExist([options]);
+await browser.find('.selector').shouldExist([options]);
 ```
 
 * `options.timeout` - length of time to wait for the element (1000ms)
@@ -292,7 +290,7 @@ Returns a promise that resolves when the element exists, or is rejected if the t
 As an alternative to `browser.find('.selector').shouldExist()` you can also do:
 
 ```js
-browser.shouldFind('.selector')
+await browser.shouldFind('.selector')
 ````
 
 ## shouldNotExist
@@ -300,7 +298,7 @@ browser.shouldFind('.selector')
 Waits for the element not to exist.
 
 ```js
-const promise = scope.shouldNotExist([options]);
+await scope.shouldNotExist([options]);
 ```
 
 * `options.timeout` - length of time to wait for the element (1000ms)
@@ -313,10 +311,10 @@ Returns a promise that resolves when the element no longer exists, or is rejecte
 Assert that a scope has certain properties.
 
 ```js
-const promise = scope.shouldHave([options]);
+await scope.shouldHave([options]);
 
 //e.g.:
-const promise = browser.find('#topMonkey').shouldHave({ text: 'Olive Baboon' });
+await browser.find('#topMonkey').shouldHave({ text: 'Olive Baboon' });
 ```
 
 would match:
@@ -327,7 +325,7 @@ would match:
 
 or if checking multiple elements:
 ```
-const promise = browser.find('#top5 .monkey-species').shouldHave({ text: [
+await browser.find('#top5 .monkey-species').shouldHave({ text: [
   'Olive Baboon',
   'Patas Monkey',
   'Proboscis Monkey',
@@ -424,7 +422,7 @@ await scope.shouldHaveElement(fn, [options]);
 Assert that the elements found in the scope pass an expectation.
 
 ```js
-const promise = scope.shouldHaveElements(fn, [options]);
+await scope.shouldHaveElements(fn, [options]);
 ```
 
 * `fn` a function that tests the elements. The function is repeatedly called until it doesn't throw an exception, or until the timeout.
@@ -436,8 +434,7 @@ const promise = scope.shouldHaveElements(fn, [options]);
 Returns a promise that resolves once the element has been found and the click has been triggered
 
 ```js
-scope.click().then(function () {
-});
+await scope.click();
 ```
 
 ## typeIn
@@ -445,8 +442,7 @@ scope.click().then(function () {
 Returns a promise that resolves once the element has been found and the text has been entered.
 
 ```js
-scope.typeIn(text).then(function () {
-});
+await scope.typeIn(text);
 ```
 
 * `text` the text to type into the input.
@@ -456,8 +452,7 @@ scope.typeIn(text).then(function () {
 Returns a promise that resolves once the element has been found and the submit event has been triggered
 
 ```js
-scope.submit().then(function () {
-});
+await scope.submit();
 ```
 
 ## select
@@ -490,8 +485,7 @@ const scope = browser.component({
   }
 })
 
-scope.mySelect().select({text: 'Second'}).then(function(){
-});
+await scope.mySelect().select({text: 'Second'});
 ```
 
 ```js
@@ -522,11 +516,9 @@ address.fill([
 This is exectuted as if you wrote this:
 
 ```
-address.street().typeIn({text: 'Monkey St'}).then(function(){
-  return address.city().typeIn({text: 'Browserville'});
-}).then(function(){
-  return address.country().select({text: 'Monkey Island'});
-});
+await address.street().typeIn({text: 'Monkey St'})
+await address.city().typeIn({text: 'Browserville'});
+await address.country().select({text: 'Monkey Island'});
 ```
 
 * name - the name of any element on the component
@@ -548,8 +540,7 @@ address.fill([
 Returns a promise resolving to the list of elements matched by the scope.
 
 ```js
-scope.elements([options]).then(function (elements) {
-});
+await scope.elements([options]);
 ```
 
 * `elements` - the HTML DOM elements matched by the scope.
@@ -561,8 +552,7 @@ scope.elements([options]).then(function (elements) {
 Returns a promise resolving to the single element matched by the scope, it will be rejected if there are multiple.
 
 ```js
-scope.element([options]).then(function (element) {
-});
+await scope.element([options]);
 ```
 
 * `element` - the HTML DOM element matched by the scope.
