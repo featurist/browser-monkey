@@ -412,7 +412,7 @@ describe('actions', function () {
 
         return component.fill([
           {name: 'title', action: 'select', options: {exactText: 'Mr'}},
-          {name: 'name', action: 'typeIn', options: {text: 'Joe'}}
+          {name: 'name', action: 'typeIn', options: 'Joe'}
         ]).then(function () {
           demand(assembly.find('.title').value).to.equal('Mr')
           demand(assembly.find('.name').value).to.equal('Joe')
@@ -437,7 +437,7 @@ describe('actions', function () {
 
         return component.fill([
           {select: 'title', text: 'Mrs'},
-          {typeIn: 'name', options: {text: 'Joe'}},
+          {typeIn: 'name', options: 'Joe'},
           {click: 'agree'}
         ]).then(function () {
           demand(assembly.find('.title').value).to.equal('Mrs')

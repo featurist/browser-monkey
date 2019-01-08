@@ -53,9 +53,9 @@ describe('selectors', () => {
         expect(monkey._options.a).to.equal('a')
       })
 
-      it('passes through the value', () => {
+      it('passes through the input', () => {
         const monkey = browserMonkey
-          .value('a')
+          .input('a')
           .component({
             aMethod: function () { return 'aMethod' }
           })
@@ -65,7 +65,7 @@ describe('selectors', () => {
 
       it('passes through the maps', async () => {
         const monkey = browserMonkey
-          .value(1)
+          .input(1)
           .mapAll(x => x + 1)
           .component({
             aMethod: function () { return 'aMethod' }
@@ -248,18 +248,18 @@ describe('selectors', () => {
       })
     })
 
-    describe('value', () => {
-      it('value sets the value used in mapAll', async () => {
+    describe('input', () => {
+      it('input sets the input used in mapAll', async () => {
         const monkey = browserMonkey
-          .value('a')
-          .mapAll(x => `value: ${x}`)
+          .input('a')
+          .mapAll(x => `input: ${x}`)
 
-        expect(await monkey).to.eql('value: a')
+        expect(await monkey).to.eql('input: a')
       })
     })
 
     describe('scope', () => {
-      it('when scope is one element, sets the value to an array of one', () => {
+      it('when scope is one element, sets the input to an array of one', () => {
         const monkey = browserMonkey
           .scope(document.body)
 
@@ -268,7 +268,7 @@ describe('selectors', () => {
     })
 
     describe('ensure', () => {
-      it('waits for the value to eventually pass the assertion', async () => {
+      it('waits for the input to eventually pass the assertion', async () => {
         const hello = browserMonkey
           .ensure(elements => {
             expect(elements.some(element => element.innerText.includes('hello'))).to.equal(true)
@@ -337,7 +337,7 @@ describe('selectors', () => {
       })
     })
 
-    describe.only('actions', () => {
+    describe('actions', () => {
       it('actions are only executed once', async () => {
         let actionExecuted = 0
 
@@ -391,11 +391,11 @@ describe('selectors', () => {
           </div>
         `)
 
-        await expect(name).to.reject.with.error('expected one element (found: find: .container [1], find: .contact [2], find: .name [0])')
+        await expect(name).to.reject.with.error("expected one element (found: scope [1], find('.container') [1], find('.contact') [2], find('.name') [0])")
       })
     })
 
-    describe('anyOf', () => {
+    describe('all', () => {
       it('finds either', async () => {
         const a = assembly.insertHtml(`
           <div class="a">A</div>
@@ -407,7 +407,7 @@ describe('selectors', () => {
           <div class="c">C</div>
         `)
 
-        const elementsFound = await browserMonkey.anyOf([
+        const elementsFound = await browserMonkey.all([
           b => b.find('.a'),
           b => b.find('.b')
         ])
@@ -415,7 +415,7 @@ describe('selectors', () => {
         expect(elementsFound).to.eql([a, b])
       })
 
-      it('throws error with finders used in anyOf', async () => {
+      it('throws error with finders used in all', async () => {
         assembly.insertHtml(`
           <div class="a">A</div>
         `)
@@ -426,39 +426,38 @@ describe('selectors', () => {
           <div class="c">C</div>
         `)
 
-        const promise = browserMonkey.anyOf([
+        const promise = browserMonkey.all([
           b => b.find('.a'),
           b => b.find('.b')
         ]).find('.child').some()
 
-        return expect(promise).to.reject.with.error('expected some elements (found: anyOf (find: .a [1], or find: .b [1]) [2], find: .child [0])')
+        return expect(promise).to.reject.with.error("expected some elements (found: scope [1], all (find('.a') [1], or find('.b') [1]) [2], find('.child') [0])")
       })
     })
 
     describe('race', () => {
       it('finds the first of two or more selectors', async () => {
         const promise = browserMonkey.race([
-          b => b.find('.a').some(),
-          b => b.find('.b').some()
+          b => b.find('.a').one(),
+          b => b.find('.b').one()
         ])
 
-        const bPromise = assembly.eventuallyInsertHtml('<div class="b"/>')
+        const bPromise = assembly.eventuallyInsertHtml('<div class="b">B</div>')
 
-        const [a, b] = await promise
+        const b = await promise
 
-        expect(a).to.equal(undefined)
         expect(b).to.eql(await bPromise)
       })
 
       it('returns descriptions of all queries used when none are successful', async () => {
-        const promise = browserMonkey.race([
+        assembly.insertHtml('<div class="content">content<div class="c"/>C</div>')
+
+        const promise = browserMonkey.find('.content').race([
           b => b.find('.a').some(),
           b => b.find('.b').some()
         ])
 
-        assembly.eventuallyInsertHtml('<div class="c"/>')
-
-        await expect(promise).to.reject.with.error('all queries failed in race (found: race between (expected some elements (found: find: .a [0]), and expected some elements (found: find: .b [0])))')
+        await expect(promise).to.reject.with.error("all queries failed in race (found: scope [1], find('.content') [1], race between (expected some elements (found: find('.a') [0]), and expected some elements (found: find('.b') [0])))")
       })
     })
   })

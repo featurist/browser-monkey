@@ -199,12 +199,20 @@ describe('fields', function () {
     })
 
     describe('shouldHave value', () => {
-      it.only('uses .value in shouldHave({value}) and shouldHave({exactValue})', async () => {
+      it('uses .value in shouldHave({exactValue})', async () => {
         const custom = browser.defineFieldValue({
           get: (monkey) => monkey.mapAll(() => 'div value')
         })
 
         await custom.shouldHave({exactValue: 'div value'})
+      })
+
+      it('uses .value in shouldHave({value})', async () => {
+        const custom = browser.defineFieldValue({
+          get: (monkey) => monkey.mapAll(() => 'div value')
+        })
+
+        await custom.shouldHave({value: 'value'})
       })
     })
 

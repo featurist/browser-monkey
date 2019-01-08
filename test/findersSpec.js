@@ -1,4 +1,3 @@
-require('babel-polyfill')
 var describeAssemblies = require('./describeAssemblies')
 const DomAssembly = require('./assemblies/DomAssembly')
 var demand = require('must')
@@ -64,6 +63,19 @@ describe('find', function () {
     })
 
     if (Assembly.hasDom()) {
+      describe('iframes', () => {
+        it('finds content after iframe navigation', async () => {
+          const page2Exists = browser.find('iframe').iframeContent().find('h1', {text: 'Page 2'}).shouldExist()
+          assembly.useNormalRetry()
+
+          assembly.eventuallyInsertHtml(`<iframe src="${pathUtils.join(__dirname, 'page1.html')}"/>`)
+
+          await browser.find('iframe').iframeContent().clickButton('page 2')
+
+          return page2Exists
+        })
+      })
+
       it('should eventually find an element in an iframe', function () {
         var iframe = document.createElement('iframe')
         iframe.src = assembly.localUrl(pathUtils.join(__dirname, 'page1.html'))
@@ -76,8 +88,8 @@ describe('find', function () {
 
         return iframeScope.find('a', {text: 'page 2'}).click().then(function () {
           return Promise.all([
-            iframeScope.find('h1').shouldHave({text: 'Hello World'}),
-            iframeScope.shouldHave({text: 'Hello World'})
+            iframeScope.find('h1').shouldHave({text: 'Page 2'}),
+            iframeScope.shouldHave({text: 'Page 2'})
           ])
         })
       }, {vdom: false})
@@ -92,7 +104,7 @@ describe('find', function () {
         assembly.useNormalRetry()
 
         return browser.find('iframe').element().then(function (iframe) {
-          return browser.scope(iframe).find('h1', {text: 'Hello World'}).shouldExist()
+          return browser.scope(iframe).find('h1', {text: 'Page 2'}).shouldExist()
         })
       }, {vdom: false})
     }

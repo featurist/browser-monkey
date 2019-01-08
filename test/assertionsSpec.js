@@ -265,6 +265,19 @@ describe('assertions', function () {
           ])
         })
 
+        it('asserts that a checkbox is indeterminate', function () {
+          var good = browser.find('.checkbox').shouldHave({checked: 'indeterminate'})
+
+          var checkbox = assembly.insertHtml('<input class="checkbox" type=checkbox />')
+          assembly.eventually(function () {
+            checkbox.indeterminate = true
+          })
+
+          return Promise.all([
+            good
+          ])
+        })
+
         it('fails if we expected one checkbox, but found many', function () {
           var bad = browser.find('.checkbox').shouldHave({checked: true})
 
