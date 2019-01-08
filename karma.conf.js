@@ -1,12 +1,14 @@
 module.exports = function (config) {
   config.set({
+    concurrency: 5,
     basePath: '',
-    frameworks: ['browserify', 'mocha', 'server-side'],
+    frameworks: ['browserify', 'mocha'],
     files: [
       'test/global.js',
       'test/**/*Spec.js',
       'test/page1.html',
-      'test/page2.html'
+      'test/page2.html',
+      'test/iframe-mount-test.html'
     ],
     exclude: [
       '**/*.sw?'
@@ -36,7 +38,9 @@ module.exports = function (config) {
     colors: true,
     logLevel: config.LOG_INFO,
     autoWatch: true,
-    browsers: process.env.BROWSERS === 'all' ? Object.keys(browsers) : ['Chrome'],
+    browsers: process.env.BROWSERS === 'all' ? Object.keys(browsers) : [
+      config.singleRun ? 'ChromeHeadless' : 'Chrome'
+    ],
 
     browserStack: {
       username: process.env.BROWSERSTACK_USER,
@@ -46,11 +50,7 @@ module.exports = function (config) {
     customLaunchers: browsers,
     browserNoActivityTimeout: 120000,
     browserDisconnectTimeout: 120000,
-    browserDisconnectTolerance: 3,
-
-    proxies: {
-      '/iframe-test/': 'http://localhost:4572/'
-    }
+    browserDisconnectTolerance: 3
   })
 }
 
@@ -58,7 +58,6 @@ var browsers = {
   'browserstack-windows-firefox': {
     base: 'BrowserStack',
     browser: 'Firefox',
-    browser_version: '52.0',
     os: 'Windows',
     os_version: '10',
     resolution: '1280x1024'
@@ -66,29 +65,20 @@ var browsers = {
   'browserstack-osx-firefox': {
     base: 'BrowserStack',
     browser: 'Firefox',
-    browser_version: '52.0',
     os: 'OS X',
-    os_version: 'Sierra',
+    os_version: 'Mojave',
     resolution: '1280x1024'
   },
   'browserstack-safari': {
     base: 'BrowserStack',
     browser: 'Safari',
-    browser_version: '10',
     os: 'OS X',
-    os_version: 'Sierra',
+    os_version: 'Mojave',
     resolution: '1280x1024'
-  },
-  'browserstack-safari-ios': {
-    base: 'BrowserStack',
-    device: 'iPhone 6S',
-    os: 'ios',
-    os_version: '9.1'
   },
   'browserstack-windows-chrome': {
     base: 'BrowserStack',
     browser: 'Chrome',
-    browser_version: '52.0',
     os: 'Windows',
     os_version: '10',
     resolution: '1280x1024'
@@ -96,31 +86,13 @@ var browsers = {
   'browserstack-osx-chrome': {
     base: 'BrowserStack',
     browser: 'Chrome',
-    browser_version: '52.0',
     os: 'OS X',
-    os_version: 'Sierra',
-    resolution: '1280x1024'
-  },
-  'browserstack-ie9': {
-    base: 'BrowserStack',
-    browser: 'IE',
-    browser_version: '9.0',
-    os: 'Windows',
-    os_version: '7',
-    resolution: '1280x1024'
-  },
-  'browserstack-ie10': {
-    base: 'BrowserStack',
-    browser: 'IE',
-    browser_version: '10.0',
-    os: 'Windows',
-    os_version: '8',
+    os_version: 'Mojave',
     resolution: '1280x1024'
   },
   'browserstack-ie11': {
     base: 'BrowserStack',
     browser: 'IE',
-    browser_version: '11.0',
     os: 'Windows',
     os_version: '10',
     resolution: '1280x1024'
@@ -128,7 +100,6 @@ var browsers = {
   'browserstack-edge': {
     base: 'BrowserStack',
     browser: 'Edge',
-    browser_version: '13.0',
     os: 'Windows',
     os_version: '10',
     resolution: '1280x1024'
