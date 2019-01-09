@@ -8,7 +8,7 @@ const elementSubmit = require('../lib/elementSubmit')
 const elementTriggerEvent = require('../lib/elementTriggerEvent')
 const elementEnterText = require('../lib/elementEnterText')
 const elementInnerText = require('../lib/elementInnerText')
-const {expect} = require('chai')
+const { expect } = require('chai')
 
 describe('dom', () => {
   describeAssemblies([DomAssembly], Assembly => {
@@ -287,7 +287,7 @@ describe('dom', () => {
       it('clears any existing text', () => {
         var events = []
         var input = assembly.insertHtml('<input type="text" value="existing"/>')
-        
+
         ;['keydown', 'keypress', 'input', 'keyup', 'change'].forEach(type => {
           input.addEventListener(type, e => events.push(type + ':' + e.target.value))
         })
@@ -322,7 +322,7 @@ describe('dom', () => {
       it('clears any existing text, even if the text to enter is blank', () => {
         var events = []
         var input = assembly.insertHtml('<input type="text" value="existing"/>')
-        
+
         ;['keydown', 'keypress', 'input', 'keyup', 'change'].forEach(type => {
           input.addEventListener(type, e => events.push(type + ':' + e.target.value))
         })

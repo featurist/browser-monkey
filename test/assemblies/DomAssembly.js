@@ -1,12 +1,11 @@
 /* global location */
 
 const createTestDiv = require('../../lib/createTestDiv')
-const browserMonkey = require('../..')
+const createBrowserMonkey = require('../../create')
 const $ = require('jquery')
 const pathUtils = require('path')
 const trytryagain = require('trytryagain')
-const {expect} = require('chai')
-const ErrorStackParser = require('error-stack-parser')
+const { expect } = require('chai')
 const inspect = require('object-inspect')
 
 module.exports = class DomAssembly {
@@ -26,7 +25,7 @@ module.exports = class DomAssembly {
 
     this.retry = () => {}
 
-    return browserMonkey.scope(this._div).options({
+    return createBrowserMonkey(this._div).options({
       retry: (retry) => {
         if (this._normalRetry) {
           return trytryagain(retry)
@@ -136,15 +135,9 @@ module.exports = class DomAssembly {
   }
 
   assertRejection (promise, expectedMessage) {
-    const specFile = findSpecFileInStackTrace(new Error())
-    expect(specFile, 'expected to be called from *Spec.js file').to.not.equal(undefined)
-
     return promise.then(() => {
       throw new Error('expected rejection')
     }, e => {
-      const thrownSpecFile = findSpecFileInStackTrace(e)
-      expect(thrownSpecFile, 'expected stack trace to include the test file').to.equal(specFile)
-
       if (e.message.indexOf(expectedMessage) === -1) {
         throw new Error('expected error message ' + inspect(e.message) + ' to include ' + inspect(expectedMessage))
       }
@@ -154,9 +147,4 @@ module.exports = class DomAssembly {
   static hasDom () {
     return true
   }
-}
-
-function findSpecFileInStackTrace (error) {
-  const stack = ErrorStackParser.parse(error)
-  return stack.map(frame => frame.fileName).find(fileName => /Spec\.js$/.test(fileName))
 }

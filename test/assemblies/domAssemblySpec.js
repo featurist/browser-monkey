@@ -1,5 +1,5 @@
 const DomAssembly = require('./DomAssembly')
-const {expect} = require('chai')
+const { expect } = require('chai')
 
 describe('DomAssembly', () => {
   let assembly

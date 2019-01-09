@@ -63,7 +63,7 @@ describe('actions', function () {
         return browser.find('.inner-element').click().then(function () {
           demand(events).to.eql(['mousedown', 'mouseup', 'click'])
         })
-      }, {vdom: false})
+      }, { vdom: false })
 
       it('waits until checkbox is enabled before clicking', function () {
         var promise = browser.find('input[type=checkbox]').click()
@@ -86,7 +86,7 @@ describe('actions', function () {
       })
 
       it('waits until button is enabled before clicking', function () {
-        var promise = browser.find('button', {text: 'a button'}).click()
+        var promise = browser.find('button', { text: 'a button' }).click()
         var clicked
         var buttonState = 'disabled'
 
@@ -109,7 +109,7 @@ describe('actions', function () {
     describe('select', function () {
       describe('text', function () {
         it('eventually selects an option element using the text', function () {
-          var promise = browser.find('.element').select({text: 'Second'})
+          var promise = browser.find('.element').select({ text: 'Second' })
           var selectedItem
 
           assembly.eventuallyInsertHtml(
@@ -139,7 +139,7 @@ describe('actions', function () {
         })
 
         it('should eventually select an option element using a partial match', function () {
-          var promise = browser.find('.element').select({text: 'Seco'})
+          var promise = browser.find('.element').select({ text: 'Seco' })
           var selectedItem
 
           assembly.eventuallyInsertHtml(
@@ -163,13 +163,13 @@ describe('actions', function () {
             })
           )
 
-          return browser.find('select').select({index: 1}).then(function () {
+          return browser.find('select').select({ index: 1 }).then(function () {
             demand(selectedItem).to.equal('2')
           })
         })
 
         it('selects an option that eventually appears', function () {
-          var promise = browser.find('.element').select({text: 'Second'})
+          var promise = browser.find('.element').select({ text: 'Second' })
           var selectedItem
 
           var select = assembly.insertHtml(
@@ -185,8 +185,8 @@ describe('actions', function () {
           })
         })
 
-        it('errors when the specified option does not exist', function () {
-          var promise = browser.find('.element').select({text: 'Does not exist'})
+        it('errors when the specified option does not exist', async function () {
+          var promise = browser.find('.element').select({ text: 'Does not exist' })
 
           assembly.eventuallyInsertHtml('<select class="element"><option>First</option><option>Second</option></select>')
 
@@ -194,13 +194,13 @@ describe('actions', function () {
         })
 
         it('errors when the input is not a select', function () {
-          var promise = browser.find('.element').select({text: 'Whatevs'})
+          var promise = browser.find('.element').select({ text: 'Whatevs' })
           assembly.eventuallyInsertHtml('<div class="element"></div>')
           return assembly.assertRejection(promise, 'expected some elements')
         })
 
         it('selects an option using text that is falsy', function () {
-          var promise = browser.find('.element').select({text: 0})
+          var promise = browser.find('.element').select({ text: 0 })
           var selectedItem
 
           assembly.eventuallyInsertHtml(
@@ -217,7 +217,7 @@ describe('actions', function () {
 
       describe('exactText', function () {
         it('should select an option using exact text that would otherwise match multiple options', function () {
-          var promise = browser.find('.element').select({exactText: 'Mr'})
+          var promise = browser.find('.element').select({ exactText: 'Mr' })
           var selectedItem
 
           assembly.eventuallyInsertHtml(
@@ -232,7 +232,7 @@ describe('actions', function () {
         })
 
         it('should select an option using exact text that is falsy', function () {
-          var promise = browser.find('.element').select({exactText: ''})
+          var promise = browser.find('.element').select({ exactText: '' })
           var selectedItem
 
           assembly.eventuallyInsertHtml(
@@ -411,8 +411,8 @@ describe('actions', function () {
         assembly.eventuallyInsertHtml('<input type="text" class="name"></input>')
 
         return component.fill([
-          {name: 'title', action: 'select', options: {exactText: 'Mr'}},
-          {name: 'name', action: 'typeIn', options: 'Joe'}
+          { name: 'title', action: 'select', options: { exactText: 'Mr' } },
+          { name: 'name', action: 'typeIn', options: 'Joe' }
         ]).then(function () {
           demand(assembly.find('.title').value).to.equal('Mr')
           demand(assembly.find('.name').value).to.equal('Joe')
@@ -436,9 +436,9 @@ describe('actions', function () {
         assembly.eventuallyInsertHtml('<label class="agree">Check: <input type="checkbox"></label>')
 
         return component.fill([
-          {select: 'title', text: 'Mrs'},
-          {typeIn: 'name', options: 'Joe'},
-          {click: 'agree'}
+          { select: 'title', text: 'Mrs' },
+          { typeIn: 'name', options: 'Joe' },
+          { click: 'agree' }
         ]).then(function () {
           demand(assembly.find('.title').value).to.equal('Mrs')
           demand(assembly.find('.name').value).to.equal('Joe')
@@ -474,7 +474,7 @@ describe('actions', function () {
         var component = browser.component({})
 
         var promise = component.fill([
-          {actionDoesNotExist: 'name'}
+          { actionDoesNotExist: 'name' }
         ])
 
         return assembly.assertRejection(promise, 'actionDoesNotExist')
@@ -484,7 +484,7 @@ describe('actions', function () {
         var component = browser.component({})
 
         var promise = component.fill([
-          {typeIn: 'name'}
+          { typeIn: 'name' }
         ])
 
         return assembly.assertRejection(promise, "Field 'name' does not exist")

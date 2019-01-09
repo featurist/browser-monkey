@@ -27,7 +27,7 @@ describe('selectors', () => {
 
     describe('options', () => {
       it('returns a new Browser Monkey object without modifying the current one', () => {
-        const withOptions = browserMonkey.options({a: 'a'})
+        const withOptions = browserMonkey.options({ a: 'a' })
         expect(browserMonkey._options.a).to.equal(undefined)
         expect(withOptions._options.a).to.equal('a')
       })
@@ -45,7 +45,7 @@ describe('selectors', () => {
 
       it('passes through the options', () => {
         const monkey = browserMonkey
-          .options({a: 'a'})
+          .options({ a: 'a' })
           .component({
             aMethod: function () { return 'aMethod' }
           })

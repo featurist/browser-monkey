@@ -41,7 +41,7 @@ describe('find', function () {
     })
 
     it('should eventually find an element with the right text', function () {
-      var promise = browser.find('.element', {text: 'green'}).element()
+      var promise = browser.find('.element', { text: 'green' }).element()
 
       assembly.insertHtml('<div class="element"></div>')
       assembly.eventuallyInsertHtml('<div class="element">red</div><div class="element">blue</div><div class="element" id="green">green</div>')
@@ -65,10 +65,10 @@ describe('find', function () {
     if (Assembly.hasDom()) {
       describe('iframes', () => {
         it('finds content after iframe navigation', async () => {
-          const page2Exists = browser.find('iframe').iframeContent().find('h1', {text: 'Page 2'}).shouldExist()
+          const page2Exists = browser.find('iframe').iframeContent().find('h1', { text: 'Page 2' }).shouldExist()
           assembly.useNormalRetry()
 
-          assembly.eventuallyInsertHtml(`<iframe src="${pathUtils.join(__dirname, 'page1.html')}"/>`)
+          assembly.eventuallyInsertHtml(`<iframe src="${assembly.localUrl(pathUtils.join(__dirname, 'page1.html'))}"/>`)
 
           await browser.find('iframe').iframeContent().clickButton('page 2')
 
@@ -86,13 +86,13 @@ describe('find', function () {
 
         assembly.useNormalRetry()
 
-        return iframeScope.find('a', {text: 'page 2'}).click().then(function () {
+        return iframeScope.find('a', { text: 'page 2' }).click().then(function () {
           return Promise.all([
-            iframeScope.find('h1').shouldHave({text: 'Page 2'}),
-            iframeScope.shouldHave({text: 'Page 2'})
+            iframeScope.find('h1').shouldHave({ text: 'Page 2' }),
+            iframeScope.shouldHave({ text: 'Page 2' })
           ])
         })
-      }, {vdom: false})
+      }, { vdom: false })
 
       it('can find things in an iframe', function () {
         var iframe = document.createElement('iframe')
@@ -104,9 +104,9 @@ describe('find', function () {
         assembly.useNormalRetry()
 
         return browser.find('iframe').element().then(function (iframe) {
-          return browser.scope(iframe).find('h1', {text: 'Page 2'}).shouldExist()
+          return browser.scope(iframe).find('h1', { text: 'Page 2' }).shouldExist()
         })
-      }, {vdom: false})
+      }, { vdom: false })
     }
 
     describe('visibility', function () {
@@ -116,14 +116,14 @@ describe('find', function () {
         assembly.eventuallyDoNothing()
 
         return browser.find('.element > span').shouldNotExist()
-      }, {vdom: false})
+      }, { vdom: false })
 
       it('should find an element that is visually hidden when visibleOnly = false', function () {
         assembly.insertHtml('<div class="element">hello <span style="display:none;">world</span></div>')
 
         assembly.eventuallyDoNothing()
 
-        return browser.options({visibleOnly: false}).find('.element > span').shouldExist()
+        return browser.options({ visibleOnly: false }).find('.element > span').shouldExist()
       })
 
       it('should find elements that are visually hidden because of how html renders them', function () {
@@ -131,7 +131,7 @@ describe('find', function () {
 
         assembly.eventuallyDoNothing()
 
-        return browser.find('select option').shouldHave({text: ['First', 'Second']})
+        return browser.find('select option').shouldHave({ text: ['First', 'Second'] })
       })
     })
 

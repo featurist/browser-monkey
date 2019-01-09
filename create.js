@@ -6,10 +6,11 @@ var fields = require('./lib/fields')
 var assertions = require('./lib/assertions')
 
 module.exports = function (rootSelector) {
-  return new Selector(rootSelector)
+  return new Selector()
     .component(finders)
     .component(actions)
     .component(button)
     .component(fields)
     .component(assertions)
+    .scope(rootSelector)
 }

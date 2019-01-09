@@ -64,7 +64,7 @@ describe('buttons', function () {
       it('can define a new button', () => {
         const button = assembly.insertHtml('<div class="button" value="Login">Login</div>')
 
-        browser.defineButton((monkey, name) => monkey.find('div.button', {exactText: name}))
+        browser.defineButton((monkey, name) => monkey.find('div.button', { exactText: name }))
 
         return browser.button('Login').then(function (elements) {
           demand(elements).to.eql([button])
@@ -74,7 +74,7 @@ describe('buttons', function () {
       it('can define a new button and still use original button definitions', () => {
         const button = assembly.insertHtml('<button>Login</button>')
 
-        browser.defineButton((monkey, name) => monkey.find('div.button', {exactText: name}))
+        browser.defineButton((monkey, name) => monkey.find('div.button', { exactText: name }))
 
         return browser.button('Login').then(function (elements) {
           demand(elements).to.eql([button])
@@ -99,7 +99,7 @@ describe('buttons', function () {
 
         button.addEventListener('click', () => events.push('click'))
 
-        browser.defineButton((monkey, name) => monkey.find('div.button', {exactText: name}))
+        browser.defineButton((monkey, name) => monkey.find('div.button', { exactText: name }))
 
         return browser.clickButton('Login').then(function () {
           demand(events).to.eql(['click'])

@@ -24,7 +24,7 @@ module.exports = function (app, options) {
         var vdom = hyperdom.html('body')
 
         var monkey = createMonkey(vdom)
-        monkey.set({$: vquery, visibleOnly: false, document: {}})
+        monkey.set({ $: vquery, visibleOnly: false, document: {} })
 
         hyperdom.appendVDom(vdom, app, extend({ requestRender: setTimeout, window: window }, options))
         return monkey

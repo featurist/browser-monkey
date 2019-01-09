@@ -1,1 +1,1 @@
-{ "presets": ["latest", "react"] }
+{ "presets": ["@babel/react"] }

@@ -93,10 +93,10 @@ describe('component', function () {
         }
       })
 
-      var promise = admin.user().shouldHave({text: ['Jane']})
+      var promise = admin.user().shouldHave({ text: ['Jane'] })
 
       assembly.eventuallyInsertHtml(
-          '<div class="user">Bob</div>' +
+        '<div class="user">Bob</div>' +
         '<div class="admin">' +
           '<div class="user">Jane</div>' +
         '</div>'

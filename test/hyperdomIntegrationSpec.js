@@ -41,13 +41,13 @@ describe('hyperdom integration', function () {
                 model.show = !model.show
               }
             }),
-            h('input', {type: 'text', binding: [model, 'name']}),
-            h('select', {binding: [model, 'gender']},
+            h('input', { type: 'text', binding: [model, 'name'] }),
+            h('select', { binding: [model, 'gender'] },
               h('option', 'Select..'),
-              h('option', {value: 'fml'}, 'Female'),
-              h('option', {value: 'ml'}, 'Male'),
-              h('option', {value: fuzzy}, 'Not sure'),
-              h('option', {value: other}, 'Other')
+              h('option', { value: 'fml' }, 'Female'),
+              h('option', { value: 'ml' }, 'Male'),
+              h('option', { value: fuzzy }, 'Not sure'),
+              h('option', { value: other }, 'Other')
             ),
             h('.name', 'Name: ', model.name),
             h('.gender', 'Gender: ', model.gender),
@@ -60,17 +60,17 @@ describe('hyperdom integration', function () {
       hyperdom.append(assembly._div, new App(model), { requestRender: setTimeout })
 
       await browserMonkey.find('.toggle').click()
-      await browserMonkey.find('span', {text: 'hello'}).shouldExist()
+      await browserMonkey.find('span', { text: 'hello' }).shouldExist()
       await browserMonkey.find('input').typeIn('monkey')
       await retry(function () {
         demand(model.name).to.equal('monkey')
       })
-      await browserMonkey.find('select').select({text: 'Female'})
-      await browserMonkey.find('.name').shouldHave({text: 'monkey'})
-      await browserMonkey.find('.gender').shouldHave({text: 'fml'})
-      await browserMonkey.find('input').shouldHave({value: 'monkey'})
-      await browserMonkey.find('select').select({text: 'Other'})
-      await browserMonkey.find('option:checked').shouldHave({text: 'Other'})
+      await browserMonkey.find('select').select({ text: 'Female' })
+      await browserMonkey.find('.name').shouldHave({ text: 'monkey' })
+      await browserMonkey.find('.gender').shouldHave({ text: 'fml' })
+      await browserMonkey.find('input').shouldHave({ value: 'monkey' })
+      await browserMonkey.find('select').select({ text: 'Other' })
+      await browserMonkey.find('option:checked').shouldHave({ text: 'Other' })
     })
   })
 })

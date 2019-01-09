@@ -34,7 +34,7 @@ describe('fields', function () {
         const fieldDiv = assembly.insertHtml('<div class="field"><div class="field-name">Email</div><input type="text" /></div>')
         const field = fieldDiv.querySelector('input')
 
-        const customFieldBrowser = browser.defineField((monkey, name) => monkey.find('div.field').containing('.field-name', {exactText: name}).find('input'))
+        const customFieldBrowser = browser.defineField((monkey, name) => monkey.find('div.field').containing('.field-name', { exactText: name }).find('input'))
 
         return customFieldBrowser.field('Email').then(function (elements) {
           demand(elements).to.eql([field])
@@ -44,7 +44,7 @@ describe('fields', function () {
       it('can define a new field and still use original field definitions', () => {
         const field = assembly.insertHtml('<label>Email <input type="text" /></label>').querySelector('input')
 
-        const customFieldBrowser = browser.defineField((monkey, name) => monkey.find('div.field').containing('.field-name', {exactText: name}).find('input'))
+        const customFieldBrowser = browser.defineField((monkey, name) => monkey.find('div.field').containing('.field-name', { exactText: name }).find('input'))
 
         return customFieldBrowser.field('Email').then(function (elements) {
           demand(elements).to.eql([field])
@@ -204,7 +204,7 @@ describe('fields', function () {
           get: (monkey) => monkey.mapAll(() => 'div value')
         })
 
-        await custom.shouldHave({exactValue: 'div value'})
+        await custom.shouldHave({ exactValue: 'div value' })
       })
 
       it('uses .value in shouldHave({value})', async () => {
@@ -212,7 +212,7 @@ describe('fields', function () {
           get: (monkey) => monkey.mapAll(() => 'div value')
         })
 
-        await custom.shouldHave({value: 'value'})
+        await custom.shouldHave({ value: 'value' })
       })
     })
 
@@ -234,7 +234,7 @@ describe('fields', function () {
 
         field.addEventListener('change', () => events.push('change'))
 
-        const custom = browser.defineField((monkey, name) => monkey.find('div.field').containing('.field-name', {exactText: name}).find('input'))
+        const custom = browser.defineField((monkey, name) => monkey.find('div.field').containing('.field-name', { exactText: name }).find('input'))
 
         return custom.setField('Email', 'bob@example.com').then(function () {
           demand(events).to.eql(['change'])

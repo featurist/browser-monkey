@@ -25,7 +25,19 @@ module.exports = function (config) {
     browserify: {
       debug: true,
       extensions: ['.jsx'],
-      transform: ['babelify', [require('./utils/removeStrictFromSend'), {global: true}, 'transform-regenerator']]
+      transform: [
+        ['babelify', {
+          presets: [
+            ['@babel/preset-env', {
+              targets: {
+                ie: '11'
+              },
+              useBuiltIns: 'entry'
+            }],
+            '@babel/preset-react'
+          ]
+        }]
+      ]
     },
 
     client: {
