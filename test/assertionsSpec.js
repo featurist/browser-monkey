@@ -246,7 +246,7 @@ describe('assertions', function () {
 
           assembly.eventuallyInsertHtml('<select><option>Optional</option><option>Mr</option><option>Mrs</option></select>')
 
-          assembly.assertRejection(promise, "expected [ 'Optional', 'Mr', 'Mrs' ] to have exact inner texts [ '', 'Mr', 'Mrs' ]")
+          return assembly.assertRejection(promise, "expected [ 'Optional', 'Mr', 'Mrs' ] to have exact inner texts [ '', 'Mr', 'Mrs' ]")
         })
       })
 
