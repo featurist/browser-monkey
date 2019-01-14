@@ -53,7 +53,7 @@
   "dependencies": {
     "array.prototype.find": "^2.0.4",
     "chai": "4.2.0",
-    "debug": "https://github.com/artemave/debug",
+    "debug-es5": "^4.1.0",
     "deep-equal": "1.0.1",
     "error-stack-parser": "2.0.2",
     "global": "^4.3.2",
@@ -65,7 +65,8 @@
   },
   "standard": {
     "env": [
-      "mocha"
+      "mocha",
+      "browser"
     ],
     "ignore": [
       "docs/codesandbox/**/*"

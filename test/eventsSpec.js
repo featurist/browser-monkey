@@ -1,6 +1,7 @@
 var describeAssemblies = require('./describeAssemblies')
 const DomAssembly = require('./assemblies/DomAssembly')
 var demand = require('must')
+var retry = require('trytryagain')
 
 describe('events', function () {
   describeAssemblies([DomAssembly], function (Assembly) {
@@ -49,7 +50,7 @@ describe('events', function () {
       demand(document.hasFocus(), 'the browser must be in focus for this test!').to.equal(true)
     }
 
-    it('typeIn element should fire change and then blur event on input', function () {
+    it('typeIn element should fire change and then blur event on input', async function () {
       var firedEvents = []
 
       assertBrowserHasFocus()
@@ -64,9 +65,9 @@ describe('events', function () {
         firedEvents.push('change')
       })
 
-      return browser.find('.input').typeIn('first').then(function () {
-        return browser.find('.change').typeIn('second')
-      }).then(function () {
+      await browser.find('.input').typeIn('first')
+      await browser.find('.change').typeIn('second')
+      await retry(() => {
         demand(firedEvents).to.eql([
           'change',
           'blur'
@@ -74,7 +75,7 @@ describe('events', function () {
       })
     })
 
-    it('click element should fire blur event on input', function () {
+    it('click element should fire blur event on input', async function () {
       var blurred = false
 
       assertBrowserHasFocus()
@@ -86,14 +87,14 @@ describe('events', function () {
         blurred = true
       })
 
-      return browser.find('.input').typeIn('first').then(function () {
-        return browser.find('button').click()
-      }).then(function () {
+      await browser.find('.input').typeIn('first')
+      await browser.find('button').click()
+      await retry(function () {
         demand(blurred).to.eql(true)
       })
     })
 
-    it('select element should fire blur event on input', function () {
+    it('select element should fire blur event on input', async function () {
       var blurred = false
 
       assertBrowserHasFocus()
@@ -104,9 +105,9 @@ describe('events', function () {
         blurred = true
       })
 
-      return browser.find('.input').typeIn('first').then(function () {
-        return browser.find('select').select({ text: 'one' })
-      }).then(function () {
+      await browser.find('.input').typeIn('first')
+      await browser.find('select').select({ text: 'one' })
+      await retry(function () {
         demand(blurred).to.eql(true)
       })
     })
