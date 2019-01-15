@@ -2,7 +2,7 @@ var describeAssemblies = require('./describeAssemblies')
 const expect = require('must')
 const DomAssembly = require('./assemblies/DomAssembly')
 
-describe('selectors', () => {
+describe('query', () => {
   describeAssemblies([DomAssembly], Assembly => {
     let assembly
     let browserMonkey
@@ -436,7 +436,7 @@ describe('selectors', () => {
     })
 
     describe('race', () => {
-      it('finds the first of two or more selectors', async () => {
+      it('finds the first of two or more queries', async () => {
         const promise = browserMonkey.race([
           b => b.find('.a').one(),
           b => b.find('.b').one()
