@@ -1,4 +1,4 @@
-require('lie/polyfill')
+require('@babel/polyfill')
 
 var expect = require('chai').expect
 global.timeout = parseInt(typeof window === 'object' && (window.__env__.BM_TIMEOUT || 200))

@@ -9,7 +9,7 @@ class WebApp extends React.Component {
   }
 
   hello () {
-    this.setState({message: 'hello browser-monkey'})
+    this.setState({ message: 'hello browser-monkey' })
   }
 
   render () {

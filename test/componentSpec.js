@@ -1,111 +1,108 @@
-var domTest = require('./domTest')
+var describeAssemblies = require('./describeAssemblies')
+const DomAssembly = require('./assemblies/DomAssembly')
 
 describe('component', function () {
-  domTest('can return new selectors by extending', function (browser, dom) {
-    var user = browser.component({
-      name: function () {
-        return this.find('.user-name')
-      },
+  describeAssemblies([DomAssembly], function (Assembly) {
+    var assembly
+    var browser
 
-      address: function () {
-        return this.find('.user-address')
-      }
+    beforeEach(function () {
+      assembly = new Assembly()
+      browser = assembly.browserMonkey()
     })
 
-    var promise = user.name().shouldExist()
+    it('can return new selectors by extending', function () {
+      var user = browser.component({
+        name: function () {
+          return this.find('.user-name')
+        }
+      })
 
-    dom.eventuallyInsert('<div class="user"><div class="user-name">bob</div><div class="user-address">bob\'s address</div></div>')
+      var promise = user.name().shouldExist()
 
-    return promise
-  })
+      assembly.eventuallyInsertHtml('<div class="user"><div class="user-name">bob</div><div class="user-address">bob\'s address</div></div>')
 
-  domTest('components are independent', function (browser, dom) {
-    var user = browser.component({
-      name: function () {
-        return this.find('.user-name')
-      }
+      return promise
     })
 
-    browser.component({
-      name: function () {
-        return this.find('.bah-name')
-      }
+    it('can define properties', function () {
+      var user = browser.component({
+        get name () {
+          return this.find('.user-name')
+        }
+      })
+
+      var promise = user.name.shouldExist()
+
+      assembly.eventuallyInsertHtml('<div class="user"><div class="user-name">bob</div><div class="user-address">bob\'s address</div></div>')
+
+      return promise
     })
 
-    var promise = user.name().shouldExist()
+    it('components are independent', function () {
+      var user = browser.component({
+        name: function () {
+          return this.find('.user-name')
+        }
+      })
 
-    dom.eventuallyInsert('<div class="user"><div class="user-name">bob</div><div class="user-address">bob\'s address</div></div>')
+      browser.component({
+        name: function () {
+          return this.find('.bah-name')
+        }
+      })
 
-    return promise
-  })
+      var promise = user.name().shouldExist()
 
-  domTest('can extend another component', function (browser, dom) {
-    var user = browser.component({
-      name: function () {
-        return this.find('.user-name')
-      },
+      assembly.eventuallyInsertHtml('<div class="user"><div class="user-name">bob</div><div class="user-address">bob\'s address</div></div>')
 
-      address: function () {
-        return this.find('.user-address')
-      }
+      return promise
     })
 
-    var bossUser = user.component({
-      secondAddress: function () {
-        return this.find('.user-second-address')
-      }
+    it('can extend another component', function () {
+      var user = browser.component({
+        name: function () {
+          return this.find('.user-name')
+        },
+
+        address: function () {
+          return this.find('.user-address')
+        }
+      })
+
+      var bossUser = user.component({
+        secondAddress: function () {
+          return this.find('.user-second-address')
+        }
+      })
+
+      var name = bossUser.name().shouldExist()
+      var secondAddress = bossUser.secondAddress().shouldExist()
+
+      assembly.eventuallyInsertHtml('<div class="user"><div class="user-name">bob</div><div class="user-address">bob\'s address</div><div class="user-second-address">bob\'s second address</div></div>')
+
+      return Promise.all([name, secondAddress])
     })
 
-    var name = bossUser.name().shouldExist()
-    var secondAddress = bossUser.secondAddress().shouldExist()
+    it('components inherit scope', function () {
+      var adminArea = browser.find('.admin')
 
-    dom.eventuallyInsert('<div class="user"><div class="user-name">bob</div><div class="user-address">bob\'s address</div><div class="user-second-address">bob\'s second address</div></div>')
+      var admin = adminArea.component({
+        user: function () {
+          return this.find('.user')
+        }
+      })
 
-    return Promise.all([name, secondAddress])
-  })
+      var promise = admin.user().shouldHave({ text: ['Jane'] })
 
-  domTest('can return new scoped selectors', function (browser, dom) {
-    var admin = browser.component({
-      user: function () {
-        return user.scope(this.find('.user'))
-      }
-    })
-
-    var user = browser.component({
-      name: function () {
-        return this.find('.user-name')
-      },
-
-      address: function () {
-        return this.find('.user-address')
-      }
-    })
-
-    var promise = admin.user().name().shouldExist()
-
-    dom.eventuallyInsert('<div class="user"><div class="user-name">bob</div><div class="user-address">bob\'s address</div></div>')
-
-    return promise
-  })
-
-  domTest('components inherit scope', function (browser, dom) {
-    var adminArea = browser.find('.admin')
-
-    var admin = adminArea.component({
-      user: function () {
-        return this.find('.user')
-      }
-    })
-
-    var promise = admin.user().shouldHave({text: ['Jane']})
-
-    dom.eventuallyInsert(
+      assembly.eventuallyInsertHtml(
         '<div class="user">Bob</div>' +
-      '<div class="admin">' +
-        '<div class="user">Jane</div>' +
-      '</div>'
-    )
+        '<div class="admin">' +
+          '<div class="user">Jane</div>' +
+        '</div>'
+      )
 
-    return promise
+      return promise
+    })
   })
 })

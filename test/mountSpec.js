@@ -1,23 +1,17 @@
-var expect = require('chai').expect
-var isBrowser = !require('is-node')
+const { expect } = require('chai')
+const pathUtils = require('path')
+const describeAssemblies = require('./describeAssemblies')
+const DomAssembly = require('./assemblies/DomAssembly')
 
-function isSupportedBrowser () {
-  if (isBrowser) {
-    var browser = require('detect-browser')
-    if (browser.name === 'ie' && parseInt(browser.version.match(/(\d+)./)[1]) <= 10) {
-      return false
-    }
-
-    return true
+describeAssemblies([DomAssembly], (Assembly) => {
+  const assembly = new Assembly()
+  if (Assembly.hasDom()) {
+    testMount('angular', require('./app/angular'), require('../angular'))
+    testMount('hyperdom', new (require('./app/hyperdom'))(), require('../hyperdom'))
+    testMount('react', new (require('./app/react'))(), require('../react'))
+    testMount('iframe', assembly.localUrl(pathUtils.join(__dirname, 'iframe-mount-test.html')), require('../iframe'))
   }
-}
-
-if (isSupportedBrowser()) {
-  testMount('angular', require('./app/angular'), require('../angular'))
-  testMount('hyperdom', new (require('./app/hyperdom'))(), require('../hyperdom'))
-  testMount('react', new (require('./app/react'))(), require('../react'))
-  testMount('iframe', '/base/test/iframe-mount-test.html', require('../iframe'))
-}
+})
 
 function testMount (appType, app, monkeyBuilder) {
   describe(`mount ${appType}`, () => {
@@ -27,18 +21,18 @@ function testMount (appType, app, monkeyBuilder) {
       monkey = monkeyBuilder(app)
     })
 
-    afterEach(() => monkey.get('mount').stop())
+    afterEach(() => monkey.options().mount.stop())
 
     it('loads some data', () => {
-      return monkey.find('.message').shouldHave({text: 'default'}).then(() => {
+      return monkey.find('.message').shouldHave({ text: 'default' }).then(() => {
         return monkey.find('button').click()
       }).then(() => {
-        return monkey.find('.message').shouldHave({text: 'hello browser-monkey'})
+        return monkey.find('.message').shouldHave({ text: 'hello browser-monkey' })
       })
     })
 
     it('exposes the app', () => {
-      expect(monkey.get('app')).to.equal(app)
+      expect(monkey.options().app).to.equal(app)
     })
   })
 }

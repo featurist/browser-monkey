@@ -1,30 +1,28 @@
 var demand = require('must')
-var domTest = require('./domTest')
+var describeAssemblies = require('./describeAssemblies')
+const DomAssembly = require('./assemblies/DomAssembly')
 
 describe('scope', function () {
-  domTest('can scope with an element', function (browser, dom, $) {
-    var red = dom.insert('<div><div class="element">red</div></div>')
-    var blue = dom.insert('<div><div class="element">blue</div></div>')
+  describeAssemblies([DomAssembly], Assembly => {
+    var assembly
+    var browser
 
-    return browser.scope(red).find('.element').element().then(function (element) {
-      demand($(element).text()).to.equal('red')
-    }).then(function () {
-      return browser.scope(blue).find('.element').element()
-    }).then(function (element) {
-      demand($(element).text()).to.equal('blue')
+    beforeEach(function () {
+      assembly = new Assembly()
+      browser = assembly.browserMonkey()
     })
-  })
 
-  domTest('can scope with another finder', function (browser, dom, $) {
-    dom.insert('<div class="red"><div class="element">red</div></div>')
-    dom.insert('<div class="blue"><div class="element">blue</div></div>')
+    it('can scope with an element', function () {
+      var red = assembly.insertHtml('<div><div class="element">red</div></div>')
+      var blue = assembly.insertHtml('<div><div class="element">blue</div></div>')
 
-    return browser.scope(browser.find('.red')).find('.element').element().then(function (element) {
-      demand($(element).text()).to.equal('red')
-    }).then(function () {
-      return browser.scope(browser.find('.blue')).find('.element').element()
-    }).then(function (element) {
-      demand($(element).text()).to.equal('blue')
+      return browser.scope(red).find('.element').element().then(function (element) {
+        demand(element.innerText).to.equal('red')
+      }).then(function () {
+        return browser.scope(blue).find('.element').element()
+      }).then(function (element) {
+        demand(element.innerText).to.equal('blue')
+      })
     })
   })
 })

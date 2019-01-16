@@ -1,18 +1,21 @@
 var demand = require('must')
 var retry = require('trytryagain')
-var browser = require('..')
 var hyperdom = require('hyperdom')
 var h = hyperdom.html
-var isBrowser = !require('is-node')
-var createTestDiv = require('../lib/createTestDiv')
+var describeAssemblies = require('./describeAssemblies')
+const DomAssembly = require('./assemblies/DomAssembly')
 
-if (isBrowser) {
-  describe('hyperdom integration', function () {
-    it('should find things rendered by hyperdom', function () {
-      function App (model) {
-        this.model = model
-      }
+describe('hyperdom integration', function () {
+  describeAssemblies([DomAssembly], Assembly => {
+    let assembly
+    let browserMonkey
 
+    beforeEach(() => {
+      assembly = new Assembly()
+      browserMonkey = assembly.browserMonkey()
+    })
+
+    it('should find things rendered by hyperdom', async () => {
       var other = {
         former: 'Male'
       }
@@ -20,59 +23,54 @@ if (isBrowser) {
         fuzzy: true
       }
 
-      App.prototype.render = function () {
-        var model = this.model
-        function renderMessage () {
-          if (model.show) {
-            return h('span', 'hello')
-          }
+      class App {
+        constructor (model) {
+          this.model = model
         }
-        return h('div', [
-          h('a.toggle', {
-            onclick: function () {
-              model.show = !model.show
+
+        render () {
+          var model = this.model
+          function renderMessage () {
+            if (model.show) {
+              return h('span', 'hello')
             }
-          }),
-          h('input', {type: 'text', binding: [model, 'name']}),
-          h('select', {binding: [model, 'gender']},
-            h('option', 'Select..'),
-            h('option', {value: 'fml'}, 'Female'),
-            h('option', {value: 'ml'}, 'Male'),
-            h('option', {value: fuzzy}, 'Not sure'),
-            h('option', {value: other}, 'Other')
-          ),
-          h('.name', 'Name: ', model.name),
-          h('.gender', 'Gender: ', model.gender),
-          renderMessage()
-        ])
+          }
+          return h('div',
+            h('a.toggle', {
+              onclick: function () {
+                model.show = !model.show
+              }
+            }),
+            h('input', { type: 'text', binding: [model, 'name'] }),
+            h('select', { binding: [model, 'gender'] },
+              h('option', 'Select..'),
+              h('option', { value: 'fml' }, 'Female'),
+              h('option', { value: 'ml' }, 'Male'),
+              h('option', { value: fuzzy }, 'Not sure'),
+              h('option', { value: other }, 'Other')
+            ),
+            h('.name', 'Name: ', model.name),
+            h('.gender', 'Gender: ', model.gender),
+            renderMessage()
+          )
+        }
       }
 
       var model = {}
-      var dom = createTestDiv()
-      hyperdom.append(dom, new App(model))
-      browser = browser.scope(dom)
+      hyperdom.append(assembly._div, new App(model), { requestRender: setTimeout })
 
-      return browser.find('.toggle').click().then(function () {
-        return browser.find('span', {text: 'hello'}).shouldExist()
-      }).then(function () {
-        return browser.find('input').typeIn({text: 'monkey'})
-      }).then(function () {
-        return retry(function () {
-          demand(model.name).to.equal('monkey')
-        })
-      }).then(function () {
-        return browser.find('select').select({text: 'Female'})
-      }).then(function () {
-        return browser.find('.name').shouldHave({text: 'monkey'})
-      }).then(function () {
-        return browser.find('.gender').shouldHave({text: 'fml'})
-      }).then(function () {
-        return browser.find('input').shouldHave({value: 'monkey'})
-      }).then(function () {
-        return browser.find('select').select({text: 'Other'})
-      }).then(function () {
-        return browser.find('option:selected').shouldHave({text: 'Other'})
+      await browserMonkey.find('.toggle').click()
+      await browserMonkey.find('span', { text: 'hello' }).shouldExist()
+      await browserMonkey.find('input').typeIn('monkey')
+      await retry(function () {
+        demand(model.name).to.equal('monkey')
       })
+      await browserMonkey.find('select').select({ text: 'Female' })
+      await browserMonkey.find('.name').shouldHave({ text: 'monkey' })
+      await browserMonkey.find('.gender').shouldHave({ text: 'fml' })
+      await browserMonkey.find('input').shouldHave({ value: 'monkey' })
+      await browserMonkey.find('select').select({ text: 'Other' })
+      await browserMonkey.find('option:checked').shouldHave({ text: 'Other' })
     })
   })
-}
+})
