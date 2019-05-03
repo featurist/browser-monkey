@@ -1,3 +1,3 @@
-- [Overview](/)
-- [Quick start](quickstart.md)
-- [API Reference](api.md)
+- [Introduction](introduction)
+- [Quick start](quickstart)
+- [API Reference](api)

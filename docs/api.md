@@ -42,8 +42,61 @@ innerScope.get('visibleOnly'); // returns false
 * `visibleOnly` if true, then only visible elements will be found, if false, then all elements are considered. Visible is determined by the element's computed CSS, see [jQuery's :visible selector](https://api.jquery.com/visible-selector/). Default is true.
 * `timeout` an integer specifying the milliseconds to wait for an element to appear. This can be overriden by specifying the timeout when calling an action.
 
+## mount
+
+Typically you will need to mount your application into the DOM before running your tests.
+
+Browser monkey comes with a handy way of doing this for popular web frameworks
+
+### react
+where YourReactApp is a react class [see here](test/app/react.jsx) for an example
+
+```js
+const reactMonkey = require('browser-monkey/react')
+const monkey = reactMonkey(new YourReactApp())
+```
+
+### hyperdom
+where YourHyperdomApp is a class that has a render method. [see here](test/app/hyperdom.jsx) for an example
+
+```js
+const hyperdomMonkey = require('browser-monkey/hyperdom')
+const monkey = hyperdomMonkey(new YourHyperdomApp())
+```
+
+### angular
+where YourAngularApp is a class with fields 'directiveName' and 'moduleName' [see here](test/app/angular.js) for an example
+
+```js
+const angularMonkey = require('browser-monkey/angular')
+const monkey = angularMonkey({
+  directiveName: 'best-frameworks',
+  moduleName: 'FrameworksApp'
+})
+```
+
+### iframe
+You can also use browser-monkey to do full integration testing.
+Just give it the url of your web server
+
+```js
+const iframeMonkey = require('browser-monkey/iframe')
+const monkey = iframeMonkey('http://your-app.example')
+```
+
+and then you can use the monkey
+
+```js
+monkey.find('h1').shouldHave({text: 'Hello World'});
+```
+
+The `monkey` is a normal browser monkey object which the has the following additional options:
+
+ * mount - the mount object used to mount the app (useful for unmounting later)
+ * app - the application passed to withApp
+
+you can retrieve these options using the options api eg. `monkey.get('app')`
 ## Scopes
-### scope
 You can reset the starting point for the scope, the element from which all elements are searched for. By default this is the `<body>` element, but you can set it to a more specific element, or indeed another scope.
 
 ```js

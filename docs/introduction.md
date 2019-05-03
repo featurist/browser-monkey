@@ -1,7 +1,4 @@
 # Browser Monkey
-
-Reliable DOM Testing
-
 ## What it is
 
 Browser Monkey is a DOM assertion library. It helps you write framework agnostic browser tests that are reliable in the face of asynchronous behaviours like animations, AJAX and delayed rendering. It also helps you to write tests that exhibit the semantic meaning of the page, as opposed to a jumble of CSS selectors.
@@ -42,7 +39,4 @@ describe("beer app", () => {
 });
 ```
 
-*THIS IFRAME SHOULD BE GENERATED USING THE UPDATER*
-
 <iframe src="https://codesandbox.io/embed/2x8kv8voyn?fontsize=14&previewwindow=tests" style="width:100%; height:500px; border:0; border-radius: 4px; overflow:hidden;" sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"></iframe>
-
