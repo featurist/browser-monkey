@@ -16,7 +16,7 @@ Browser Monkey is a DOM assertion library. It helps you write framework agnostic
 
 ## Examples
 
-```js codesandbox: basic-example
+```js
 import createMonkey from "browser-monkey/create";
 import createTestDiv from "browser-monkey/lib/createTestDiv";
 import hyperdom from "hyperdom";
@@ -41,6 +41,8 @@ describe("beer app", () => {
   });
 });
 ```
+
 *THIS IFRAME SHOULD BE GENERATED USING THE UPDATER*
+
 <iframe src="https://codesandbox.io/embed/2x8kv8voyn?fontsize=14&previewwindow=tests" style="width:100%; height:500px; border:0; border-radius: 4px; overflow:hidden;" sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"></iframe>
 
