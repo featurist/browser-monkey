@@ -1,7 +1,3 @@
 - [Overview](/)
- - [Features](/#features)
- - [Examples](/#examples)
-
-- Getting started
-
-  - [Quick start](quickstart.md)
+- [Quick start](quickstart.md)
+- [API Reference](api.md)

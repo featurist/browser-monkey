@@ -40,6 +40,8 @@ Now you can run the test using `electron-mocha`, the `--renderer` flag tells ele
 electron-mocha test/**/*Spec.js --renderer --interactive 
 ```
 
+[Clone this example](https://github.com/featurist/browser-monkey-electron-mocha/)
+
 ## Karma
 For this example we will create a small react application
 
@@ -87,3 +89,5 @@ module.exports = function(config) {
 ```
 
 Now you can run the testing using `karma start`
+
+[Clone this example](https://github.com/featurist/browser-monkey-karma/)
