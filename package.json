@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "standard && mocha && karma start --single-run",
-    "update-readme-example-links": "node ./docs/update-readme-example-links.js"
+    "update-readme-example-links": "node ./docs/update-readme-example-links.js",
+    "docs": "docsify serve docs"
   },
   "author": "Tim Macfarlane <timmacfarlane@gmail.com>",
   "license": "MIT",
@@ -51,6 +52,7 @@
     "chai": "3.5.0",
     "debug": "^2.6.3",
     "detect-browser": "^1.6.2",
+    "docsify-cli": "^4.3.0",
     "finished-promise": "0.0.2",
     "global": "^4.3.1",
     "hobostyle": "1.0.0",
