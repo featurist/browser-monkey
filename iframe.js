@@ -1,45 +1,52 @@
-var debug = require('debug')('browser-monkey:angular')
-var Mount = require('./lib/mount')
+var debug = require('debug')('browser-monkey:iframe')
 var createMonkey = require('./create')
 var hobostyle = require('hobostyle')
 var createTestDiv = require('./lib/createTestDiv')
-var addressBarInterval
+var { iframeResizer } = require('iframe-resizer')
 
 module.exports = function (url) {
-  return new Mount(url, {
-    stopApp: function () {},
-    startApp: function () {
-      debug('Mounting iframe: ' + url)
-      var div = createTestDiv()
-      var addressBar = document.createElement('div')
-      addressBar.innerText = url
-      addressBar.className = 'address-bar'
-      div.appendChild(addressBar)
+  debug('Mounting iframe: ' + url)
 
-      var iframe = document.createElement('iframe')
-      iframe.src = url
-      iframe.onload = function () {
-        addressBar.innerText = iframe.contentWindow.location.href
-      }
-      iframe.height = window.innerHeight - addressBar.clientHeight - 10
-      div.appendChild(iframe)
+  var div = createTestDiv()
+  div.className = 'browser-monkey-browser'
 
-      if (addressBarInterval) {
-        clearInterval(addressBarInterval)
-      }
-      addressBarInterval = setInterval(function () {
-        if (iframe.contentWindow) {
-          addressBar.innerText = iframe.contentWindow.location.href
-        } else {
-          clearInterval(addressBarInterval)
-        }
-      }, 300)
+  div.innerHTML = `
+    <div class="browser-monkey-address-bar">
+      <button class="browser-monkey-back-button">&lt;</button>
+      <button class="browser-monkey-forward-button">&gt;</button>
+      <div class="browser-monkey-address-bar-text"></div>
+    </div>
+    <iframe class="browser-monkey-iframe"></iframe>
+  `
 
-      hobostyle.style('html,body { margin: 0; height: 100%; }')
-      hobostyle.style('iframe { border: none; width: 100%; }')
-      hobostyle.style('.address-bar { padding: 5px; font-family: arial; font-size: 20px; border-bottom: 1px solid gray; }')
+  const addressBar = div.querySelector('.browser-monkey-address-bar')
+  const forwardButton = div.querySelector('.browser-monkey-forward-button')
+  const backButton = div.querySelector('.browser-monkey-back-button')
+  const addressBarText = div.querySelector('.browser-monkey-address-bar-text')
+  addressBarText.innerText = url
+  const iframe = div.querySelector('.browser-monkey-iframe')
 
-      return createMonkey(iframe)
-    }
-  }).start()
+  forwardButton.addEventListener('click', () => {
+    iframe.contentWindow.history.forward()
+  })
+
+  backButton.addEventListener('click', () => {
+    iframe.contentWindow.history.back()
+  })
+
+  iframe.src = url
+  iframe.addEventListener('load', () => {
+    console.log('loading')
+    addressBarText.innerText = iframe.contentWindow.location.href
+    const script = iframe.contentDocument.createElement('script')
+    script.src = 'file://' + __dirname + '/node_modules/iframe-resizer/js/iframeResizer.contentWindow.min.js'
+    iframe.contentDocument.head.appendChild(script)
+    console.log('done')
+  })
+
+  iframeResizer({ log: true, checkOrigin: false }, iframe)
+
+  hobostyle.link(__dirname + '/iframe.css')
+
+  return createMonkey(iframe)
 }

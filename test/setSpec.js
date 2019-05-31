@@ -1,0 +1,246 @@
+const describeAssemblies = require('./describeAssemblies')
+const DomAssembly = require('./assemblies/DomAssembly')
+const demand = require('must')
+
+describe('set', function () {
+  describeAssemblies([DomAssembly], function (Assembly) {
+    var assembly
+    var browser
+
+    beforeEach(function () {
+      assembly = new Assembly()
+      browser = assembly.browserMonkey()
+    })
+
+    it('can set fields by CSS', async () => {
+      assembly.insertHtml(`
+        <form>
+          <input type=text class="address"/>
+          <input type=text class="phone"/>
+          <input type=text class="first-name"/>
+        </form>
+      `)
+
+      await browser.set({
+        'css:.address': '7 Lola St',
+        'css:.phone': '123123123',
+        'css:.first-name': 'Barry'
+      })
+
+      demand(assembly.find('.address').value).to.equal('7 Lola St')
+      demand(assembly.find('.phone').value).to.equal('123123123')
+      demand(assembly.find('.first-name').value).to.equal('Barry')
+    })
+
+    describe('objects', function () {
+      it('can set deep fields by CSS', async () => {
+        assembly.insertHtml(`
+          <form>
+            <div class="address">
+              <input type=text class="street"/>
+              <input type=text class="city"/>
+              <input type=text class="country"/>
+              <input type=text class="postcode"/>
+            </div>
+            <input type=text class="phone"/>
+            <input type=text class="first-name"/>
+          </form>
+        `)
+
+        await browser.set({
+          'css:.address': {
+            'css:.street': '7 Lola St',
+            'css:.city': 'Frisby City',
+            'css:.country': 'Atlantis',
+            'css:.postcode': '12345'
+          },
+          'css:.phone': '123123123',
+          'css:.first-name': 'Barry'
+        })
+
+        demand(assembly.find('.address .street').value).to.equal('7 Lola St')
+        demand(assembly.find('.address .city').value).to.equal('Frisby City')
+        demand(assembly.find('.address .country').value).to.equal('Atlantis')
+        demand(assembly.find('.address .postcode').value).to.equal('12345')
+        demand(assembly.find('.phone').value).to.equal('123123123')
+        demand(assembly.find('.first-name').value).to.equal('Barry')
+      })
+
+      it('deep fields disambiguate', async () => {
+        assembly.insertHtml(`
+          <form>
+            <div class="address">
+              <input type=text class="street"/>
+            </div>
+            <input type=text class="street"/>
+          </form>
+        `)
+
+        await browser.set({
+          'css:.address': {
+            'css:.street': '7 Lola St'
+          }
+        })
+
+        demand(assembly.find('.address .street').value).to.equal('7 Lola St')
+        demand(assembly.find('form > .street').value).to.equal('')
+      })
+    })
+
+    describe('arrays', function () {
+      it('arrays can set multiple matching elements', async () => {
+        assembly.insertHtml(`
+          <form>
+            <div class="address">
+              <input type=text class="street"/>
+            </div>
+            <div class="address">
+              <input type=text class="street"/>
+            </div>
+            <div class="address">
+              <input type=text class="street"/>
+            </div>
+          </form>
+        `)
+
+        await browser.set({
+          'css:.address': [
+            { 'css:.street': '1' },
+            { 'css:.street': '2' },
+            { 'css:.street': '3' }
+          ]
+        })
+
+        demand(assembly.find('.address:nth-child(1) .street').value).to.equal('1')
+        demand(assembly.find('.address:nth-child(2) .street').value).to.equal('2')
+        demand(assembly.find('.address:nth-child(3) .street').value).to.equal('3')
+      })
+
+      it('arrays must have exact number of matching elements', async () => {
+        assembly.insertHtml(`
+          <form>
+            <div class="address">
+              <input type=text class="street"/>
+            </div>
+            <div class="address">
+              <input type=text class="street"/>
+            </div>
+            <div class="address">
+              <input type=text class="street"/>
+            </div>
+          </form>
+        `)
+
+        await assembly.assertRejection(
+          browser.set({
+            'css:.address': [
+              { 'css:.street': '1' },
+              { 'css:.street': '2' }
+            ]
+          }),
+          'expected 2 elements'
+        )
+
+        demand(assembly.find('.address:nth-child(1) .street').value).to.equal('')
+        demand(assembly.find('.address:nth-child(2) .street').value).to.equal('')
+        demand(assembly.find('.address:nth-child(3) .street').value).to.equal('')
+      })
+
+      it('empty arrays assert no elements', async () => {
+        assembly.insertHtml(`
+          <form>
+            <div class="address">
+              <input type=text class="street"/>
+            </div>
+          </form>
+        `)
+
+        await assembly.assertRejection(
+          browser.set({
+            'css:.address': [
+            ]
+          }),
+          'expected 0 elements'
+        )
+
+        demand(assembly.find('.address:nth-child(1) .street').value).to.equal('')
+      })
+    })
+
+    describe('functions', () => {
+      it('can return query to execute', async () => {
+        assembly.insertHtml(`
+          <form>
+            <span class="street"></span>
+          </form>
+        `)
+
+        await browser.set({
+          'css: .street': streetQuery => {
+            streetQuery.element().value().innerText = 'hi'
+          }
+        })
+
+        demand(assembly.find('.street').innerText).to.equal('hi')
+      })
+    })
+
+    it('setting fields is atomic', async () => {
+      assembly.insertHtml(`
+        <form>
+          <input type=text class="phone"/>
+          <input type=text class="first-name"/>
+        </form>
+      `)
+
+      const promise = browser.set({
+        'css:.street': '7 Lola St',
+        'css:.phone': '123123123',
+        'css:.first-name': 'Barry'
+      })
+      await assembly.assertRejection(promise, 'expected 1 elements')
+
+      demand(assembly.find('.phone').value).to.equal('')
+      demand(assembly.find('.first-name').value).to.equal('')
+    })
+
+    it('can define a named field', async function () {
+      assembly.insertHtml(`
+        <form>
+          <input type=text class="phone"/>
+          <input type=text class="first-name"/>
+        </form>
+      `)
+
+      browser.define('phone', b => b.css('.phone'))
+      browser.define('firstName', b => b.css('.first-name'))
+
+      await browser.set({
+        phone: '123123123',
+        firstName: 'Barry'
+      })
+
+      demand(assembly.find('.phone').value).to.equal('123123123')
+      demand(assembly.find('.first-name').value).to.equal('Barry')
+    })
+
+    it('can define a named finder', async function () {
+      assembly.insertHtml(`
+        <form>
+          <input name=phone type=text class="phone"/>
+          <input name=firstname type=text class="first-name"/>
+        </form>
+      `)
+
+      browser.defineFinder('form', (b, name) => b.css('* [name=' + JSON.stringify(name) + ']'))
+
+      await browser.set({
+        'form: phone': '123123123',
+        'form: firstname': 'Barry'
+      })
+
+      demand(assembly.find('.phone').value).to.equal('123123123')
+      demand(assembly.find('.first-name').value).to.equal('Barry')
+    })
+  })
+})

@@ -1,6 +1,7 @@
 var describeAssemblies = require('./describeAssemblies')
 const expect = require('must')
 const DomAssembly = require('./assemblies/DomAssembly')
+const BrowserMonkeyAssertionError = require('../lib/BrowserMonkeyAssertionError').default
 
 describe('query', () => {
   describeAssemblies([DomAssembly], Assembly => {
@@ -13,7 +14,7 @@ describe('query', () => {
     })
 
     it('can find an element by DOM selector', async () => {
-      const selectedElementPromise = browserMonkey.find('.test').one()
+      const selectedElementPromise = browserMonkey.css('.test').one()
 
       const insertedElementPromise = assembly.eventuallyInsertHtml(
         `<div class="test"></div>`
@@ -66,7 +67,7 @@ describe('query', () => {
       it('passes through the maps', async () => {
         const monkey = browserMonkey
           .input(1)
-          .mapAll(x => x + 1)
+          .transform(x => x + 1)
           .component({
             aMethod: function () { return 'aMethod' }
           })
@@ -85,7 +86,7 @@ describe('query', () => {
         `)
 
         const contacts = browserMonkey
-          .find('.contact')
+          .css('.contact')
           .zero()
 
         assembly.eventuallyDeleteHtml('.contact')
@@ -106,11 +107,10 @@ describe('query', () => {
         `)
 
         const contacts = browserMonkey
-          .find('.contact')
+          .css('.contact')
           .zero()
 
         assembly.eventuallyDeleteHtml('.message')
-
         await expect(contacts).reject.with.error(/expected no elements/)
       })
     })
@@ -118,7 +118,7 @@ describe('query', () => {
     describe('one', () => {
       it('when there is one element, selects it', async () => {
         const contacts = browserMonkey
-          .find('.contact')
+          .css('.contact')
           .one()
 
         assembly.eventuallyInsertHtml(`
@@ -133,7 +133,7 @@ describe('query', () => {
 
       it('when there is more than one element, throws an error', async () => {
         const contacts = browserMonkey
-          .find('.contact')
+          .css('.contact')
           .one()
 
         assembly.eventuallyInsertHtml(`
@@ -152,7 +152,7 @@ describe('query', () => {
 
       it('when there no elements, throws an error', async () => {
         const contacts = browserMonkey
-          .find('.contact')
+          .css('.contact')
           .one()
 
         assembly.eventuallyInsertHtml(`
@@ -165,7 +165,7 @@ describe('query', () => {
 
       it('when there is already one result, no array, selects it', async () => {
         const contacts = browserMonkey
-          .find('.contact')
+          .css('.contact')
           .one()
           .one()
 
@@ -183,7 +183,7 @@ describe('query', () => {
     describe('some', () => {
       it('when there are one or more elements, selects them', async () => {
         const contacts = browserMonkey
-          .find('.contact')
+          .css('.contact')
           .some()
 
         assembly.eventuallyInsertHtml(`
@@ -202,7 +202,7 @@ describe('query', () => {
 
       it('when there no elements, throws an error', async () => {
         const contacts = browserMonkey
-          .find('.contact')
+          .css('.contact')
           .some()
 
         assembly.eventuallyInsertHtml(`
@@ -217,7 +217,7 @@ describe('query', () => {
     describe('map', () => {
       it('can map elements', async () => {
         const contacts = browserMonkey
-          .find('.contact')
+          .css('.contact')
           .map(contact => ({
             name: contact.querySelector('.name').innerText,
             address: contact.querySelector('.address').innerText
@@ -249,10 +249,10 @@ describe('query', () => {
     })
 
     describe('input', () => {
-      it('input sets the input used in mapAll', async () => {
+      it('input sets the input used in transform', async () => {
         const monkey = browserMonkey
           .input('a')
-          .mapAll(x => `input: ${x}`)
+          .transform(x => `input: ${x}`)
 
         expect(await monkey).to.eql('input: a')
       })
@@ -295,11 +295,11 @@ describe('query', () => {
       })
     })
 
-    describe('mapAll', () => {
+    describe('transform', () => {
       it('can map all the elements', async () => {
         const contacts = browserMonkey
-          .find('.name')
-          .mapAll(names => {
+          .css('.name')
+          .transform(names => {
             return names.map(contact => contact.innerText).join(', ')
           })
           .ensure(x => expect(x).to.not.be.empty())
@@ -316,7 +316,7 @@ describe('query', () => {
     describe('filter', () => {
       it('can filter elements', async () => {
         const contacts = browserMonkey
-          .find('.contact')
+          .css('.contact')
           .filter(contact => {
             return contact.querySelector('.name').innerText === 'Sally'
           })
@@ -345,7 +345,7 @@ describe('query', () => {
           <div>A</div>
         `)
 
-        const action = browserMonkey.find('div').action(function () {
+        const action = browserMonkey.css('div').action(function () {
           actionExecuted++
         })
 
@@ -364,7 +364,7 @@ describe('query', () => {
         `)
 
         let givenElements
-        const action = browserMonkey.find('div').action(function (els) {
+        const action = browserMonkey.css('div').action(function (els) {
           givenElements = els
         })
 
@@ -377,25 +377,26 @@ describe('query', () => {
     describe('errors', () => {
       it('shows what it was able to map', async () => {
         const name = browserMonkey
-          .find('.container')
-          .find('.contact')
-          .find('.name')
+          .css('.container')
+          .css('.contact')
+          .css('.name')
           .one()
 
         assembly.eventuallyInsertHtml(`
           <div class="container">
             <div class="contact">
+              no .name
             </div>
             <div class="contact">
             </div>
           </div>
         `)
 
-        await expect(name).to.reject.with.error("expected one element (found: scope [1], find('.container') [1], find('.contact') [2], find('.name') [0])")
+        await expect(name).to.reject.with.error("expected one element (found: find('.container') [1], find('.contact') [2], find('.name') [0])")
       })
     })
 
-    describe('all', () => {
+    describe('concat', () => {
       it('finds either', async () => {
         const a = assembly.insertHtml(`
           <div class="a">A</div>
@@ -407,15 +408,15 @@ describe('query', () => {
           <div class="c">C</div>
         `)
 
-        const elementsFound = await browserMonkey.all([
-          b => b.find('.a'),
-          b => b.find('.b')
+        const elementsFound = await browserMonkey.concat([
+          b => b.css('.a'),
+          b => b.css('.b')
         ])
 
         expect(elementsFound).to.eql([a, b])
       })
 
-      it('throws error with finders used in all', async () => {
+      it('throws error with finders used in concat', async () => {
         assembly.insertHtml(`
           <div class="a">A</div>
         `)
@@ -426,20 +427,20 @@ describe('query', () => {
           <div class="c">C</div>
         `)
 
-        const promise = browserMonkey.all([
-          b => b.find('.a'),
-          b => b.find('.b')
-        ]).find('.child').some()
+        const promise = browserMonkey.concat([
+          b => b.css('.a'),
+          b => b.css('.b')
+        ]).css('.child').some()
 
-        return expect(promise).to.reject.with.error("expected some elements (found: scope [1], all (find('.a') [1], or find('.b') [1]) [2], find('.child') [0])")
+        return expect(promise).to.reject.with.error("expected some elements (found: concat (find('.a') [1], find('.b') [1]) [2], find('.child') [0])")
       })
     })
 
     describe('race', () => {
       it('finds the first of two or more queries', async () => {
         const promise = browserMonkey.race([
-          b => b.find('.a').one(),
-          b => b.find('.b').one()
+          b => b.css('.a').one(),
+          b => b.css('.b').one()
         ])
 
         const bPromise = assembly.eventuallyInsertHtml('<div class="b">B</div>')
@@ -452,12 +453,12 @@ describe('query', () => {
       it('returns descriptions of all queries used when none are successful', async () => {
         assembly.insertHtml('<div class="content">content<div class="c"/>C</div>')
 
-        const promise = browserMonkey.find('.content').race([
-          b => b.find('.a').some(),
-          b => b.find('.b').some()
+        const promise = browserMonkey.css('.content').race([
+          b => b.css('.a').some(),
+          b => b.css('.b').some()
         ])
 
-        await expect(promise).to.reject.with.error("all queries failed in race (found: scope [1], find('.content') [1], race between (expected some elements (found: find('.a') [0]), and expected some elements (found: find('.b') [0])))")
+        await expect(promise).to.reject.with.error("all queries failed in race (found: find('.content') [1], or(expected some elements (found: find('.a') [0]), expected some elements (found: find('.b') [0])) [0])")
       })
     })
   })
