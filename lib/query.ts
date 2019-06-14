@@ -1,7 +1,7 @@
 import { ExecutedTransformSequence } from './ExecutedTransformSequence'
 import { ExecutedSimpleTransform } from './ExecutedSimpleTransform'
 import { ExecutedConcatTransform } from './ExecutedConcatTransform'
-import { ExecutedOrTransform } from './ExecutedOrTransform'
+import { ExecutedFirstOfTransform } from './ExecutedFirstOfTransform'
 import { ExecutedTransformError } from './ExecutedTransformError'
 import BrowserMonkeyAssertionError from './BrowserMonkeyAssertionError'
 import toExecutedTransform from './toExecutedTransform'
@@ -37,13 +37,15 @@ class Query {
     }
   }
 
-  private _value: any
+  private _input: any
   private _actionExecuted: any
   private _action: (value: any) => void
   private _isResolved: boolean
+  private _hasExpectation: boolean
 
   public constructor () {
     this._isResolved = false
+    this._hasExpectation = false
     this._transforms = []
     this._options = {
       visibleOnly: true,
@@ -125,26 +127,29 @@ class Query {
         ]
       }
     }
-    this._value = undefined
+    this._input = undefined
   }
 
   public transform (transform: Transform): this {
     if (this._isResolved) {
       return this.clone(clone => {
-        const executedTransform = toExecutedTransform(transform.call(this, this._value))
+        const executedTransform = toExecutedTransform(transform.call(this, this._executedTransforms.value))
         clone._executedTransforms.addTransform(executedTransform)
-        clone._value = executedTransform.value
       })
     } else {
       return this.clone(clone => clone._transforms.push(transform))
     }
   }
 
-  public assertion (assertion: (any) => void): this {
-    return this.transform((value) => {
-      assertion.call(this, value)
+  public expect (expectation: (any) => void): this {
+    const expectQuery = this.transform(function (value) {
+      expectation.call(this, value)
       return value
     })
+
+    expectQuery._hasExpectation = true
+
+    return expectQuery
   }
 
   public action (action: (any) => void): any {
@@ -153,7 +158,11 @@ class Query {
     }
 
     if (this._isResolved) {
-      action.call(this, this._value)
+      if (!this._actionExecuted) {
+        action.call(this, this._executedTransforms.value)
+        this._actionExecuted = true
+      }
+      return this
     } else {
       return this.clone(clone => {
         clone._action = action
@@ -161,9 +170,9 @@ class Query {
     }
   }
 
-  public value (): any {
+  public result (): any {
     if (this._isResolved) {
-      return this._value
+      return this._executedTransforms.value
     } else {
       return toExecutedTransform(this.execute()).value
     }
@@ -171,19 +180,13 @@ class Query {
 
   public resolve (): this {
     if (!this._isResolved) {
-      this._executedTransforms = this.execute()
-      this._value = this._executedTransforms.value
-      this._isResolved = true
-      return this
+      const resolved = this.clone()
+      resolved._executedTransforms = resolved.execute()
+      resolved._isResolved = true
+      return resolved
     } else {
       return this
     }
-  }
-
-  public map (mapper, description): this {
-    return this.transform((elements) => {
-      return new ExecutedSimpleTransform(elements.map(mapper), description)
-    })
   }
 
   public filter (filter, description): this {
@@ -193,33 +196,17 @@ class Query {
   }
 
   public concat (queryCreators): this {
-    var queries = queryCreators.map(queryCreator => {
-      return this.subQuery(queryCreator)
-    })
+    return this.transform(() => {
+      const resolved = this.resolve()
 
-    return this.transform((elements) => {
-      var transforms = queries.map(query => {
-        const transforms = new ExecutedTransformSequence(elements)
-        query.executeQuery(transforms)
-        return transforms
-      })
+      var transforms = queryCreators.map(queryCreator => runQueryCreator(queryCreator, resolved).execute())
 
       var value = uniq(Array.prototype.concat.apply([], transforms.map(t => t.value)))
       return new ExecutedConcatTransform(value, transforms)
     })
   }
 
-  private subQuery (createQuery) {
-    var clone = this.clone()
-    clone._transforms = []
-    var query = createQuery(clone)
-    if (!(query instanceof Query)) {
-      throw new Error('expected to create query: ' + createQuery)
-    }
-    return query
-  }
-
-  public error (message: string, { expected, actual }): void {
+  public error (message: string, {expected = undefined, actual = undefined} = {}): void {
     if (this._isResolved) {
       throw new BrowserMonkeyAssertionError(message, { expected, actual, executedTransforms: this._executedTransforms })
     } else {
@@ -227,24 +214,22 @@ class Query {
     }
   }
 
-  private resolveSubQuery (createQuery, value) {
-    return this.subQuery(createQuery).resolve()
-  }
-
-  private executeQuery (transformSequence: ExecutedTransformSequence) {
+  private executeQuery (input: any): ExecutedTransformSequence {
     const query = this
-
-    function reducer (transform) {
-      const executedTransform = toExecutedTransform(transform.call(query, transformSequence.value))
-      transformSequence.addTransform(executedTransform)
-    }
+    const transformSequence = new ExecutedTransformSequence(input)
 
     try {
-      this._transforms.forEach(reducer)
+      this._transforms.forEach(transform => {
+        const executedTransform = toExecutedTransform(transform.call(query, transformSequence.value))
+        transformSequence.addTransform(executedTransform)
+      })
+
       if (this._action && !this._actionExecuted) {
         this._action(transformSequence.value)
         this._actionExecuted = true
       }
+
+      return transformSequence
     } catch (e) {
       if (e instanceof BrowserMonkeyAssertionError) {
         e.executedTransforms.prepend(transformSequence)
@@ -256,22 +241,23 @@ class Query {
 
   private execute (): ExecutedTransformSequence {
     if (!this._isResolved) {
-      const transformSequence = new ExecutedTransformSequence(this._value)
-      this.executeQuery(transformSequence)
-      return transformSequence
+      return this.executeQuery(this._input)
     } else {
       return this._executedTransforms
     }
   }
 
-  private race (queryCreators): this {
-    return this.transform(() => {
-      const resolved = this.clone().resolve()
+  private firstOf (queryCreators): this {
+    const transformed = this.transform(() => {
+      const resolved = this.resolve().clone()
+      resolved._executedTransforms.clear()
 
       var values = queryCreators.map(query => {
         try {
+          const q = runQueryCreator(query, resolved)
+          q.assertHasActionOrExpectation()
           return {
-            value: query(resolved).execute()
+            value: q.execute()
           }
         } catch (e) {
           if (e instanceof BrowserMonkeyAssertionError) {
@@ -290,44 +276,60 @@ class Query {
 
       const firstSuccess = values[firstSuccessIndex]
 
-      const transform = new ExecutedOrTransform((firstSuccess && firstSuccess.value.value) || [], firstSuccessIndex, values.map(v => v.error || v.value))
+      const transform = new ExecutedFirstOfTransform(firstSuccess ? firstSuccess.value.value : [], firstSuccessIndex, values.map(v => v.error || v.value))
 
       if (firstSuccess) {
         return transform
       } else {
-        var error = new BrowserMonkeyAssertionError('all queries failed in race')
+        var error = new BrowserMonkeyAssertionError('all queries failed in firstOf')
         error.executedTransforms.addTransform(transform)
         throw error
       }
     })
+
+    transformed._hasExpectation = true
+
+    return transformed
   }
 
-  public query (selector: string) {
+  public query (selector: string): this {
     const field = this._options.definitions.fields[selector]
 
     if (field) {
       return field(this)
     } else {
-      const [finderName, value] = selector.split(':')
-      if (this[finderName]) {
-        return this[finderName](value.trim())
-      } else {
-        throw new Error('no such finder: ' + finderName)
+      const match = /(.*?)!(.*)/.exec(selector)
+
+      if (match) {
+        const [, finderName, value] = match
+        const finder = this._options.definitions.finders[finderName]
+
+        if (finder) {
+          return finder(this, value.trim())
+        }
       }
     }
+
+    return this.find(selector)
   }
 
-  public options (options) {
+  public options (options): Options {
     if (options) {
-      return this.clone(function (clone) {
-        extend(clone._options, options)
-      })
+      extend(this._options, options)
     } else {
       return this._options
     }
   }
 
-  public then (...args) {
+  private assertHasActionOrExpectation () {
+    if (!this._hasExpectation && !this._action) {
+      throw new Error('no expectations or actions in query, use .result(), or add an expectation or an action')
+    }
+  }
+
+  public then (...args): Promise<any> {
+    this.assertHasActionOrExpectation()
+
     var self = this
     var retry = retryFromOptions(this._options)
     var originalStack = new Error().stack
@@ -365,55 +367,12 @@ class Query {
     return clone
   }
 
-  public ensure (assertion, name): this {
-    return this.transform(function (value) {
-      assertion(value)
-      return new ExecutedSimpleTransform(value, name || 'ensure')
-    })
-  }
+  public input (value): void {
+    if (this._isResolved) {
+      throw new Error('cannot change input, query is already resolved')
+    }
 
-  public zero (): this {
-    return this.transform(function (results) {
-      if (results instanceof Array) {
-        if (results.length !== 0) {
-          throw new BrowserMonkeyAssertionError('expected no elements')
-        } else {
-          return new ExecutedSimpleTransform(results, 'zero')
-        }
-      } else {
-        throw new BrowserMonkeyAssertionError('expected array of no elements')
-      }
-    })
-  }
-
-  public one (): this {
-    return this.transform(function (results) {
-      if (results instanceof Array) {
-        if (results.length === 1) {
-          return new ExecutedSimpleTransform(results[0], 'one')
-        } else {
-          throw new BrowserMonkeyAssertionError('expected one element')
-        }
-      } else {
-        return new ExecutedSimpleTransform(results, 'one')
-      }
-    })
-  }
-
-  public some (): this {
-    return this.transform(function (results) {
-      if (results instanceof Array && results.length !== 0) {
-        return new ExecutedSimpleTransform(results, 'some')
-      } else {
-        throw new BrowserMonkeyAssertionError('expected some elements')
-      }
-    })
-  }
-
-  public input (value): this {
-    return this.clone(function (clone) {
-      clone._value = value
-    })
+    this._input = value
   }
 
   public component (methods): this {
@@ -440,8 +399,9 @@ class Query {
 
 function copySelectorFields (from, to) {
   to._transforms = from._transforms.slice()
-  to._value = from._value
+  to._input = from._input
 
+  to._hasExpectation = from._hasExpectation
   to._isResolved = from._isResolved
   if (from._isResolved) {
     to._executedTransforms = from._executedTransforms.clone()
@@ -459,42 +419,6 @@ function copySelectorFields (from, to) {
   })
 }
 
-function errorMessage (error) {
-  if (error instanceof BrowserMonkeyAssertionError) {
-    return browserMonkeyAssertionErrorMessage(error)
-  } else {
-    return error.message
-  }
-}
-
-function browserMonkeyAssertionErrorMessage (error: BrowserMonkeyAssertionError) {
-  var foundMessage = describeAccumulatedTransforms(error.executedTransforms)
-  return error.message + ' (found: ' + foundMessage + ')'
-}
-
-function describeAccumulatedTransforms (accumulatedTransforms: ExecutedTransformSequence) {
-  return accumulatedTransforms.transforms.map(function (transform) {
-    return transform.renderError()
-    // if (transform.concat instanceof Array) {
-    //   return describeTransform({
-    //     description: 'concat (' + transform.concat.map(describeAccumulatedTransforms).join(', or ') + ')',
-    //     value: transform.value
-    //   })
-    // } else if (transform.raceErrors instanceof Array) {
-    //   return 'race between (' + transform.raceErrors.map(errorMessage).join(', and ') + ')'
-    // } else {
-    //   return describeTransform(transform)
-    // }
-  }).join(', ')
-}
-
-function describeTransform (transform) {
-  var v = transform.value instanceof Array
-    ? '[' + transform.value.length + ']'
-    : '(' + typeof transform.value + ')'
-  return transform.description + ' ' + v
-}
-
 function retryFromOptions (options) {
   if (options && options.retry) {
     return options.retry
@@ -505,6 +429,16 @@ function retryFromOptions (options) {
   } else {
     return retry
   }
+}
+
+function runQueryCreator (queryCreator, query): Query {
+  const q = queryCreator(query)
+
+  if (!(q instanceof Query)) {
+    throw new Error(`function ${queryCreator} expected to return Query but was: ` + q)
+  }
+
+  return q
 }
 
 module.exports = Query

@@ -22,9 +22,9 @@ describe('set', function () {
       `)
 
       await browser.set({
-        'css:.address': '7 Lola St',
-        'css:.phone': '123123123',
-        'css:.first-name': 'Barry'
+        '.address': '7 Lola St',
+        '.phone': '123123123',
+        '.first-name': 'Barry'
       })
 
       demand(assembly.find('.address').value).to.equal('7 Lola St')
@@ -48,14 +48,14 @@ describe('set', function () {
         `)
 
         await browser.set({
-          'css:.address': {
-            'css:.street': '7 Lola St',
-            'css:.city': 'Frisby City',
-            'css:.country': 'Atlantis',
-            'css:.postcode': '12345'
+          '.address': {
+            '.street': '7 Lola St',
+            '.city': 'Frisby City',
+            '.country': 'Atlantis',
+            '.postcode': '12345'
           },
-          'css:.phone': '123123123',
-          'css:.first-name': 'Barry'
+          '.phone': '123123123',
+          '.first-name': 'Barry'
         })
 
         demand(assembly.find('.address .street').value).to.equal('7 Lola St')
@@ -77,8 +77,8 @@ describe('set', function () {
         `)
 
         await browser.set({
-          'css:.address': {
-            'css:.street': '7 Lola St'
+          '.address': {
+            '.street': '7 Lola St'
           }
         })
 
@@ -104,10 +104,10 @@ describe('set', function () {
         `)
 
         await browser.set({
-          'css:.address': [
-            { 'css:.street': '1' },
-            { 'css:.street': '2' },
-            { 'css:.street': '3' }
+          '.address': [
+            { '.street': '1' },
+            { '.street': '2' },
+            { '.street': '3' }
           ]
         })
 
@@ -133,9 +133,9 @@ describe('set', function () {
 
         await assembly.assertRejection(
           browser.set({
-            'css:.address': [
-              { 'css:.street': '1' },
-              { 'css:.street': '2' }
+            '.address': [
+              { '.street': '1' },
+              { '.street': '2' }
             ]
           }),
           'expected 2 elements'
@@ -157,7 +157,7 @@ describe('set', function () {
 
         await assembly.assertRejection(
           browser.set({
-            'css:.address': [
+            '.address': [
             ]
           }),
           'expected 0 elements'
@@ -176,8 +176,8 @@ describe('set', function () {
         `)
 
         await browser.set({
-          'css: .street': streetQuery => {
-            streetQuery.element().value().innerText = 'hi'
+          '.street': streetQuery => {
+            streetQuery.expectOneElement().result()[0].innerText = 'hi'
           }
         })
 
@@ -194,9 +194,9 @@ describe('set', function () {
       `)
 
       const promise = browser.set({
-        'css:.street': '7 Lola St',
-        'css:.phone': '123123123',
-        'css:.first-name': 'Barry'
+        '.street': '7 Lola St',
+        '.phone': '123123123',
+        '.first-name': 'Barry'
       })
       await assembly.assertRejection(promise, 'expected 1 elements')
 
@@ -212,8 +212,8 @@ describe('set', function () {
         </form>
       `)
 
-      browser.define('phone', b => b.css('.phone'))
-      browser.define('firstName', b => b.css('.first-name'))
+      browser.define('phone', b => b.find('.phone'))
+      browser.define('firstName', b => b.find('.first-name'))
 
       await browser.set({
         phone: '123123123',
@@ -232,11 +232,11 @@ describe('set', function () {
         </form>
       `)
 
-      browser.defineFinder('form', (b, name) => b.css('* [name=' + JSON.stringify(name) + ']'))
+      browser.defineFinder('form', (b, name) => b.find('* [name=' + JSON.stringify(name) + ']'))
 
       await browser.set({
-        'form: phone': '123123123',
-        'form: firstname': 'Barry'
+        'form! phone': '123123123',
+        'form! firstname': 'Barry'
       })
 
       demand(assembly.find('.phone').value).to.equal('123123123')

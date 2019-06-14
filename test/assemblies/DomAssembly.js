@@ -25,7 +25,9 @@ module.exports = class DomAssembly {
 
     this.retry = () => {}
 
-    return createBrowserMonkey(this._div).options({
+    const browserMonkey = createBrowserMonkey(this._div)
+
+    browserMonkey.options({
       retry: (retry) => {
         if (this._normalRetry) {
           return trytryagain(retry)
@@ -54,6 +56,8 @@ module.exports = class DomAssembly {
         }
       }
     })
+
+    return browserMonkey
   }
 
   async tick () {
@@ -141,6 +145,14 @@ module.exports = class DomAssembly {
       if (e.message.indexOf(expectedMessage) === -1) {
         throw new Error('expected error message ' + inspect(e.message) + ' to include ' + inspect(expectedMessage))
       }
+    })
+  }
+
+  assertExpectedActual (query, expected, actual) {
+    return query.assert(expected).then(() => {
+      throw new Error('expected rejection')
+    }, e => {
+      expect(e.actual).to.eql(actual)
     })
   }
 

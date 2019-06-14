@@ -9,6 +9,8 @@ export class ExecutedSimpleTransform extends ExecutedTransform {
   }
 
   public renderError (): string {
-    return `${this.description} [${this.value.length}]`
+    if (this.description) {
+      return `${this.description} [${this.value.length}]`
+    }
   }
 }

@@ -1,6 +1,6 @@
 import { ExecutedTransform } from './ExecutedTransform'
 
-export class ExecutedOrTransform extends ExecutedTransform {
+export class ExecutedFirstOfTransform extends ExecutedTransform {
   public items: ExecutedTransform[]
   public index: number
 
@@ -11,6 +11,6 @@ export class ExecutedOrTransform extends ExecutedTransform {
   }
 
   public renderError (): string {
-    return `or(${this.items.map(i => i.renderError()).join(', ')}) [${this.value.length}]`
+    return `firstOf(${this.items.map(i => i.renderError()).join(', ')}) [${this.value.length}]`
   }
 }

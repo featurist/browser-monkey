@@ -52,7 +52,7 @@ describe('assertions', function () {
 
         return Promise.all([
           good,
-          assembly.assertRejection(bad, 'expected some elements')
+          assembly.assertRejection(bad, 'expected one or more elements')
         ])
       })
     })
@@ -87,7 +87,7 @@ describe('assertions', function () {
 
       return Promise.all([
         good,
-        assembly.assertRejection(bad, 'expected some elements')
+        assembly.assertRejection(bad, 'expected one or more elements')
       ])
     })
 
@@ -180,14 +180,14 @@ describe('assertions', function () {
         ])
       })
 
-      it('treats selects with no value as empty string', function () {
+      it('cannot assert against selects with no options', function () {
         assembly.insertHtml('<select></select>')
 
         var select = browser.find('select')
 
         return Promise.all([
-          select.shouldHave({ value: '' }),
-          select.shouldHave({ exactValue: '' })
+          assembly.assertRejection(select.shouldHave({ value: '' }), 'expected select options'),
+          assembly.assertRejection(select.shouldHave({ exactValue: '' }), 'expected select options'),
         ])
       })
 
@@ -398,7 +398,7 @@ describe('assertions', function () {
 
         return Promise.all([
           good1,
-          assembly.assertRejection(bad1, 'expected one element'),
+          assembly.assertRejection(bad1, 'expected just one element'),
           assembly.assertRejection(bad2, '"a" must be equivalent to "b"')
         ])
       })

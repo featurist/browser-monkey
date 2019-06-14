@@ -27,7 +27,7 @@ describe('reload button', function () {
       reloadButton()
       reloadButton()
 
-      return browser.find('a', { text: '⟳ reload' }).elements().then(function (elements) {
+      return browser.find('a', { text: '⟳ reload' }).expectSomeElements().then(function (elements) {
         expect(elements.length).to.eq(1)
       })
     }, { vdom: false })

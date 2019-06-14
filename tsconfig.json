@@ -6,5 +6,9 @@
     "target": "ES5",
     "outDir": "dist",
     "rootDir": "."
-  }
+  },
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

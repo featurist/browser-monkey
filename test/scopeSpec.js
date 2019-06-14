@@ -16,11 +16,11 @@ describe('scope', function () {
       var red = assembly.insertHtml('<div><div class="element">red</div></div>')
       var blue = assembly.insertHtml('<div><div class="element">blue</div></div>')
 
-      return browser.scope(red).find('.element').element().then(function (element) {
+      return browser.scope(red).find('.element').expectOneElement().then(function ([element]) {
         demand(element.innerText).to.equal('red')
       }).then(function () {
-        return browser.scope(blue).find('.element').element()
-      }).then(function (element) {
+        return browser.scope(blue).find('.element').expectOneElement()
+      }).then(function ([element]) {
         demand(element.innerText).to.equal('blue')
       })
     })

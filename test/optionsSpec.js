@@ -12,15 +12,10 @@ describe('options', function () {
       browser = assembly.browserMonkey()
     })
 
-    it('can set an option that is inerhited by components', function () {
-      var parentComponent = browser.find('div').component({})
-      var childComponent = parentComponent.options({ myOption: 'abc' }).find('div')
-      demand(childComponent._options.myOption).to.equal('abc')
-    })
-
     it('can overide default timeout', function () {
       var defaultTimeout = browser.options().timeout
-      const timeoutBrowser = browser.options({ timeout: 1 })
+      const timeoutBrowser = browser.clone()
+      timeoutBrowser.options({ timeout: 1 })
       var start = new Date()
 
       return timeoutBrowser.find('.doesnt-exist').shouldExist().catch(function () {

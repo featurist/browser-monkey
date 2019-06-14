@@ -190,13 +190,13 @@ describe('actions', function () {
 
           assembly.eventuallyInsertHtml('<select class="element"><option>First</option><option>Second</option></select>')
 
-          return assembly.assertRejection(promise, 'expected some elements')
+          return assembly.assertRejection(promise, 'expected just one element')
         })
 
         it('errors when the input is not a select', function () {
           var promise = browser.find('.element').select({ text: 'Whatevs' })
           assembly.eventuallyInsertHtml('<div class="element"></div>')
-          return assembly.assertRejection(promise, 'expected some elements')
+          return assembly.assertRejection(promise, 'expected just one element')
         })
 
         it('selects an option using text that is falsy', function () {
@@ -316,7 +316,7 @@ describe('actions', function () {
           var promise = browser.find('.element').typeIn('whatevs')
           var inputPromise = assembly.eventuallyInsertHtml(html)
           return inputPromise.then(function (input) {
-            return assembly.assertRejection(promise, 'expected some elements')
+            return assembly.assertRejection(promise, 'expected just one element')
           })
         })
       })

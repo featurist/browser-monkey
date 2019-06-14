@@ -1,6 +1,7 @@
 const describeAssemblies = require('./describeAssemblies')
 const DomAssembly = require('./assemblies/DomAssembly')
 var BrowserMonkeyAssertionError = require('../lib/BrowserMonkeyAssertionError').default
+const {expect} = require('chai')
 
 describe('assert', function () {
   describeAssemblies([DomAssembly], function (Assembly) {
@@ -22,8 +23,8 @@ describe('assert', function () {
         `)
 
         await browser.assert({
-          'css:h1': 'Title',
-          'css:.content': 'The Content'
+          'h1': 'Title',
+          '.content': 'The Content'
         })
       })
 
@@ -34,10 +35,13 @@ describe('assert', function () {
           </div>
         `)
 
-        await assembly.assertRejection(browser.assert({
-          'css:h1': 'Title',
-          'css:.content': 'The Content'
-        }), '.content')
+        await assembly.assertExpectedActual(browser, {
+          'h1': 'Title',
+          '.content': 'The Content'
+        }, {
+          'h1': 'Title',
+          '.content': undefined
+        })
       })
     })
 
@@ -56,7 +60,7 @@ describe('assert', function () {
         `)
 
         await browser.assert({
-          'css:.result': [
+          '.result': [
             'Result 1',
             'Result 2',
             'Result 3'
@@ -64,7 +68,7 @@ describe('assert', function () {
         })
       })
 
-      it('fails when the number of items is wrong', async () => {
+      it('fails when the number of items is actually greater', async () => {
         assembly.insertHtml(`
           <div class="result">
             Result 1
@@ -77,12 +81,37 @@ describe('assert', function () {
           </div>
         `)
 
-        await assembly.assertRejection(browser.assert({
-          'css:.result': [
+        await assembly.assertExpectedActual(browser, {
+          '.result': [
             'Result 1',
             'Result 2'
           ]
-        }), 'expected 2 elements')
+        }, {
+          '.result': [
+            'Result 1',
+            'Result 2',
+            'Result 3'
+          ]
+        })
+      })
+
+      it('fails when the number of items is actually less', async () => {
+        assembly.insertHtml(`
+          <div class="result">
+            Result 1
+          </div>
+        `)
+
+        await assembly.assertExpectedActual(browser, {
+          '.result': [
+            'Result 1',
+            'Result 2'
+          ]
+        }, {
+          '.result': [
+            'Result 1',
+          ]
+        })
       })
 
       it('can assert objects as items', async () => {
@@ -98,14 +127,14 @@ describe('assert', function () {
         `)
 
         await browser.assert({
-          'css:.result': [
+          '.result': [
             {
-              'css: h3': 'Title 1',
-              'css: .description': 'Description 1'
+              'h3': 'Title 1',
+              '.description': 'Description 1'
             },
             {
-              'css: h3': 'Title 2',
-              'css: .description': 'Description 2'
+              'h3': 'Title 2',
+              '.description': 'Description 2'
             }
           ]
         })
@@ -122,16 +151,16 @@ describe('assert', function () {
         `)
 
         await browser.assert({
-          'css:h1': 'Title',
-          'css:.content': query => {
-            if (!/Content/.test(query.element().value().innerText)) {
+          'h1': 'Title',
+          '.content': query => {
+            if (!/Content/.test(query.expectOneElement().result()[0].innerText)) {
               throw new BrowserMonkeyAssertionError('asdf')
             }
           }
         })
       })
 
-      it('fails when query from function fails', async () => {
+      it('fails when query from function fails with error with actual', async () => {
         assembly.insertHtml(`
           <div>
             <h1>Title</h1>
@@ -139,14 +168,40 @@ describe('assert', function () {
           </div>
         `)
 
-        await assembly.assertRejection(browser.assert({
-          'css:h1': 'Title',
-          'css:.content': query => {
-            if (/Content/.test(query.element().value().innerText)) {
-              throw new BrowserMonkeyAssertionError('asdf')
+        await assembly.assertExpectedActual(browser, {
+          'h1': 'Title',
+          '.content': query => {
+            if (/Content/.test(query.expectOneElement().result()[0].innerText)) {
+              throw new BrowserMonkeyAssertionError('asdf', {actual: 'Content'})
             }
           }
-        }), 'asdf')
+        }, {
+          'h1': 'Title',
+          '.content': 'Content'
+        })
+      })
+
+      it('fails when query from function fails with error without actual', async () => {
+        assembly.insertHtml(`
+          <div>
+            <h1>Title</h1>
+            <div class="content">The Content</div>
+          </div>
+        `)
+
+        let error = new BrowserMonkeyAssertionError('asdf')
+
+        await assembly.assertExpectedActual(browser, {
+          'h1': 'Title',
+          '.content': query => {
+            if (/Content/.test(query.expectOneElement().result()[0].innerText)) {
+              throw error
+            }
+          }
+        }, {
+          'h1': 'Title',
+          '.content': error
+        })
       })
     })
   })

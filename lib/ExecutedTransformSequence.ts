@@ -18,8 +18,26 @@ export class ExecutedTransformSequence extends ExecutedTransform {
     this.transforms.unshift(...transforms.transforms)
   }
 
+  public clear (): void {
+    this.transforms = []
+  }
+
   public renderError (): string {
-    return this.transforms.map(t => t.renderError()).join(', ')
+    const transformsUpUntilAndIncludingFirstFailure = this.transforms.reduce(({ keepTaking, array }, b) => {
+      if (keepTaking) {
+        return {
+          keepTaking: !!b.value.length,
+          array: array.concat([b])
+        }
+      } else {
+        return { array }
+      }
+    }, {
+      array: [],
+      keepTaking: true
+    }).array
+
+    return this.transforms.map(t => t.renderError()).filter(Boolean).join(', ')
   }
 
   public clone (): ExecutedTransformSequence {

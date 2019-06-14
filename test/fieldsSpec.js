@@ -15,18 +15,16 @@ describe('fields', function () {
     it('can recognise a label with input', () => {
       const field = assembly.insertHtml('<label>Email <input type="text" /></label>').querySelector('input')
 
-      return browser.field('Email').then(function (elements) {
-        demand(elements).to.eql([field])
-      })
+      const elements = browser.field('Email').result()
+      demand(elements).to.eql([field])
     })
 
     it('can recognise an input with aria-labelledby', () => {
       assembly.insertHtml('<label id="email-label">Email</label>')
       const field = assembly.insertHtml('<input aria-labelledby="email-label" type="text" />')
 
-      return browser.field('Email').then(function (elements) {
-        demand(elements).to.eql([field])
-      })
+      const elements = browser.field('Email').result()
+      demand(elements).to.eql([field])
     })
 
     describe('defineField', () => {
@@ -36,9 +34,8 @@ describe('fields', function () {
 
         const customFieldBrowser = browser.defineField((monkey, name) => monkey.find('div.field').containing('.field-name', { exactText: name }).find('input'))
 
-        return customFieldBrowser.field('Email').then(function (elements) {
-          demand(elements).to.eql([field])
-        })
+        const elements = customFieldBrowser.field('Email').result()
+        demand(elements).to.eql([field])
       })
 
       it('can define a new field and still use original field definitions', () => {
@@ -46,9 +43,8 @@ describe('fields', function () {
 
         const customFieldBrowser = browser.defineField((monkey, name) => monkey.find('div.field').containing('.field-name', { exactText: name }).find('input'))
 
-        return customFieldBrowser.field('Email').then(function (elements) {
-          demand(elements).to.eql([field])
-        })
+        const elements = customFieldBrowser.field('Email').result()
+        demand(elements).to.eql([field])
       })
     })
 
@@ -57,11 +53,11 @@ describe('fields', function () {
         const fieldDiv = assembly.insertHtml('<div class="field"></div>')
 
         const custom = browser.defineFieldValue({
-          set: (monkey, value) => monkey.is('div.nomatch').one().action((element) => { element.innerText = 'no-match: ' + value }),
-          get: (monkey) => monkey.is('div.nomatch').one().text()
+          set: (monkey, value) => monkey.is('div.nomatch').expectOneElement().action(([element]) => { element.innerText = 'no-match: ' + value }),
+          get: (monkey) => monkey.is('div.nomatch').expectOneElement().text()
         }).defineFieldValue({
-          set: (monkey, value) => monkey.is('div.field').one().action((element) => { element.innerText = 'match: ' + value }),
-          get: (monkey) => monkey.is('div.field').one().text()
+          set: (monkey, value) => monkey.is('div.field').expectOneElement().action(([element]) => { element.innerText = 'match: ' + value }),
+          get: (monkey) => monkey.is('div.field').expectOneElement().text()
         })
 
         await custom.find('.field').setValue('value')
@@ -72,14 +68,14 @@ describe('fields', function () {
         assembly.insertHtml('<div class="non-field"></div>')
 
         const custom = browser.defineFieldValue({
-          set: (monkey, value) => monkey.is('div.nomatch').one().action((element) => { element.innerText = 'no-match: ' + value }),
-          get: (monkey) => monkey.is('div.nomatch').one().text()
+          set: (monkey, value) => monkey.is('div.nomatch').expectOneElement().action(([element]) => { element.innerText = 'no-match: ' + value }),
+          get: (monkey) => monkey.is('div.nomatch').expectOneElement().text()
         }).defineFieldValue({
-          set: (monkey, value) => monkey.is('div.field').one().action((element) => { element.innerText = 'match: ' + value }),
-          get: (monkey) => monkey.is('div.field').one().text()
+          set: (monkey, value) => monkey.is('div.field').expectOneElement().action(([element]) => { element.innerText = 'match: ' + value }),
+          get: (monkey) => monkey.is('div.field').expectOneElement().text()
         })
 
-        await demand(custom.find('.non-field').setValue('value')).to.reject.with.error(/all queries failed in race/)
+        await demand(custom.find('.non-field').setValue('value')).to.reject.with.error(/all queries failed in firstOf/)
       })
     })
 
@@ -201,7 +197,7 @@ describe('fields', function () {
     describe('shouldHave value', () => {
       it('uses .value in shouldHave({exactValue})', async () => {
         const custom = browser.defineFieldValue({
-          get: (monkey) => monkey.mapAll(() => 'div value')
+          get: (monkey) => monkey.expect(() => {}).transform(() => 'div value')
         })
 
         await custom.shouldHave({ exactValue: 'div value' })
@@ -209,7 +205,7 @@ describe('fields', function () {
 
       it('uses .value in shouldHave({value})', async () => {
         const custom = browser.defineFieldValue({
-          get: (monkey) => monkey.mapAll(() => 'div value')
+          get: (monkey) => monkey.expect(() => {}).transform(() => 'div value')
         })
 
         await custom.shouldHave({ value: 'value' })

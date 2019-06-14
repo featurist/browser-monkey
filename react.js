@@ -4,13 +4,13 @@ var ReactDOM = require('react-dom')
 var createMonkey = require('./create')
 var createTestDiv = require('./lib/createTestDiv')
 
-module.exports = function (app) {
-  return new Mount(app, {
+module.exports = function (App, props) {
+  return new Mount(App, {
     stopApp: function () {
     },
     startApp: function () {
       var div = createTestDiv()
-      ReactDOM.render(React.createElement(this.app.constructor, null), div)
+      ReactDOM.render(React.createElement(this.app, props), div)
 
       return createMonkey(document.body)
     }

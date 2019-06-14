@@ -6,7 +6,7 @@ var fields = require('./lib/fields')
 var set = require('./lib/set')
 var assertions = require('./lib/assertions')
 
-module.exports = function (rootSelector) {
+module.exports = function (rootSelector = document.body) {
   return new Query()
     .component(finders)
     .component(actions)
