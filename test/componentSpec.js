@@ -18,7 +18,7 @@ describe('component', function () {
         }
       })
 
-      var promise = user.name().shouldExist()
+      var promise = user.name().shouldExist().then()
 
       assembly.eventuallyInsertHtml('<div class="user"><div class="user-name">bob</div><div class="user-address">bob\'s address</div></div>')
 
@@ -32,7 +32,7 @@ describe('component', function () {
         }
       })
 
-      var promise = user.name.shouldExist()
+      var promise = user.name.shouldExist().then()
 
       assembly.eventuallyInsertHtml('<div class="user"><div class="user-name">bob</div><div class="user-address">bob\'s address</div></div>')
 
@@ -52,7 +52,7 @@ describe('component', function () {
         }
       })
 
-      var promise = user.name().shouldExist()
+      var promise = user.name().shouldExist().then()
 
       assembly.eventuallyInsertHtml('<div class="user"><div class="user-name">bob</div><div class="user-address">bob\'s address</div></div>')
 
@@ -76,8 +76,8 @@ describe('component', function () {
         }
       })
 
-      var name = bossUser.name().shouldExist()
-      var secondAddress = bossUser.secondAddress().shouldExist()
+      var name = bossUser.name().shouldExist().then()
+      var secondAddress = bossUser.secondAddress().shouldExist().then()
 
       assembly.eventuallyInsertHtml('<div class="user"><div class="user-name">bob</div><div class="user-address">bob\'s address</div><div class="user-second-address">bob\'s second address</div></div>')
 
@@ -93,7 +93,7 @@ describe('component', function () {
         }
       })
 
-      var promise = admin.user().shouldHave({ text: ['Jane'] })
+      var promise = admin.user().shouldHave({ text: ['Jane'] }).then()
 
       assembly.eventuallyInsertHtml(
         '<div class="user">Bob</div>' +

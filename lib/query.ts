@@ -1,3 +1,4 @@
+import { ExecutedTransform } from './ExecutedTransform'
 import { ExecutedTransformSequence } from './ExecutedTransformSequence'
 import { ExecutedSimpleTransform } from './ExecutedSimpleTransform'
 import { ExecutedConcatTransform } from './ExecutedConcatTransform'
@@ -14,11 +15,11 @@ var debug = require('debug')('browser-monkey')
 var inputsSelector = require('./inputsSelector')
 const elementEnterText = require('./elementEnterText')
 
-type Transform = (any) => any
+type Transform = (elements: any, executedTransforms: ExecutedTransform[]) => any
+type Action = (elements: any, executedTransforms: ExecutedTransform[]) => void
 
 class Query {
   private _transforms: Transform[]
-  private _executedTransforms: ExecutedTransformSequence
   private _options: {
     visibleOnly: boolean
     timeout: number
@@ -39,12 +40,10 @@ class Query {
 
   private _input: any
   private _actionExecuted: any
-  private _action: (value: any) => void
-  private _isResolved: boolean
+  private _action: Action
   private _hasExpectation: boolean
 
   public constructor () {
-    this._isResolved = false
     this._hasExpectation = false
     this._transforms = []
     this._options = {
@@ -131,14 +130,7 @@ class Query {
   }
 
   public transform (transform: Transform): this {
-    if (this._isResolved) {
-      return this.clone(clone => {
-        const executedTransform = toExecutedTransform(transform.call(this, this._executedTransforms.value))
-        clone._executedTransforms.addTransform(executedTransform)
-      })
-    } else {
-      return this.clone(clone => clone._transforms.push(transform))
-    }
+    return this.clone(clone => clone._transforms.push(transform))
   }
 
   public expect (expectation: (any) => void): this {
@@ -152,52 +144,36 @@ class Query {
     return expectQuery
   }
 
-  public action (action: (any) => void): any {
+  public action (action: Action): any {
     if (this._action) {
       throw new Error('can only have one action')
     }
 
-    if (this._isResolved) {
-      if (!this._actionExecuted) {
-        action.call(this, this._executedTransforms.value)
-        this._actionExecuted = true
-      }
-      return this
-    } else {
-      return this.clone(clone => {
-        clone._action = action
-      })
-    }
+    return this.clone(clone => {
+      clone._action = action
+    })
   }
 
   public result (): any {
-    if (this._isResolved) {
-      return this._executedTransforms.value
-    } else {
-      return toExecutedTransform(this.execute()).value
-    }
+    return this.execute().value
   }
 
-  public resolve (): this {
-    if (!this._isResolved) {
-      const resolved = this.clone()
-      resolved._executedTransforms = resolved.execute()
-      resolved._isResolved = true
-      return resolved
-    } else {
-      return this
-    }
+  public resolve (input: any): this {
+    const resolved = this.clone()
+    resolved._input = input
+    resolved._transforms = []
+    return resolved
   }
 
-  public filter (filter, description): this {
+  public filter (filter: (a: any) => boolean, description: string): this {
     return this.transform((elements) => {
       return new ExecutedSimpleTransform(elements.filter(filter), description)
     })
   }
 
-  public concat (queryCreators): this {
-    return this.transform(() => {
-      const resolved = this.resolve()
+  public concat (queryCreators: [(q: Query) => Query]): this {
+    return this.transform((elements) => {
+      const resolved = this.resolve(elements)
 
       var transforms = queryCreators.map(queryCreator => runQueryCreator(queryCreator, resolved).execute())
 
@@ -207,25 +183,20 @@ class Query {
   }
 
   public error (message: string, {expected = undefined, actual = undefined} = {}): void {
-    if (this._isResolved) {
-      throw new BrowserMonkeyAssertionError(message, { expected, actual, executedTransforms: this._executedTransforms })
-    } else {
-      throw new BrowserMonkeyAssertionError(message, { expected, actual })
-    }
+    throw new BrowserMonkeyAssertionError(message, { expected, actual })
   }
 
-  private executeQuery (input: any): ExecutedTransformSequence {
-    const query = this
-    const transformSequence = new ExecutedTransformSequence(input)
+  private execute (): ExecutedTransformSequence {
+    const transformSequence = new ExecutedTransformSequence(this._input)
 
     try {
       this._transforms.forEach(transform => {
-        const executedTransform = toExecutedTransform(transform.call(query, transformSequence.value))
+        const executedTransform = toExecutedTransform(transform.call(this, transformSequence.value, transformSequence.transforms))
         transformSequence.addTransform(executedTransform)
       })
 
       if (this._action && !this._actionExecuted) {
-        this._action(transformSequence.value)
+        this._action(transformSequence.value, transformSequence.transforms)
         this._actionExecuted = true
       }
 
@@ -239,18 +210,9 @@ class Query {
     }
   }
 
-  private execute (): ExecutedTransformSequence {
-    if (!this._isResolved) {
-      return this.executeQuery(this._input)
-    } else {
-      return this._executedTransforms
-    }
-  }
-
-  private firstOf (queryCreators): this {
-    const transformed = this.transform(() => {
-      const resolved = this.resolve().clone()
-      resolved._executedTransforms.clear()
+  public firstOf (queryCreators: [(q: Query) => Query]): this {
+    const transformed = this.transform((elements) => {
+      const resolved = this.resolve(elements)
 
       var values = queryCreators.map(query => {
         try {
@@ -292,25 +254,28 @@ class Query {
     return transformed
   }
 
-  public query (selector: string): this {
-    const field = this._options.definitions.fields[selector]
+  public find (selector: string, options = undefined): this {
+    // name(value)
+    const match = /^\s*(.*?)\s*(\((.*)\)\s*)?$/.exec(selector)
 
-    if (field) {
-      return field(this)
-    } else {
-      const match = /(.*?)!(.*)/.exec(selector)
+    if (match) {
+      const [, name,, value] = match
+      const finder = this._options.definitions.fields[name]
 
-      if (match) {
-        const [, finderName, value] = match
-        const finder = this._options.definitions.finders[finderName]
+      if (finder) {
+        if (options) {
+          throw new Error('options not used here')
+        }
 
-        if (finder) {
+        if (value !== undefined) {
           return finder(this, value.trim())
+        } else {
+          return finder(this)
         }
       }
     }
 
-    return this.find(selector)
+    return this.css(selector, options)
   }
 
   public options (options): Options {
@@ -321,7 +286,7 @@ class Query {
     }
   }
 
-  private assertHasActionOrExpectation () {
+  private assertHasActionOrExpectation (): void {
     if (!this._hasExpectation && !this._action) {
       throw new Error('no expectations or actions in query, use .result(), or add an expectation or an action')
     }
@@ -351,6 +316,7 @@ class Query {
 
       throw error
     })
+
     return promise.then.apply(promise, args)
   }
 
@@ -368,10 +334,6 @@ class Query {
   }
 
   public input (value): void {
-    if (this._isResolved) {
-      throw new Error('cannot change input, query is already resolved')
-    }
-
     this._input = value
   }
 
@@ -397,15 +359,11 @@ class Query {
   }
 }
 
-function copySelectorFields (from, to) {
+function copySelectorFields (from: Query, to: Query): void {
   to._transforms = from._transforms.slice()
   to._input = from._input
 
   to._hasExpectation = from._hasExpectation
-  to._isResolved = from._isResolved
-  if (from._isResolved) {
-    to._executedTransforms = from._executedTransforms.clone()
-  }
 
   to._options = extend({}, from._options)
   to._options.definitions = {}
@@ -431,7 +389,7 @@ function retryFromOptions (options) {
   }
 }
 
-function runQueryCreator (queryCreator, query): Query {
+function runQueryCreator (queryCreator: (q: Query) => Query, query: Query): Query {
   const q = queryCreator(query)
 
   if (!(q instanceof Query)) {

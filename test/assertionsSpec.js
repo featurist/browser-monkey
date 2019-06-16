@@ -13,12 +13,12 @@ describe('assertions', function () {
     })
 
     describe('shouldNotExist', function () {
-      it("should ensure that element eventually doesn't exists", function () {
+      it("should ensure that element eventually doesn't exist", function () {
         assembly.insertHtml('<div class="removing"></div>')
         assembly.insertHtml('<div class="staying"></div>')
 
-        var good = browser.find('.removing').shouldNotExist()
-        var bad = browser.find('.staying').shouldNotExist()
+        var good = browser.find('.removing').shouldNotExist().then()
+        var bad = browser.find('.staying').shouldNotExist().then()
 
         assembly.eventuallyDeleteHtml('.removing')
 
@@ -31,7 +31,7 @@ describe('assertions', function () {
       it('allows trytryagain parameters to be used', function () {
         assembly.insertHtml('<div class="removing"></div>')
 
-        var promise = browser.find('.removing').shouldNotExist({ timeout: 500, interval: 100 })
+        var promise = browser.find('.removing').shouldNotExist({ timeout: 500, interval: 100 }).then()
 
         assembly.eventuallyDeleteHtml('.removing')
 
@@ -43,8 +43,8 @@ describe('assertions', function () {
       it('should eventually find an element if it has a class', function () {
         var element = assembly.insertHtml('<div class="element"></div>')
 
-        var good = browser.find('.element').is('.good').shouldExist()
-        var bad = browser.find('.element').is('.bad').shouldExist()
+        var good = browser.find('.element').is('.good').shouldExist().then()
+        var bad = browser.find('.element').is('.bad').shouldExist().then()
 
         assembly.eventually(function () {
           element.classList.add('good')
@@ -58,13 +58,13 @@ describe('assertions', function () {
     })
 
     it('eventually finds an element containing text', function () {
-      var promise = browser.find('.element', { text: 'some t' }).shouldExist()
+      var promise = browser.find('.element', { text: 'some t' }).shouldExist().then()
       assembly.eventuallyInsertHtml('<div class="element"><div>some text</div></div>')
       return promise
     })
 
     it('eventually finds an element containing text as it appears on the page', function () {
-      var promise = browser.find('.element').shouldHave({ text: 'This is some text that is all on one line.\nAnd some more on another line.' })
+      var promise = browser.find('.element').shouldHave({ text: 'This is some text that is all on one line.\nAnd some more on another line.' }).then()
       /* eslint-disable no-multi-str */
       assembly.eventuallyInsertHtml('<div class="element"><div>\
       This\
@@ -80,8 +80,8 @@ describe('assertions', function () {
     })
 
     it('eventually finds an element containing exactText', function () {
-      var good = browser.find('.a', { exactText: '8' }).shouldExist()
-      var bad = browser.find('.b', { exactText: '8' }).shouldExist()
+      var good = browser.find('.a', { exactText: '8' }).shouldExist().then()
+      var bad = browser.find('.b', { exactText: '8' }).shouldExist().then()
 
       assembly.eventuallyInsertHtml('<div><div class="a">8</div><div class="b">28</div></div>')
 
@@ -92,9 +92,11 @@ describe('assertions', function () {
     })
 
     it("treats assertion of text: '' as exact text", function () {
+      const promise = browser.find('.a', { text: 'something' }).shouldExist().then()
+
       assembly.eventuallyInsertHtml('<div><div class="a">something</div><div class="b"></div></div>')
 
-      return browser.find('.a', { text: 'something' }).shouldExist().then(function () {
+      return promise.then(function () {
         return Promise.all([
           browser.find('.a', { text: '' }).shouldNotExist(),
           browser.find('.b', { text: '' }).shouldExist()
@@ -104,8 +106,8 @@ describe('assertions', function () {
 
     describe('shouldHave', function () {
       it('eventually finds an element and asserts that it has text', function () {
-        var good = browser.find('.element').shouldHave({ text: 'some t' })
-        var bad = browser.find('.element').shouldHave({ text: 'sme t' })
+        var good = browser.find('.element').shouldHave({ text: 'some t' }).then()
+        var bad = browser.find('.element').shouldHave({ text: 'sme t' }).then()
 
         assembly.eventuallyInsertHtml('<div class="element"><div>some text</div></div>')
 
@@ -123,9 +125,9 @@ describe('assertions', function () {
       })
 
       it('eventually finds an element and asserts that it has value', function () {
-        var good1 = browser.find('.element1 input').shouldHave({ value: 'some t' })
-        var good2 = browser.find('.element2 input').shouldHave({ value: '0' })
-        var bad = browser.find('.element1 input').shouldHave({ value: 'sme t' })
+        var good1 = browser.find('.element1 input').shouldHave({ value: 'some t' }).then()
+        var good2 = browser.find('.element2 input').shouldHave({ value: '0' }).then()
+        var bad = browser.find('.element1 input').shouldHave({ value: 'sme t' }).then()
 
         assembly.eventuallyInsertHtml('<div class="element1"><input type=text value="some text" /></div>')
         assembly.eventuallyInsertHtml('<div class="element2"><input type=text value="0" /></div>')
@@ -154,8 +156,8 @@ describe('assertions', function () {
       })
 
       it('finds an element with exact value', function () {
-        var bad = browser.find('.element1 input').shouldHave({ exactValue: 'some t' })
-        var good = browser.find('.element1 input').shouldHave({ exactValue: 'some text' })
+        var bad = browser.find('.element1 input').shouldHave({ exactValue: 'some t' }).then()
+        var good = browser.find('.element1 input').shouldHave({ exactValue: 'some text' }).then()
 
         assembly.eventuallyInsertHtml('<div class="element1"><input type=text value="some text" /></div>')
 
@@ -166,8 +168,8 @@ describe('assertions', function () {
       })
 
       it("treats assertion of value: '' as exact value", function () {
-        var bad = browser.find('.element1 input').shouldHave({ value: '' })
-        var good = browser.find('.element2 input').shouldHave({ value: '' })
+        var bad = browser.find('.element1 input').shouldHave({ value: '' }).then()
+        var good = browser.find('.element2 input').shouldHave({ value: '' }).then()
 
         assembly.eventuallyInsertHtml('<div>\n' +
                                '<div class="element1"><input type=text value="some text" /></div>\n' +
@@ -234,7 +236,7 @@ describe('assertions', function () {
 
       describe('exactText', function () {
         it('eventually finds elements that have the exact array of text', function () {
-          var promise = browser.find('.element option').shouldHave({ exactText: ['', 'Mr', 'Mrs'] })
+          var promise = browser.find('.element option').shouldHave({ exactText: ['', 'Mr', 'Mrs'] }).then()
 
           assembly.eventuallyInsertHtml('<select class="element"><option></option><option>Mr</option><option>Mrs</option></select>')
 
@@ -242,7 +244,7 @@ describe('assertions', function () {
         })
 
         it('fails to find exact text', function () {
-          var promise = browser.find('option').shouldHave({ exactText: ['', 'Mr', 'Mrs'] })
+          var promise = browser.find('option').shouldHave({ exactText: ['', 'Mr', 'Mrs'] }).then()
 
           assembly.eventuallyInsertHtml('<select><option>Optional</option><option>Mr</option><option>Mrs</option></select>')
 
@@ -252,7 +254,7 @@ describe('assertions', function () {
 
       describe('checkboxes', function () {
         it('eventually finds a checked checkbox', function () {
-          var good = browser.find('.checkbox').shouldHave({ checked: true })
+          var good = browser.find('.checkbox').shouldHave({ checked: true }).then()
 
           var checkbox = assembly.insertHtml('<input class="checkbox" type=checkbox />')
           assembly.eventually(function () {
@@ -265,7 +267,7 @@ describe('assertions', function () {
         })
 
         it('asserts that a checkbox is indeterminate', function () {
-          var good = browser.find('.checkbox').shouldHave({ checked: 'indeterminate' })
+          var good = browser.find('.checkbox').shouldHave({ checked: 'indeterminate' }).then()
 
           var checkbox = assembly.insertHtml('<input class="checkbox" type=checkbox />')
           assembly.eventually(function () {
@@ -278,7 +280,7 @@ describe('assertions', function () {
         })
 
         it('fails if we expected one checkbox, but found many', function () {
-          var bad = browser.find('.checkbox').shouldHave({ checked: true })
+          var bad = browser.find('.checkbox').shouldHave({ checked: true }).then()
 
           var checkbox = assembly.insertHtml('<input class="checkbox" type=checkbox />')
           assembly.insertHtml('<input class="checkbox" type=checkbox />')
@@ -292,8 +294,8 @@ describe('assertions', function () {
         })
 
         it('ensures that each checkbox in the scope is either checked or unchecked', function () {
-          var good = browser.find('.checkbox').shouldHave({ checked: [true, false] })
-          var bad = browser.find('.checkbox').shouldHave({ checked: [false, true] })
+          var good = browser.find('.checkbox').shouldHave({ checked: [true, false] }).then()
+          var bad = browser.find('.checkbox').shouldHave({ checked: [false, true] }).then()
 
           var checkbox = assembly.insertHtml('<input class="checkbox" type=checkbox />')
           assembly.insertHtml('<input class="checkbox" type=checkbox />')
@@ -321,9 +323,9 @@ describe('assertions', function () {
       })
 
       it('eventually finds elements and asserts that they each have text', function () {
-        var good = browser.find('.element div').shouldHave({ text: ['one', 2] })
-        var bad1 = browser.find('.element div').shouldHave({ text: ['one'] })
-        var bad2 = browser.find('.element div').shouldHave({ text: ['one', 'three'] })
+        var good = browser.find('.element div').shouldHave({ text: ['one', 2] }).then()
+        var bad1 = browser.find('.element div').shouldHave({ text: ['one'] }).then()
+        var bad2 = browser.find('.element div').shouldHave({ text: ['one', 'three'] }).then()
 
         assembly.eventuallyInsertHtml('<div class="element"><div>\nfirst one</div><div>number 2\n</div></div>')
 
@@ -335,9 +337,9 @@ describe('assertions', function () {
       })
 
       it('eventually finds elements and asserts that they each have value', function () {
-        var good = browser.find('.element input').shouldHave({ value: ['one', 2, 0] })
-        var bad1 = browser.find('.element input').shouldHave({ value: ['one'] })
-        var bad2 = browser.find('.element input').shouldHave({ value: ['one', 'three'] })
+        var good = browser.find('.element input').shouldHave({ value: ['one', 2, 0] }).then()
+        var bad1 = browser.find('.element input').shouldHave({ value: ['one'] }).then()
+        var bad2 = browser.find('.element input').shouldHave({ value: ['one', 'three'] }).then()
 
         assembly.eventuallyInsertHtml('<div class="element"><input type=text value="first one"><input type=text value="number 2"><input type="text" value="0"></div>')
 
@@ -349,9 +351,9 @@ describe('assertions', function () {
       })
 
       it('eventually finds an element and asserts that it has css', function () {
-        var good = browser.find('.element').shouldHave({ css: '.the-class' })
-        var bad1 = browser.find('.element').shouldHave({ css: '.not-the-class' })
-        var bad2 = browser.find('.element').shouldHave({ css: '.not-found' })
+        var good = browser.find('.element').shouldHave({ css: '.the-class' }).then()
+        var bad1 = browser.find('.element').shouldHave({ css: '.not-the-class' }).then()
+        var bad2 = browser.find('.element').shouldHave({ css: '.not-found' }).then()
 
         assembly.eventuallyInsertHtml('<div class="element the-class"><div class="not-the-class">some text</div></div>')
 
@@ -363,11 +365,10 @@ describe('assertions', function () {
       })
 
       it('eventually finds an element and asserts that it has n elements', function () {
-        var good = browser.find('.element').shouldHave({ length: 2 })
-        var bad1 = browser.find('.element').shouldHave({ length: 1 })
+        var good = browser.find('.element').shouldHave({ length: 2 }).then()
+        var bad1 = browser.find('.element').shouldHave({ length: 1 }).then()
 
-        assembly.eventuallyInsertHtml('<div class="element"></div>')
-        assembly.eventuallyInsertHtml('<div class="element"></div>')
+        assembly.eventuallyInsertHtml('<div class="element"></div><div class="element"></div>')
 
         return Promise.all([
           good,
@@ -378,15 +379,15 @@ describe('assertions', function () {
       it('eventually finds an element and asserts that it passes an assertion', function () {
         var good1 = browser.find('.element').shouldHaveElement(function (element) {
           demand(element.innerText).to.eql('a')
-        })
+        }).then()
 
         var bad1 = browser.find('.multi').shouldHaveElement(function (element) {
           demand(element.innerText).to.eql('b')
-        })
+        }).then()
 
         var bad2 = browser.find('.element').shouldHaveElement(function (element) {
           demand(element.innerText).to.eql('b')
-        })
+        }).then()
 
         var element = assembly.insertHtml('<div class="element"></div>')
         assembly.eventuallyInsertHtml('<div class="multi"></div>')
@@ -410,7 +411,7 @@ describe('assertions', function () {
           })
 
           demand(xs).to.eql(['one', 'two', 'three'])
-        })
+        }).then()
 
         var bad1 = browser.find('.element').shouldHaveElements(function (elements) {
           var xs = elements.map(function (element) {
@@ -418,11 +419,13 @@ describe('assertions', function () {
           })
 
           demand(xs).to.eql(['one', 'two'])
-        })
+        }).then()
 
-        assembly.eventuallyInsertHtml('<div class="element" data-x="one"></div>')
-        assembly.eventuallyInsertHtml('<div class="element" data-x="two"></div>')
-        assembly.eventuallyInsertHtml('<div class="element" data-x="three"></div>')
+        assembly.eventuallyInsertHtml(`
+          <div class="element" data-x="one"></div>
+          <div class="element" data-x="two"></div>
+          <div class="element" data-x="three"></div>
+        `)
 
         return Promise.all([
           good1,
@@ -440,7 +443,7 @@ describe('assertions', function () {
             errorThrown = error
             throw error
           }
-        })
+        }).then()
 
         assembly.eventuallyInsertHtml('<div class="element">text</div>')
 
@@ -452,7 +455,7 @@ describe('assertions', function () {
 
     describe('shouldNotHave', function () {
       it('eventually finds an element and asserts that it does not have text', function () {
-        var promise = browser.find('.element').shouldNotHave({ text: 'sme t' })
+        var promise = browser.find('.element').shouldNotHave({ text: 'sme t' }).then()
 
         assembly.eventuallyInsertHtml('<div class="element"><div>some text</div></div>')
 
@@ -460,7 +463,7 @@ describe('assertions', function () {
       })
 
       it('allows trytryagain parameters to be used', function () {
-        var promise = browser.find('.element').shouldNotHave({ text: 'sme t', timeout: 400, interval: 100 })
+        var promise = browser.find('.element').shouldNotHave({ text: 'sme t', timeout: 400, interval: 100 }).then()
 
         assembly.eventuallyInsertHtml('<div class="element"><div>some text</div></div>')
 

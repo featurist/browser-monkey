@@ -14,6 +14,7 @@ module.exports = class DomAssembly {
     this.jQuery = $
     this.retries = []
     this.delayedActions = []
+    this.queuedRetries = 0
   }
 
   div () {
@@ -23,8 +24,6 @@ module.exports = class DomAssembly {
   browserMonkey () {
     this.div()
 
-    this.retry = () => {}
-
     const browserMonkey = createBrowserMonkey(this._div)
 
     browserMonkey.options({
@@ -33,25 +32,16 @@ module.exports = class DomAssembly {
           return trytryagain(retry)
         } else {
           return new Promise((resolve, reject) => {
-            const success = result => {
-              resolve(result)
-              const index = this.retries.indexOf(retrier)
-              if (index !== -1) {
-                this.retries.splice(index, 1)
-              }
-            }
-
-            const retrier = () => {
+            this.retries.push(() => {
               try {
-                success(retry())
+                resolve(retry())
               } catch (e) {
-                reject(e)
+                if (this.queuedRetries === 0) {
+                  reject(e)
+                }
               }
-            }
-
-            this.retries.push(retrier)
-
-            this.tick()
+            })
+            this.eventuallyDoNothing()
           })
         }
       }
@@ -60,20 +50,17 @@ module.exports = class DomAssembly {
     return browserMonkey
   }
 
-  async tick () {
-    if (this.ticking) {
+  tick () {
+    if (this._normalRetry) {
       return
     }
 
-    this.ticking = true
-
-    await new Promise(resolve => setTimeout(resolve))
-
-    this.delayedActions.forEach(action => action())
-    this.delayedActions = []
-    this.retries.slice().forEach(retry => retry())
-
-    this.ticking = false
+    if (this.retries.length) {
+      this.queuedRetries--
+      this.retries.forEach(r => r())
+    } else {
+      throw new Error('nothing retrying yet')
+    }
   }
 
   localUrl (path) {
@@ -99,16 +86,22 @@ module.exports = class DomAssembly {
   }
 
   eventuallyDoNothing () {
-    return this.eventually(function () {})
+    this.eventually(() => {})
   }
 
   eventually (fn) {
-    this.tick()
-    return new Promise(resolve => {
-      this.delayedActions.push(() => {
-        var result = fn()
+    if (!this._normalRetry && !this.retries.length) {
+      throw new Error('nothing retrying yet, start retrying by calling .then() on a query')
+    }
+
+    this.queuedRetries++
+
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const result =fn()
+        this.tick()
         resolve(result)
-      })
+      }, 0)
     })
   }
 
@@ -140,7 +133,7 @@ module.exports = class DomAssembly {
 
   assertRejection (promise, expectedMessage) {
     return promise.then(() => {
-      throw new Error('expected rejection')
+      throw new Error('expected rejection ' + JSON.stringify(expectedMessage))
     }, e => {
       if (e.message.indexOf(expectedMessage) === -1) {
         throw new Error('expected error message ' + inspect(e.message) + ' to include ' + inspect(expectedMessage))

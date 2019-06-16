@@ -1,6 +1,7 @@
 const describeAssemblies = require('./describeAssemblies')
 const DomAssembly = require('./assemblies/DomAssembly')
 const demand = require('must')
+const {expect} = require('chai')
 
 describe('set', function () {
   describeAssemblies([DomAssembly], function (Assembly) {
@@ -193,15 +194,39 @@ describe('set', function () {
         </form>
       `)
 
-      const promise = browser.set({
+      const promise = browser.find('form').set({
         '.street': '7 Lola St',
         '.phone': '123123123',
         '.first-name': 'Barry'
       })
-      await assembly.assertRejection(promise, 'expected 1 elements')
+      await assembly.assertRejection(promise, "expected 1 element, found 0 (found: find('form') [1], find('.street') [0])")
 
       demand(assembly.find('.phone').value).to.equal('')
       demand(assembly.find('.first-name').value).to.equal('')
+    })
+
+    describe('selecting options atomically', () => {
+      it('waits until the desired option appears on the page', async () => {
+        const select = assembly.insertHtml(`
+          <select>
+            <option>One</option>
+            <option>Two</option>
+          </select>
+        `)
+
+        const promise = browser.set({
+          'select': 'Three',
+        }).then()
+
+        assembly.eventually(() => {
+          assembly.jQuery(select).append('<option>Three</option>')
+        })
+
+        await promise
+
+        const selectedItem = assembly.jQuery(select).find(':selected').text()
+        expect(selectedItem).to.equal('Three')
+      })
     })
 
     it('can define a named field', async function () {
@@ -232,11 +257,11 @@ describe('set', function () {
         </form>
       `)
 
-      browser.defineFinder('form', (b, name) => b.find('* [name=' + JSON.stringify(name) + ']'))
+      browser.define('form', (b, name) => b.find('* [name=' + JSON.stringify(name) + ']'))
 
       await browser.set({
-        'form! phone': '123123123',
-        'form! firstname': 'Barry'
+        'form(phone)': '123123123',
+        'form(firstname)': 'Barry'
       })
 
       demand(assembly.find('.phone').value).to.equal('123123123')

@@ -109,7 +109,7 @@ describe('actions', function () {
     describe('select', function () {
       describe('text', function () {
         it('eventually selects an option element using the text', function () {
-          var promise = browser.find('.element').select({ text: 'Second' })
+          var promise = browser.find('.element').select({ text: 'Second' }).then()
           var selectedItem
 
           assembly.eventuallyInsertHtml(
@@ -124,7 +124,7 @@ describe('actions', function () {
         })
 
         it('eventually selects an option element using the text, when text is passed as a string', function () {
-          var promise = browser.find('.element').select('Second')
+          var promise = browser.find('.element').select('Second').then()
           var selectedItem
 
           assembly.eventuallyInsertHtml(
@@ -139,7 +139,7 @@ describe('actions', function () {
         })
 
         it('should eventually select an option element using a partial match', function () {
-          var promise = browser.find('.element').select({ text: 'Seco' })
+          var promise = browser.find('.element').select({ text: 'Seco' }).then()
           var selectedItem
 
           assembly.eventuallyInsertHtml(
@@ -156,7 +156,7 @@ describe('actions', function () {
         it('selects the option by index names are ambiguous', function () {
           var selectedItem
 
-          assembly.eventuallyInsertHtml(
+          assembly.insertHtml(
             assembly.jQuery('<select><option value="1">Item</option><option value="2">Item</option></select>').on('change', function (e) {
               var select = e.target
               selectedItem = select.value
@@ -169,7 +169,7 @@ describe('actions', function () {
         })
 
         it('selects an option that eventually appears', function () {
-          var promise = browser.find('.element').select({ text: 'Second' })
+          var promise = browser.find('.element').select({ text: 'Second' }).then()
           var selectedItem
 
           var select = assembly.insertHtml(
@@ -186,7 +186,7 @@ describe('actions', function () {
         })
 
         it('errors when the specified option does not exist', async function () {
-          var promise = browser.find('.element').select({ text: 'Does not exist' })
+          var promise = browser.find('.element').select({ text: 'Does not exist' }).then()
 
           assembly.eventuallyInsertHtml('<select class="element"><option>First</option><option>Second</option></select>')
 
@@ -194,13 +194,13 @@ describe('actions', function () {
         })
 
         it('errors when the input is not a select', function () {
-          var promise = browser.find('.element').select({ text: 'Whatevs' })
+          var promise = browser.find('.element').select({ text: 'Whatevs' }).then()
           assembly.eventuallyInsertHtml('<div class="element"></div>')
           return assembly.assertRejection(promise, 'expected just one element')
         })
 
         it('selects an option using text that is falsy', function () {
-          var promise = browser.find('.element').select({ text: 0 })
+          var promise = browser.find('.element').select({ text: 0 }).then()
           var selectedItem
 
           assembly.eventuallyInsertHtml(
@@ -217,7 +217,7 @@ describe('actions', function () {
 
       describe('exactText', function () {
         it('should select an option using exact text that would otherwise match multiple options', function () {
-          var promise = browser.find('.element').select({ exactText: 'Mr' })
+          var promise = browser.find('.element').select({ exactText: 'Mr' }).then()
           var selectedItem
 
           assembly.eventuallyInsertHtml(
@@ -232,7 +232,7 @@ describe('actions', function () {
         })
 
         it('should select an option using exact text that is falsy', function () {
-          var promise = browser.find('.element').select({ exactText: '' })
+          var promise = browser.find('.element').select({ exactText: '' }).then()
           var selectedItem
 
           assembly.eventuallyInsertHtml(
@@ -296,7 +296,7 @@ describe('actions', function () {
 
       allowedToTypeInto.forEach(function (html) {
         it('eventually enters text into: ' + html, function () {
-          var typeInPromise = browser.find('.element').typeIn('1234')
+          var typeInPromise = browser.find('.element').typeIn('1234').then()
           var inputPromise = assembly.eventuallyInsertHtml(html)
           return Promise.all([typeInPromise, inputPromise]).then(function (elements) {
             var input = elements[1]
@@ -313,7 +313,7 @@ describe('actions', function () {
 
       notAllowedToTypeInto.forEach(function (html) {
         it('rejects attempt to type into element: ' + html, function () {
-          var promise = browser.find('.element').typeIn('whatevs')
+          var promise = browser.find('.element').typeIn('whatevs').then()
           var inputPromise = assembly.eventuallyInsertHtml(html)
           return inputPromise.then(function (input) {
             return assembly.assertRejection(promise, 'expected just one element')
@@ -407,8 +407,8 @@ describe('actions', function () {
             return this.find('.name')
           }
         })
-        assembly.eventuallyInsertHtml('<select class="title"><option>Mrs</option><option>Mr</option></select>')
-        assembly.eventuallyInsertHtml('<input type="text" class="name"></input>')
+        assembly.insertHtml('<select class="title"><option>Mrs</option><option>Mr</option></select>')
+        assembly.insertHtml('<input type="text" class="name"></input>')
 
         return component.fill([
           { name: 'title', action: 'select', options: { exactText: 'Mr' } },
@@ -431,9 +431,9 @@ describe('actions', function () {
             return this.find('.agree')
           }
         })
-        assembly.eventuallyInsertHtml('<select class="title"><option>Mrs</option><option>Mr</option></select>')
-        assembly.eventuallyInsertHtml('<input type="text" class="name"></input>')
-        assembly.eventuallyInsertHtml('<label class="agree">Check: <input type="checkbox"></label>')
+        assembly.insertHtml('<select class="title"><option>Mrs</option><option>Mr</option></select>')
+        assembly.insertHtml('<input type="text" class="name"></input>')
+        assembly.insertHtml('<label class="agree">Check: <input type="checkbox"></label>')
 
         return component.fill([
           { select: 'title', text: 'Mrs' },
@@ -461,7 +461,7 @@ describe('actions', function () {
             return this.find('.title')
           }
         })
-        assembly.eventuallyInsertHtml('<select class="title"><option>Mrs</option></select>')
+        assembly.insertHtml('<select class="title"><option>Mrs</option></select>')
 
         return component.fill([
           { myAction: 'title' }

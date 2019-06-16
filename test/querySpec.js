@@ -14,7 +14,7 @@ describe('query', () => {
     })
 
     it('can find an element by DOM selector', async () => {
-      const selectedElementPromise = browserMonkey.find('.test').expectOneElement()
+      const selectedElementPromise = browserMonkey.find('.test').expectOneElement().then()
 
       const insertedElementPromise = assembly.eventuallyInsertHtml(
         `<div class="test"></div>`
@@ -90,6 +90,7 @@ describe('query', () => {
         const contacts = browserMonkey
           .find('.contact')
           .expectNoElements()
+          .then()
 
         assembly.eventuallyDeleteHtml('.contact')
 
@@ -111,6 +112,7 @@ describe('query', () => {
         const contacts = browserMonkey
           .find('.contact')
           .expectNoElements()
+          .then()
 
         assembly.eventuallyDeleteHtml('.message')
         await expect(contacts).reject.with.error(/expected no elements/)
@@ -122,6 +124,7 @@ describe('query', () => {
         const contacts = browserMonkey
           .find('.contact')
           .expectOneElement()
+          .then()
 
         assembly.eventuallyInsertHtml(`
           <div class="contact">
@@ -137,6 +140,7 @@ describe('query', () => {
         const contacts = browserMonkey
           .find('.contact')
           .expectOneElement()
+          .then()
 
         assembly.eventuallyInsertHtml(`
           <div class="contact">
@@ -156,6 +160,7 @@ describe('query', () => {
         const contacts = browserMonkey
           .find('.contact')
           .expectOneElement()
+          .then()
 
         assembly.eventuallyInsertHtml(`
           <div class="title"></div>
@@ -171,6 +176,7 @@ describe('query', () => {
         const contacts = browserMonkey
           .find('.contact')
           .expectSomeElements()
+          .then()
 
         assembly.eventuallyInsertHtml(`
           <div class="contact">
@@ -190,6 +196,7 @@ describe('query', () => {
         const contacts = browserMonkey
           .find('.contact')
           .expectSomeElements()
+          .then()
 
         assembly.eventuallyInsertHtml(`
           <div class="title"></div>
@@ -226,6 +233,7 @@ describe('query', () => {
           .expect(elements => {
             expect(elements.some(element => element.innerText.includes('hello'))).to.equal(true)
           })
+          .then()
 
         assembly.eventuallyInsertHtml(`
           <div>hello</div>
@@ -239,6 +247,7 @@ describe('query', () => {
           .expect(elements => {
             expect(elements.some(element => element.innerText.includes('hello')), 'expected to see hello').to.equal(true)
           })
+          .then()
 
         assembly.eventuallyInsertHtml(`
           <div>goodbye</div>
@@ -256,6 +265,7 @@ describe('query', () => {
             return names.map(contact => contact.innerText).join(', ')
           })
           .expect(x => expect(x).to.not.be.empty())
+          .then()
 
         assembly.eventuallyInsertHtml(`
           <div class="name">Sally</div>
@@ -274,6 +284,7 @@ describe('query', () => {
             return contact.querySelector('.name').innerText === 'Sally'
           })
           .expectOneElement()
+          .then()
 
         assembly.eventuallyInsertHtml(`
           <div class="contact">
@@ -334,6 +345,7 @@ describe('query', () => {
           .find('.contact')
           .find('.name')
           .expectOneElement()
+          .then()
 
         assembly.eventuallyInsertHtml(`
           <div class="container">
@@ -394,7 +406,7 @@ describe('query', () => {
         const promise = browserMonkey.firstOf([
           b => b.find('.a').expectSomeElements(),
           b => b.find('.b').expectSomeElements()
-        ])
+        ]).then()
 
         const bPromise = assembly.eventuallyInsertHtml('<div class="b">B</div>')
 

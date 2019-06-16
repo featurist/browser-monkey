@@ -165,11 +165,12 @@ describe('fields', function () {
             </select>
           `)
 
+          const selectScope = browser.scope(select)
+          const setPromise = selectScope.setValue('Text Three').then()
+
           assembly.eventuallyAppendHtml(select, '<option>Text Three</option>')
 
-          const selectScope = browser.scope(select)
-
-          await selectScope.setValue('Text Three')
+          await setPromise
           const value = await selectScope.value()
           demand(value).to.equal('Text Three')
         })

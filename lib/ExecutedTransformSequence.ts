@@ -13,6 +13,11 @@ export class ExecutedTransformSequence extends ExecutedTransform {
     this.transforms.push(transform)
   }
 
+  public addTransforms (transforms: ExecutedTransform[]): void {
+    this.value = transforms[transforms.length - 1].value
+    this.transforms.push(...transforms)
+  }
+
   public prepend (transforms: ExecutedTransformSequence): void {
     this.value = transforms.value
     this.transforms.unshift(...transforms.transforms)
@@ -37,7 +42,7 @@ export class ExecutedTransformSequence extends ExecutedTransform {
       keepTaking: true
     }).array
 
-    return this.transforms.map(t => t.renderError()).filter(Boolean).join(', ')
+    return transformsUpUntilAndIncludingFirstFailure.map(t => t.renderError()).filter(Boolean).join(', ')
   }
 
   public clone (): ExecutedTransformSequence {
