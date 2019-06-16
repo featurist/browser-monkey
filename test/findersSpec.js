@@ -10,7 +10,7 @@ describe('find', function () {
 
     beforeEach(function () {
       assembly = new Assembly()
-      browser = assembly.browserMonkey()
+      browser = assembly.browserMonkey().browserMonkey2Compat()
     })
 
     it('should eventually find an element', function () {

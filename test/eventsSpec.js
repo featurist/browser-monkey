@@ -10,7 +10,7 @@ describe('events', function () {
 
     beforeEach(function () {
       assembly = new Assembly()
-      browser = assembly.browserMonkey()
+      browser = assembly.browserMonkey().browserMonkey2Compat()
     })
 
     it('typeIn element should fire change', function () {

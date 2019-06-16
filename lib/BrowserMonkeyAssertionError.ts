@@ -1,3 +1,4 @@
+import { ExecutedTransform } from './ExecutedTransform'
 import { ExecutedTransformSequence } from './ExecutedTransformSequence'
 
 class BrowserMonkeyAssertionError extends Error {
@@ -20,14 +21,25 @@ class BrowserMonkeyAssertionError extends Error {
     this.executedTransforms = executedTransforms
 
     Object.setPrototypeOf(this, BrowserMonkeyAssertionError.prototype)
+    this.message = this.renderError()
   }
 
   public rewriteMessage (): void {
     this.message = this.renderError()
   }
 
+  public addExecutedTransform (executedTransform: ExecutedTransform): void {
+    this.executedTransforms.addTransform(executedTransform)
+    this.rewriteMessage()
+  }
+
+  public prependExecutedTransforms (executedTransforms: ExecutedTransformSequence): void {
+    this.executedTransforms.prepend(executedTransforms)
+    this.rewriteMessage()
+  }
+
   public renderError (): string {
-    return `${this.description} (found: ${this.executedTransforms.renderError()})`
+    return `${this.description}${this.executedTransforms.transforms.length ? ` (found: ${this.executedTransforms.renderError()})`: ''}`
   }
 }
 

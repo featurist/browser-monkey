@@ -25,10 +25,12 @@ class Query {
     timeout: number
     interval: number
     definitions: {
-      setters: any[]
+      fieldTypes: {
+        value: (query: Query) => any
+        settter?: (query: Query, value: any) => () => void
+      }[]
       button: ((monkey: any, name: any) => any)[]
       fields: {}
-      finders: {}
       field: ((monkey: any, name: any) => any)[]
       fieldValue: {
         get: (monkey: any) => any
@@ -51,7 +53,7 @@ class Query {
       timeout: 1000,
       interval: 10,
       definitions: {
-        setters: [],
+        fieldTypes: [],
         button: [
           function (monkey, name) {
             return monkey.find('button', { exactText: name })
@@ -65,7 +67,6 @@ class Query {
         ],
 
         fields: {},
-        finders: {},
 
         field: [
           function (monkey, name) {
@@ -203,7 +204,7 @@ class Query {
       return transformSequence
     } catch (e) {
       if (e instanceof BrowserMonkeyAssertionError) {
-        e.executedTransforms.prepend(transformSequence)
+        e.prependExecutedTransforms(transformSequence)
       }
 
       throw e
@@ -244,7 +245,7 @@ class Query {
         return transform
       } else {
         var error = new BrowserMonkeyAssertionError('all queries failed in firstOf')
-        error.executedTransforms.addTransform(transform)
+        error.addExecutedTransform(transform)
         throw error
       }
     })
@@ -303,7 +304,6 @@ class Query {
       return self.execute().value
     })).catch(function (error) {
       if (error instanceof BrowserMonkeyAssertionError) {
-        error.rewriteMessage()
         error.stack = originalStack
 
         if (debug.enabled) {

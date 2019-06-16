@@ -13,6 +13,74 @@ describe('assert', function () {
       browser = assembly.browserMonkey()
     })
 
+    describe('input types', () => {
+      it('can assert html elements', async () => {
+        assembly.insertHtml(`
+          <span class="address">12 Hapless Boulevard</span>
+        `)
+
+        await browser.assert({
+          '.address': '12 Hapless Boulevard',
+        })
+      })
+
+      it('can assert text inputs', async () => {
+        assembly.insertHtml(`
+          <input type=text class="address" value="12 Hapless Boulevard"/>
+        `)
+
+        await browser.assert({
+          '.address': '12 Hapless Boulevard',
+        })
+      })
+
+      it('can reject text inputs', async () => {
+        assembly.insertHtml(`
+          <input type=text class="address" value="12 apless Boulevard"/>
+        `)
+
+        await assembly.assertExpectedActual(browser, {
+          '.address': '12 Hapless Boulevard',
+        }, {
+          '.address': '12 apless Boulevard',
+        })
+      })
+
+      it('can reject text inputs when the element is not found at all', async () => {
+        assembly.insertHtml(`
+        `)
+
+        await assembly.assertExpectedActual(browser, {
+          '.address': '12 Hapless Boulevard',
+        }, {
+          '.address': "Error: expected 1 element, found 0 (found: find('.address') [0])",
+        })
+      })
+
+      it('can assert select options', async () => {
+        assembly.insertHtml(`
+          <select>
+            <option>One</option>
+            <option selected>Two</option>
+          </select>
+        `)
+
+        await browser.assert({
+          'select': 'Two',
+        })
+      })
+
+      it('can assert checkbox', async () => {
+        assembly.insertHtml(`
+          <input type=checkbox class="check" checked/>
+        `)
+
+        await browser.assert({
+          '.check': true,
+        })
+      })
+    })
+
     describe('objects', function () {
       it('passes when the fields are there and have the expected values', async () => {
         assembly.insertHtml(`
@@ -40,7 +108,7 @@ describe('assert', function () {
           '.content': 'The Content'
         }, {
           'h1': 'Title',
-          '.content': undefined
+          '.content': "Error: expected 1 element, found 0 (found: find('.content') [0])"
         })
       })
     })
@@ -160,7 +228,7 @@ describe('assert', function () {
         })
       })
 
-      it('fails when query from function fails with error with actual', async () => {
+      it('fails when query from function fails with error', async () => {
         assembly.insertHtml(`
           <div>
             <h1>Title</h1>
@@ -172,35 +240,12 @@ describe('assert', function () {
           'h1': 'Title',
           '.content': query => {
             if (/Content/.test(query.expectOneElement().result()[0].innerText)) {
-              throw new BrowserMonkeyAssertionError('asdf', {actual: 'Content'})
+              throw new BrowserMonkeyAssertionError('asdf')
             }
           }
         }, {
           'h1': 'Title',
-          '.content': 'Content'
-        })
-      })
-
-      it('fails when query from function fails with error without actual', async () => {
-        assembly.insertHtml(`
-          <div>
-            <h1>Title</h1>
-            <div class="content">The Content</div>
-          </div>
-        `)
-
-        let error = new BrowserMonkeyAssertionError('asdf')
-
-        await assembly.assertExpectedActual(browser, {
-          'h1': 'Title',
-          '.content': query => {
-            if (/Content/.test(query.expectOneElement().result()[0].innerText)) {
-              throw error
-            }
-          }
-        }, {
-          'h1': 'Title',
-          '.content': error
+          '.content': 'Error: asdf'
         })
       })
     })

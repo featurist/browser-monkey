@@ -13,24 +13,46 @@ describe('set', function () {
       browser = assembly.browserMonkey()
     })
 
-    it('can set fields by CSS', async () => {
-      assembly.insertHtml(`
-        <form>
+    describe('field types', () => {
+      it('can set text fields', async () => {
+        assembly.insertHtml(`
           <input type=text class="address"/>
-          <input type=text class="phone"/>
-          <input type=text class="first-name"/>
-        </form>
-      `)
+        `)
 
-      await browser.set({
-        '.address': '7 Lola St',
-        '.phone': '123123123',
-        '.first-name': 'Barry'
+        await browser.set({
+          '.address': '7 Lola St',
+        })
+
+        demand(assembly.find('.address').value).to.equal('7 Lola St')
       })
 
-      demand(assembly.find('.address').value).to.equal('7 Lola St')
-      demand(assembly.find('.phone').value).to.equal('123123123')
-      demand(assembly.find('.first-name').value).to.equal('Barry')
+      it('can set select fields', async () => {
+        assembly.insertHtml(`
+          <select>
+            <option>One</option>
+            <option>Two</option>
+          </select>
+        `)
+
+        await browser.set({
+          'select': 'Two',
+        })
+
+        const selectedItem = assembly.jQuery(assembly.find('select')).find(':selected').text()
+        expect(selectedItem).to.equal('Two')
+      })
+
+      it('can set checkbox fields', async () => {
+        const checkbox = assembly.insertHtml(`
+          <input type=checkbox class="check"/>
+        `)
+
+        await browser.set({
+          '.check': true,
+        })
+
+        expect(checkbox.checked).to.equal(true)
+      })
     })
 
     describe('objects', function () {
@@ -186,26 +208,26 @@ describe('set', function () {
       })
     })
 
-    it('setting fields is atomic', async () => {
-      assembly.insertHtml(`
-        <form>
-          <input type=text class="phone"/>
-          <input type=text class="first-name"/>
-        </form>
-      `)
-
-      const promise = browser.find('form').set({
-        '.street': '7 Lola St',
-        '.phone': '123123123',
-        '.first-name': 'Barry'
-      })
-      await assembly.assertRejection(promise, "expected 1 element, found 0 (found: find('form') [1], find('.street') [0])")
-
-      demand(assembly.find('.phone').value).to.equal('')
-      demand(assembly.find('.first-name').value).to.equal('')
-    })
-
     describe('selecting options atomically', () => {
+      it('setting fields is atomic', async () => {
+        assembly.insertHtml(`
+          <form>
+            <input type=text class="phone"/>
+            <input type=text class="first-name"/>
+          </form>
+        `)
+
+        const promise = browser.find('form').set({
+          '.street': '7 Lola St',
+          '.phone': '123123123',
+          '.first-name': 'Barry'
+        })
+        await assembly.assertRejection(promise, "expected 1 element, found 0 (found: find('form') [1], find('.street') [0])")
+
+        demand(assembly.find('.phone').value).to.equal('')
+        demand(assembly.find('.first-name').value).to.equal('')
+      })
+
       it('waits until the desired option appears on the page', async () => {
         const select = assembly.insertHtml(`
           <select>
@@ -229,43 +251,45 @@ describe('set', function () {
       })
     })
 
-    it('can define a named field', async function () {
-      assembly.insertHtml(`
-        <form>
-          <input type=text class="phone"/>
-          <input type=text class="first-name"/>
-        </form>
-      `)
+    describe('defining fields', () => {
+      it('can define a named field', async function () {
+        assembly.insertHtml(`
+          <form>
+            <input type=text class="phone"/>
+            <input type=text class="first-name"/>
+          </form>
+        `)
 
-      browser.define('phone', b => b.find('.phone'))
-      browser.define('firstName', b => b.find('.first-name'))
+        browser.define('phone', b => b.find('.phone'))
+        browser.define('firstName', b => b.find('.first-name'))
 
-      await browser.set({
-        phone: '123123123',
-        firstName: 'Barry'
+        await browser.set({
+          phone: '123123123',
+          firstName: 'Barry'
+        })
+
+        demand(assembly.find('.phone').value).to.equal('123123123')
+        demand(assembly.find('.first-name').value).to.equal('Barry')
       })
 
-      demand(assembly.find('.phone').value).to.equal('123123123')
-      demand(assembly.find('.first-name').value).to.equal('Barry')
-    })
+      it('can define a named field with parameter', async function () {
+        assembly.insertHtml(`
+          <form>
+            <input name=phone type=text class="phone"/>
+            <input name=firstname type=text class="first-name"/>
+          </form>
+        `)
 
-    it('can define a named finder', async function () {
-      assembly.insertHtml(`
-        <form>
-          <input name=phone type=text class="phone"/>
-          <input name=firstname type=text class="first-name"/>
-        </form>
-      `)
+        browser.define('form', (b, name) => b.find('* [name=' + JSON.stringify(name) + ']'))
 
-      browser.define('form', (b, name) => b.find('* [name=' + JSON.stringify(name) + ']'))
+        await browser.set({
+          'form(phone)': '123123123',
+          'form(firstname)': 'Barry'
+        })
 
-      await browser.set({
-        'form(phone)': '123123123',
-        'form(firstname)': 'Barry'
+        demand(assembly.find('.phone').value).to.equal('123123123')
+        demand(assembly.find('.first-name').value).to.equal('Barry')
       })
-
-      demand(assembly.find('.phone').value).to.equal('123123123')
-      demand(assembly.find('.first-name').value).to.equal('Barry')
     })
   })
 })
