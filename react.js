@@ -10,7 +10,7 @@ module.exports = function (App, props) {
     },
     startApp: function () {
       var div = createTestDiv()
-      ReactDOM.render(React.createElement(this.app, props), div)
+      ReactDOM.render(React.createElement(App, props), div)
 
       return createMonkey(document.body)
     }

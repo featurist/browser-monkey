@@ -8,7 +8,7 @@ describeAssemblies([DomAssembly], (Assembly) => {
   if (Assembly.hasDom()) {
     testMount('angular', require('./app/angular'), require('../angular'))
     testMount('hyperdom', new (require('./app/hyperdom'))(), require('../hyperdom'))
-    testMount('react', new (require('./app/react'))(), require('../react'))
+    testMount('react', require('./app/react'), require('../react'))
     testMount('iframe', assembly.localUrl(pathUtils.join(__dirname, 'iframe-mount-test.html')), require('../iframe'))
   }
 })
