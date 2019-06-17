@@ -11,7 +11,9 @@ Browser Monkey is a DOM assertion library. It helps you write framework agnostic
  - can simulate text entry and clicks.
  - returns promises that resolve when the elements are found.
 
-## Examples
+## Example
+
+_Due to recent Codesandbox changes, this example currently does not work in the browser (details https://github.com/codesandbox/codesandbox-client/issues/2019). You can still download the project and run it locally._
 
 ```js
 import createMonkey from "browser-monkey/create";
