@@ -15,6 +15,7 @@ class WebApp extends React.Component {
   render () {
     return <div>
       <button onClick={() => this.hello()}>press me</button>
+      <input type="text" onChange={(e) => this.setState({message: e.target.value})}/>
       <div className='message'>{this.state.message}</div>
     </div>
   }

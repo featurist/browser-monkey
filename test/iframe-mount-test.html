@@ -8,12 +8,15 @@
   <body>
     <div class="message">default</div>
     <button>press me</button>
+    <input type=text>
     <script charset="utf-8">
-      document.addEventListener('click', function(e) {
-        if (e.target.innerText === 'press me') {
-          var div = document.querySelector('.message')
-          div.innerText = 'hello browser-monkey'
-        }
+      document.querySelector('button').addEventListener('click', function(e) {
+        var div = document.querySelector('.message')
+        div.innerText = 'hello browser-monkey'
+      })
+      document.querySelector('input').addEventListener('input', function(e) {
+        var div = document.querySelector('.message')
+        div.innerText = e.target.value
       })
     </script>
   </body>

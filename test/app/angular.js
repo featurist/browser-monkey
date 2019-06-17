@@ -8,6 +8,7 @@ angular
       controller: 'FrameworksController',
       template: `<div ng-controller="FrameworksController">
         <button ng-click="hello()">press me</button>
+        <input type=text ng-model="message">
         <div class="message">{{message}}</div>
       </div>`
     }

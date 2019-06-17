@@ -15,24 +15,29 @@ describeAssemblies([DomAssembly], (Assembly) => {
 
 function testMount (appType, app, monkeyBuilder) {
   describe(`mount ${appType}`, () => {
-    var monkey
+    var page
 
     beforeEach(() => {
-      monkey = monkeyBuilder(app)
+      page = monkeyBuilder(app)
     })
 
-    afterEach(() => monkey.options().mount.stop())
+    afterEach(() => page.options().mount.stop())
 
     it('loads some data', () => {
-      return monkey.find('.message').shouldHave({ text: 'default' }).then(() => {
-        return monkey.find('button').click()
+      return page.find('.message').shouldHave({ text: 'default' }).then(() => {
+        return page.find('button').click()
       }).then(() => {
-        return monkey.find('.message').shouldHave({ text: 'hello browser-monkey' })
+        return page.find('.message').shouldHave({ text: 'hello browser-monkey' })
       })
     })
 
+    it('can enter form fields', async () => {
+      await page.set({'input': 'hi'})
+      await page.assert({'.message': 'hi'})
+    })
+
     it('exposes the app', () => {
-      expect(monkey.options().app).to.equal(app)
+      expect(page.options().app).to.equal(app)
     })
   })
 }

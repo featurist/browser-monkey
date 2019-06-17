@@ -13,6 +13,7 @@ module.exports = class WebApp {
   render () {
     return <div>
       <button onclick={() => this.hello()}>press me</button>
+      <input type="text" binding={[this, 'message']}/>
       <div class='message'>{this.message}</div>
     </div>
   }
