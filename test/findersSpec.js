@@ -10,7 +10,7 @@ describe('find', function () {
 
     beforeEach(function () {
       assembly = new Assembly()
-      browser = assembly.browserMonkey().browserMonkey2Compat()
+      browser = assembly.browserMonkey()
     })
 
     it('should eventually find an element', function () {
@@ -127,48 +127,6 @@ describe('find', function () {
         assembly.insertHtml('<select><option>First</option><option>Second</option></select>')
 
         return browser.find('select option').shouldHave({ text: ['First', 'Second'] })
-      })
-    })
-
-    describe('containing', function () {
-      it('eventually finds an element containing another element', function () {
-        var promise = browser.find('.outer').containing('.inner').shouldExist().then()
-
-        assembly.eventuallyInsertHtml(
-          '<div class="outer"><div>bad</div></div>' +
-          '<div class="outer"><div class="inner">good</div></div>'
-        )
-
-        return promise
-      })
-
-      it('element returns the outer element', function () {
-        var promise = browser.find('.outer').containing('.inner').expectOneElement().then()
-
-        assembly.eventuallyInsertHtml(
-          '<div class="outer"><div>bad</div></div>' +
-          '<div id="good" class="outer"><div class="inner">good</div></div>'
-        )
-
-        return promise.then(function ([element]) {
-          demand(element).to.eql(assembly.find('#good'))
-        })
-      })
-
-      it("fails if it can't find an element containing another", function () {
-        var promise = browser.find('.outer').containing('.inner').shouldExist().then()
-
-        assembly.eventuallyInsertHtml('<div class="outer"><div>bad</div></div>')
-
-        return demand(promise).reject.with.error(/expected one or more elements/)
-      })
-
-      it("fails if it can't find an element containing another", function () {
-        var promise = browser.find('.outer').containing('.inner').shouldExist().then()
-
-        assembly.eventuallyInsertHtml('<div class="outer"><div>bad</div></div>')
-
-        return demand(promise).reject.with.error()
       })
     })
 

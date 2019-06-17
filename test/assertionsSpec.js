@@ -9,7 +9,7 @@ describe('assertions', function () {
 
     beforeEach(function () {
       assembly = new Assembly()
-      browser = assembly.browserMonkey().browserMonkey2Compat()
+      browser = assembly.browserMonkey()
     })
 
     describe('shouldNotExist', function () {
@@ -188,8 +188,8 @@ describe('assertions', function () {
         var select = browser.find('select')
 
         return Promise.all([
-          assembly.assertRejection(select.shouldHave({ value: '' }), 'expected select options'),
-          assembly.assertRejection(select.shouldHave({ exactValue: '' }), 'expected select options'),
+          select.shouldHave({ value: undefined }),
+          select.shouldHave({ exactValue: undefined }),
         ])
       })
 

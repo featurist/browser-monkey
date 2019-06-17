@@ -8,7 +8,7 @@ describe('component', function () {
 
     beforeEach(function () {
       assembly = new Assembly()
-      browser = assembly.browserMonkey().browserMonkey2Compat()
+      browser = assembly.browserMonkey()
     })
 
     it('can return new selectors by extending', function () {

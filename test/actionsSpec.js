@@ -10,12 +10,12 @@ describe('actions', function () {
 
     beforeEach(function () {
       assembly = new Assembly()
-      browser = assembly.browserMonkey().browserMonkey2Compat()
+      browser = assembly.browserMonkey()
     })
 
     describe('clicking', function () {
       it('should eventually click an element', function () {
-        var promise = browser.find('.element').click()
+        var promise = browser.find('.element').click().then()
         var clicked = false
 
         assembly.eventuallyInsertHtml(
@@ -66,7 +66,7 @@ describe('actions', function () {
       }, { vdom: false })
 
       it('waits until checkbox is enabled before clicking', function () {
-        var promise = browser.find('input[type=checkbox]').click()
+        var promise = browser.find('input[type=checkbox]').click().then()
         var clicked
         var buttonState = 'disabled'
 
@@ -86,7 +86,7 @@ describe('actions', function () {
       })
 
       it('waits until button is enabled before clicking', function () {
-        var promise = browser.find('button', { text: 'a button' }).click()
+        var promise = browser.find('button', { text: 'a button' }).click().then()
         var clicked
         var buttonState = 'disabled'
 
@@ -266,7 +266,7 @@ describe('actions', function () {
 
       it('should submit the form when submit button is clicked', function () {
         var submitted = false
-        var promise = browser.find('input').click()
+        var promise = browser.find('input').click().then()
 
         assembly.eventuallyInsertHtml(
           assembly.jQuery('<form action="#"><input type="submit">submit</input></form>').on('submit', function (ev) {
@@ -394,110 +394,6 @@ describe('actions', function () {
           demand(checkbox.checked).to.equal(false)
           demand(checked).to.equal(false)
         })
-      })
-    })
-
-    describe('fill', function () {
-      it('fills a component with the supplied values', function () {
-        var component = browser.component({
-          title: function () {
-            return this.find('.title')
-          },
-          name: function () {
-            return this.find('.name')
-          }
-        })
-        assembly.insertHtml('<select class="title"><option>Mrs</option><option>Mr</option></select>')
-        assembly.insertHtml('<input type="text" class="name"></input>')
-
-        return component.fill([
-          { name: 'title', action: 'select', options: { exactText: 'Mr' } },
-          { name: 'name', action: 'typeIn', options: 'Joe' }
-        ]).then(function () {
-          demand(assembly.find('.title').value).to.equal('Mr')
-          demand(assembly.find('.name').value).to.equal('Joe')
-        })
-      })
-
-      it('can fill using shortcut syntax', function () {
-        var component = browser.component({
-          title: function () {
-            return this.find('.title')
-          },
-          name: function () {
-            return this.find('.name')
-          },
-          agree: function () {
-            return this.find('.agree')
-          }
-        })
-        assembly.insertHtml('<select class="title"><option>Mrs</option><option>Mr</option></select>')
-        assembly.insertHtml('<input type="text" class="name"></input>')
-        assembly.insertHtml('<label class="agree">Check: <input type="checkbox"></label>')
-
-        return component.fill([
-          { select: 'title', text: 'Mrs' },
-          { typeIn: 'name', options: 'Joe' },
-          { click: 'agree' }
-        ]).then(function () {
-          demand(assembly.find('.title').value).to.equal('Mrs')
-          demand(assembly.find('.name').value).to.equal('Joe')
-          demand(assembly.find('.agree input').checked).to.equal(true)
-        })
-      })
-
-      it('can execute actions on a component', function () {
-        var myActionRan = false
-        var component = browser.component({
-          myAction: function () {
-            myActionRan = true
-
-            return new Promise(function (resolve) {
-              resolve()
-            })
-          }
-        }).component({
-          title: function () {
-            return this.find('.title')
-          }
-        })
-        assembly.insertHtml('<select class="title"><option>Mrs</option></select>')
-
-        return component.fill([
-          { myAction: 'title' }
-        ]).then(function () {
-          demand(myActionRan).to.equal(true)
-        })
-      })
-
-      it('throws an error if the action cannot be found', function () {
-        var component = browser.component({})
-
-        var promise = component.fill([
-          { actionDoesNotExist: 'name' }
-        ])
-
-        return assembly.assertRejection(promise, 'actionDoesNotExist')
-      })
-
-      it('throws an error when trying to call an action on a field which does not exist', function () {
-        var component = browser.component({})
-
-        var promise = component.fill([
-          { typeIn: 'name' }
-        ])
-
-        return assembly.assertRejection(promise, "Field 'name' does not exist")
-      })
-
-      it('throws an error if the field does not exist', function () {
-        var component = browser.component({})
-
-        var promise = component.fill(
-          { name: 'address', action: 'blah' }
-        )
-
-        return assembly.assertRejection(promise, "No field 'address' exists on this component")
       })
     })
   })

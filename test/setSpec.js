@@ -55,6 +55,22 @@ describe('set', function () {
       })
     })
 
+    describe('values', () => {
+      it('single argument, with scope sets value', async () => {
+        assembly.insertHtml(`
+          <form>
+            <div class="address">
+              <input type=text class="street"/>
+            </div>
+          </form>
+        `)
+
+        await browser.find('.address .street').set('7 Lola St')
+
+        demand(assembly.find('.address .street').value).to.equal('7 Lola St')
+      })
+    })
+
     describe('objects', function () {
       it('can set deep fields by CSS', async () => {
         assembly.insertHtml(`
@@ -87,6 +103,50 @@ describe('set', function () {
         demand(assembly.find('.address .postcode').value).to.equal('12345')
         demand(assembly.find('.phone').value).to.equal('123123123')
         demand(assembly.find('.first-name').value).to.equal('Barry')
+      })
+
+      it("an object doesn't assert the number of matching elements", async () => {
+        assembly.insertHtml(`
+          <form>
+            <div class="address">
+              <input type=text class="street"/>
+            </div>
+            <div class="address">
+              <input type=text class="city"/>
+            </div>
+          </form>
+        `)
+
+        await browser.set({
+          '.address': {
+            '.street': '7 Lola St',
+            '.city': 'Frisby City',
+          },
+        })
+
+        demand(assembly.find('.address .street').value).to.equal('7 Lola St')
+        demand(assembly.find('.address .city').value).to.equal('Frisby City')
+      })
+
+      it('a value does assert that there is only one matching element', async () => {
+        assembly.insertHtml(`
+          <form>
+            <div class="address">
+              <input type=text class="street"/>
+            </div>
+            <div class="address">
+              <input type=text class="street"/>
+              <input type=text class="city"/>
+            </div>
+          </form>
+        `)
+
+        await assembly.assertRejection(browser.set({
+          '.address': {
+            '.street': '7 Lola St',
+            '.city': 'Frisby City',
+          },
+        }), "expected 1 element, found 2 (found: find('.address') [2], find('.street') [2])")
       })
 
       it('deep fields disambiguate', async () => {
@@ -180,8 +240,7 @@ describe('set', function () {
 
         await assembly.assertRejection(
           browser.set({
-            '.address': [
-            ]
+            '.address': []
           }),
           'expected 0 elements'
         )

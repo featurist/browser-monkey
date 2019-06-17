@@ -9,7 +9,7 @@ describe('options', function () {
 
     beforeEach(function () {
       assembly = new Assembly()
-      browser = assembly.browserMonkey().browserMonkey2Compat()
+      browser = assembly.browserMonkey()
     })
 
     it('can overide default timeout', function () {

@@ -81,6 +81,68 @@ describe('assert', function () {
       })
     })
 
+    describe('values', () => {
+      it('matches if the exact text of the element is the same', async () => {
+        assembly.insertHtml(`
+          <form>
+            <div class="address">
+              <input type=text class="street" value="7 Lola St" />
+            </div>
+          </form>
+        `)
+
+        await browser.find('.address .street').assert('7 Lola St')
+      })
+
+      it('single argument, with scope asserts value', async () => {
+        assembly.insertHtml(`
+          <form>
+            <div class="address">
+              <input type=text class="street" value="7 Lola St" />
+            </div>
+          </form>
+        `)
+
+        await assembly.assertExpectedActual(browser.find('.address .street'), '8 Lola St', '7 Lola St')
+      })
+
+      it('fails even if it contains the right text', async () => {
+        assembly.insertHtml(`
+          <form>
+            <div class="address">
+              <input type=text class="street" value="8 Rue de Paris, St Etienne" />
+            </div>
+          </form>
+        `)
+
+        await assembly.assertExpectedActual(browser.find('.address .street'), '8 Rue de Paris', '8 Rue de Paris, St Etienne')
+      })
+
+      it('can match a resulgar expression', async () => {
+        assembly.insertHtml(`
+          <form>
+            <div class="address">
+              <input type=text class="street" value="7 Lola St" />
+            </div>
+          </form>
+        `)
+
+        await browser.find('.address .street').assert(/\d+ Lola St/)
+      })
+
+      it('fails if the regular expression does not match', async () => {
+        assembly.insertHtml(`
+          <form>
+            <div class="address">
+              <input type=text class="street" value="7 Lola St" />
+            </div>
+          </form>
+        `)
+
+        await assembly.assertExpectedActual(browser.find('.address .street'), /\d+ High St/, '7 Lola St')
+      })
+    })
+
     describe('objects', function () {
       it('passes when the fields are there and have the expected values', async () => {
         assembly.insertHtml(`
@@ -246,6 +308,24 @@ describe('assert', function () {
         }, {
           'h1': 'Title',
           '.content': 'Error: asdf'
+        })
+      })
+
+      it('throws if the function is asynchronous', async () => {
+        assembly.insertHtml(`
+          <div>
+            <h1>Title</h1>
+            <div class="content">The Content</div>
+          </div>
+        `)
+
+        await assembly.assertExpectedActual(browser, {
+          'h1': 'Title',
+          '.content': async () => {
+          }
+        }, {
+          'h1': 'Title',
+          '.content': 'Error: model functions must not be asynchronous'
         })
       })
     })

@@ -14,6 +14,8 @@ var uniq = require('lowscore/uniq')
 var debug = require('debug')('browser-monkey')
 var inputsSelector = require('./inputsSelector')
 const elementEnterText = require('./elementEnterText')
+var elementClick = require('./elementClick')
+var elementSubmit = require('./elementSubmit')
 
 type Transform = (elements: any, executedTransforms: ExecutedTransform[]) => any
 type Action = (elements: any, executedTransforms: ExecutedTransform[]) => void
@@ -31,12 +33,6 @@ class Query {
       }[]
       button: ((monkey: any, name: any) => any)[]
       fields: {}
-      field: ((monkey: any, name: any) => any)[]
-      fieldValue: {
-        get: (monkey: any) => any
-        set: (monkey: any, value: any) => void
-        setter?: (monkey: any, value: any) => void
-      }[]
     }
   }
 
@@ -56,75 +52,17 @@ class Query {
         fieldTypes: [],
         button: [
           function (monkey, name) {
-            return monkey.find('button', { exactText: name })
+            return monkey.css('button', { exactText: name })
           },
           function (monkey, name) {
-            return monkey.find('input[type=button]', { exactValue: name })
+            return monkey.css('input[type=button]', { exactValue: name })
           },
           function (monkey, name) {
-            return monkey.find('a', { exactText: name })
+            return monkey.css('a', { exactText: name })
           }
         ],
 
         fields: {},
-
-        field: [
-          function (monkey, name) {
-            return monkey.find('label', { exactText: name }).find('input')
-          },
-          function (monkey, name) {
-            return monkey.find('input').filter(function (element) {
-              var labelledBy = element.getAttribute('aria-labelledby')
-              if (labelledBy) {
-                var ids = labelledBy.split(/\s+/)
-                var labels = ids.map(function (id) {
-                  return element.ownerDocument.getElementById(id)
-                })
-                var label = labels.filter(Boolean).map(function (l) {
-                  return elementInnerText(l)
-                }).join(' ')
-                return name === label
-              }
-            }, 'aria-labelledby ' + inspect({ text: name }))
-          }
-        ],
-        fieldValue: [
-          {
-            set: function (monkey, value) {
-              return monkey.typeIn(value)
-            },
-            setter: function (monkey) {
-              return monkey.is(inputsSelector).element().mapAll(function (element) {
-                return function (value) {
-                  if (typeof value !== 'string') {
-                    throw new Error('expected string as argument to typeIn')
-                  }
-                  debug('typeIn', element, value)
-                  elementEnterText(element, value)
-                }
-              })
-            },
-            get: function (monkey) {
-              return monkey.inputValue()
-            }
-          },
-          {
-            set: function (monkey, value) {
-              return monkey.select(value)
-            },
-            get: function (monkey) {
-              return monkey.selectValue()
-            }
-          },
-          {
-            set: function (monkey, value) {
-              return monkey.check(value)
-            },
-            get: function (monkey) {
-              return monkey.checked()
-            }
-          }
-        ]
       }
     }
     this._input = undefined
@@ -155,6 +93,18 @@ class Query {
     })
   }
 
+  public button (name: string): this {
+    return this.concat(this._options.definitions.button.map(definition => {
+      return (q: Query): Query => {
+        return definition(q, name)
+      }
+    }))
+  }
+
+  public defineButton (definition: (q: Query, name?: string) => Query): void {
+    this._options.definitions.button.push(definition)
+  }
+
   public result (): any {
     return this.execute().value
   }
@@ -172,7 +122,7 @@ class Query {
     })
   }
 
-  public concat (queryCreators: [(q: Query) => Query]): this {
+  public concat (queryCreators: ((q: Query) => Query)[]): this {
     return this.transform((elements) => {
       const resolved = this.resolve(elements)
 
@@ -277,6 +227,24 @@ class Query {
     }
 
     return this.css(selector, options)
+  }
+
+  public submit (): void {
+    return this.expectOneElement().action(function ([element]) {
+      debug('enter', element)
+      elementSubmit(element)
+    })
+  }
+
+  public click (name?: string): void {
+    const query = name === undefined
+      ? this
+      : this.button(name)
+
+    return query.enabled().expectOneElement().action(function ([element]) {
+      debug('click', element)
+      elementClick(element)
+    })
   }
 
   public options (options): Options {

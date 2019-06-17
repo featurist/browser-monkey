@@ -10,7 +10,7 @@ describe('reload button', function () {
 
     beforeEach(function () {
       assembly = new Assembly()
-      browser = assembly.browserMonkey().scope(document.body).browserMonkey2Compat()
+      browser = assembly.browserMonkey().scope(document.body)
     })
 
     it('adds reload button that reloads to the initial url', function () {
