@@ -1,11 +1,12 @@
 {
   "compilerOptions": {
-    "lib": ["es2015"],
+    "lib": ["es2015", "dom"],
     "noImplicitAny": false,
     "module": "commonjs",
     "target": "ES5",
     "outDir": "dist",
-    "rootDir": "."
+    "rootDir": ".",
+    "allowJs": true
   },
   "exclude": [
     "node_modules",

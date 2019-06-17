@@ -2,14 +2,15 @@
   "name": "browser-monkey",
   "version": "2.7.2",
   "description": "reliable dom testing",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "yarn test-browser-compatibility && yarn test-electron-mocha && yarn karma && eslint .",
     "karma": "karma start --single-run",
     "test-electron-mocha": "yarn electron-mocha test/*Spec.js test/**/*Spec.js",
     "electron-mocha": "electron-mocha --disable-site-isolation-trials --full-trace -r test/register --renderer",
+    "update-readme-example-links": "node ./docs/update-readme-example-links.js",
     "test-browser-compatibility": "browserify ./index.js > /dev/null",
-    "update-readme-example-links": "node ./docs/update-readme-example-links.js"
+    "prepare": "tcs"
   },
   "author": "Tim Macfarlane <timmacfarlane@gmail.com>",
   "license": "MIT",

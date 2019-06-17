@@ -19,6 +19,14 @@ var elementSubmit = require('./elementSubmit')
 
 type Transform = (elements: any, executedTransforms: ExecutedTransform[]) => any
 type Action = (elements: any, executedTransforms: ExecutedTransform[]) => void
+interface Definitions {
+  fieldTypes: {
+    value: (query: Query) => any
+    settter?: (query: Query, value: any) => () => void
+  }[]
+  button: ((monkey: any, name: any) => any)[]
+  fields: {}
+}
 
 class Query {
   private _transforms: Transform[]
@@ -26,14 +34,7 @@ class Query {
     visibleOnly: boolean
     timeout: number
     interval: number
-    definitions: {
-      fieldTypes: {
-        value: (query: Query) => any
-        settter?: (query: Query, value: any) => () => void
-      }[]
-      button: ((monkey: any, name: any) => any)[]
-      fields: {}
-    }
+    definitions: Definitions
   }
 
   private _input: any
@@ -205,49 +206,7 @@ class Query {
     return transformed
   }
 
-  public find (selector: string, options = undefined): this {
-    // name(value)
-    const match = /^\s*(.*?)\s*(\((.*)\)\s*)?$/.exec(selector)
-
-    if (match) {
-      const [, name,, value] = match
-      const finder = this._options.definitions.fields[name]
-
-      if (finder) {
-        if (options) {
-          throw new Error('options not used here')
-        }
-
-        if (value !== undefined) {
-          return finder(this, value.trim())
-        } else {
-          return finder(this)
-        }
-      }
-    }
-
-    return this.css(selector, options)
-  }
-
-  public submit (): void {
-    return this.expectOneElement().action(function ([element]) {
-      debug('enter', element)
-      elementSubmit(element)
-    })
-  }
-
-  public click (name?: string): void {
-    const query = name === undefined
-      ? this
-      : this.button(name)
-
-    return query.enabled().expectOneElement().action(function ([element]) {
-      debug('click', element)
-      elementClick(element)
-    })
-  }
-
-  public options (options): Options {
+  public options (options): any {
     if (options) {
       extend(this._options, options)
     } else {
@@ -294,7 +253,7 @@ class Query {
 
   public clone (modifier?: (clone: this) => void): this {
     var clone = new (this.constructor as any)()
-    copySelectorFields(this, clone)
+    clone.copyQueryFields(this)
     if (modifier) {
       modifier(clone)
     }
@@ -308,8 +267,8 @@ class Query {
   public component (methods): this {
     var self = this
 
-    function Component () {
-      copySelectorFields(self, this)
+    function Component (): void {
+      this.copyQueryFields(self)
     }
 
     Component.prototype = new (this.constructor as any)()
@@ -325,27 +284,35 @@ class Query {
 
     return new Component()
   }
+
+  private copyQueryFields (from: Query): void {
+    this._transforms = from._transforms.slice()
+    this._input = from._input
+
+    this._hasExpectation = from._hasExpectation
+
+    this._options = extend({}, from._options)
+    this._options.definitions = cloneDefinitions(from._options.definitions)
+  }
 }
 
-function copySelectorFields (from: Query, to: Query): void {
-  to._transforms = from._transforms.slice()
-  to._input = from._input
+function cloneDefinitions(definitions: Definitions): Definitions {
+  const result = {}
 
-  to._hasExpectation = from._hasExpectation
-
-  to._options = extend({}, from._options)
-  to._options.definitions = {}
-
-  Object.keys(from._options.definitions).forEach(function (key) {
-    if (from._options.definitions[key] instanceof Array) {
-      to._options.definitions[key] = from._options.definitions[key].slice()
+  Object.keys(definitions).forEach(function (key) {
+    if (definitions[key] instanceof Array) {
+      result[key] = definitions[key].slice()
     } else {
-      to._options.definitions[key] = Object.assign({}, from._options.definitions[key])
+      result[key] = Object.assign({}, definitions[key])
     }
   })
+
+  return result as Definitions
 }
 
-function retryFromOptions (options) {
+type Retry = (fn: () => any) => Promise<any>
+
+function retryFromOptions (options: {retry?: Retry, timeout?: number, interval?: number}): Retry {
   if (options && options.retry) {
     return options.retry
   } else if (options && (options.timeout || options.interval)) {
