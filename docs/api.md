@@ -229,7 +229,7 @@ As an alternative to `browser.find('.selector').shouldExist()` you can also do:
 
 ```js
 await browser.shouldFind('.selector')
-````
+```
 
 ### shouldNotExist
 Waits for the element not to exist.
@@ -304,7 +304,6 @@ component.shouldHave({
 would match:
 
 ```html
-
 <div class="airport">
   LHR
   <span class="date">Aug 2055</span>
@@ -502,7 +501,6 @@ A button is considered any of the following types - `input[type=submit]`, `input
  - `<button>tamarin</button>`
  - `<button id="tamarin">button</button>`
  - `<button value="tamarin">button</button>`
- - `<button id="tamarin">button</button>`
  - `<button><img alt="tamarin"></button>`
 
 ### linkOrButton
