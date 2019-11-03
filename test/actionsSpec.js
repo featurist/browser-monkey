@@ -27,6 +27,20 @@ describe('actions', function () {
       })
     })
 
+    domTest.only('should reject attempts to click multiple matching elements', function (browser, dom, $) {
+      var promise = browser.find('span', { text: 'lemonade' }).click()
+
+      dom.insert(
+        $('<span class="x">lemonade</span><span class="y">lemonade</span>')
+      )
+
+      return promise.then(function () {
+        throw new Error('Promise should not resolve')
+      }).catch(function (error) {
+        demand(error.message).to.equal('whatevs')
+      })
+    })
+
     domTest('sends mousedown mouseup and click events', function (browser, dom) {
       var events = []
 
