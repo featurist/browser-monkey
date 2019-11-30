@@ -329,5 +329,88 @@ describe('assert', function () {
         })
       })
     })
+
+    describe('define', () => {
+      it('can define a field using a finder', async () => {
+        assembly.insertHtml(`
+          <div>
+            <h1>Title</h1>
+            <div class="content">The Content</div>
+          </div>
+        `)
+
+        browser.define('header', q => q.find('h1'))
+
+        await browser.assert({
+          header: 'Title',
+          '.content': 'The Content'
+        })
+      })
+
+      it('can define a field using css', async () => {
+        assembly.insertHtml(`
+          <div>
+            <h1>Title</h1>
+            <div class="content">The Content</div>
+          </div>
+        `)
+
+        browser.define('header', 'h1')
+
+        await browser.assert({
+          header: 'Title',
+          '.content': 'The Content'
+        })
+      })
+
+      it('can define a several fields using an object', async () => {
+        assembly.insertHtml(`
+          <div>
+            <h1>Title</h1>
+            <div class="content">The Content</div>
+          </div>
+        `)
+
+        browser.define({
+          header: 'h1',
+          content: q => q.find('.content'),
+        })
+
+        await browser.assert({
+          header: 'Title',
+          content: 'The Content'
+        })
+      })
+
+      it('can define a several hierarchical fields using finders', async () => {
+        assembly.insertHtml(`
+          <div>
+            <h1>Title</h1>
+            <div class="content">
+              <div class="title">title</div>
+              <div class="body">
+                body
+              </div>
+            </div>
+          </div>
+        `)
+
+        browser.define({
+          title: 'h1',
+          content: q => q.find('.content').define({
+            title: '.title',
+            body: '.body'
+          }),
+        })
+
+        await browser.assert({
+          title: 'Title',
+          content: {
+            title: 'title',
+            body: 'body'
+          }
+        })
+      })
+    })
   })
 })
