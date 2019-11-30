@@ -251,7 +251,7 @@ describe('actions', function () {
     describe('submit', function () {
       it('should submit the form', function () {
         var submitted = false
-        var promise = browser.find('input').submit()
+        var promise = browser.find('input').submit().then()
 
         assembly.eventuallyInsertHtml(
           assembly.jQuery('<form action="#"><input type=text></form>').on('submit', function (ev) {
