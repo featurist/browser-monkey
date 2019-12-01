@@ -1,13 +1,5 @@
 var describeAssemblies = require('./describeAssemblies')
 const DomAssembly = require('./assemblies/DomAssembly')
-const elementVisible = require('../lib/elementVisible')
-const elementClick = require('../lib/elementClick')
-const elementSelect = require('../lib/elementSelect')
-const elementMatches = require('../lib/elementMatches')
-const elementSubmit = require('../lib/elementSubmit')
-const elementTriggerEvent = require('../lib/elementTriggerEvent')
-const elementEnterText = require('../lib/elementEnterText')
-const elementInnerText = require('../lib/elementInnerText')
 const { expect } = require('chai')
 
 describe('dom', () => {
@@ -44,7 +36,7 @@ describe('dom', () => {
           button.addEventListener(type, () => buttonEvents.push(type))
         })
 
-        elementSubmit(input)
+        assembly.dom.submit(input)
 
         expect(formEvents).to.eql([
           'keydown',
@@ -79,7 +71,7 @@ describe('dom', () => {
           input.addEventListener(type, () => inputEvents.push(type))
         })
 
-        elementSubmit(input)
+        assembly.dom.submit(input)
 
         expect(formEvents).to.eql([
           'keydown',
@@ -110,7 +102,7 @@ describe('dom', () => {
           </div>
         `)
 
-        expect(elementInnerText(element)).to.equal('first line\nsecond line')
+        expect(assembly.dom.elementInnerText(element)).to.equal('first line\nsecond line')
       })
 
       it('normalises innerText removing extra spaces between words', () => {
@@ -120,7 +112,7 @@ describe('dom', () => {
           </div>
         `)
 
-        expect(elementInnerText(element)).to.equal('two words')
+        expect(assembly.dom.elementInnerText(element)).to.equal('two words')
       })
     })
 
@@ -133,7 +125,7 @@ describe('dom', () => {
           element.addEventListener(type, () => events.push(type))
         })
 
-        elementClick(element)
+        assembly.dom.click(element)
 
         expect(events).to.eql([
           'mousedown',
@@ -153,7 +145,7 @@ describe('dom', () => {
           element.addEventListener(type, preventDefaultSubmit(() => events.push(type)))
         })
 
-        elementClick(submit)
+        assembly.dom.click(submit)
 
         expect(events).to.eql([
           'submit'
@@ -168,7 +160,7 @@ describe('dom', () => {
           checkbox.addEventListener(type, () => events.push(type))
         })
 
-        elementClick(checkbox)
+        assembly.dom.click(checkbox)
 
         expect(events).to.eql([
           'mousedown',
@@ -177,7 +169,7 @@ describe('dom', () => {
         ])
 
         expect(checkbox.checked).to.equal(true)
-        elementClick(checkbox)
+        assembly.dom.click(checkbox)
         expect(checkbox.checked).to.equal(false)
       })
 
@@ -191,7 +183,7 @@ describe('dom', () => {
           checkbox.addEventListener(type, () => events.push('checkbox:' + type))
         })
 
-        elementClick(checkbox)
+        assembly.dom.click(checkbox)
 
         expect(events).to.eql([
           'checkbox:mousedown',
@@ -203,7 +195,7 @@ describe('dom', () => {
         ])
 
         expect(checkbox.checked).to.equal(true)
-        elementClick(checkbox)
+        assembly.dom.click(checkbox)
         expect(checkbox.checked).to.equal(false)
       })
     })
@@ -225,7 +217,7 @@ describe('dom', () => {
           selectElement.addEventListener(type, () => selectEvents.push(type))
         })
 
-        elementSelect(selectElement, one)
+        assembly.dom.selectOption(selectElement, one)
 
         expect(selectEvents).to.eql([
           'mousedown',
@@ -242,7 +234,7 @@ describe('dom', () => {
         expect(two.selected).to.equal(false)
         assembly.assertElementIsFocussed(selectElement)
 
-        elementSelect(selectElement, two)
+        assembly.dom.selectOption(selectElement, two)
 
         expect(selectElement.selectedIndex).to.equal(1)
         expect(selectElement.value).to.equal('two')
@@ -261,7 +253,7 @@ describe('dom', () => {
           input.addEventListener(type, e => events.push(type + ':' + e.target.value))
         })
 
-        elementEnterText(input, 'abc')
+        assembly.dom.enterText(input, 'abc')
 
         expect(events).to.eql([
           'keydown:',
@@ -292,7 +284,7 @@ describe('dom', () => {
           input.addEventListener(type, e => events.push(type + ':' + e.target.value))
         })
 
-        elementEnterText(input, 'abc')
+        assembly.dom.enterText(input, 'abc')
 
         expect(events).to.eql([
           'keydown:existing',
@@ -327,7 +319,7 @@ describe('dom', () => {
           input.addEventListener(type, e => events.push(type + ':' + e.target.value))
         })
 
-        elementEnterText(input, '')
+        assembly.dom.enterText(input, '')
 
         expect(events).to.eql([
           'keydown:existing',
@@ -357,7 +349,7 @@ describe('dom', () => {
       it('throws error if event type is not known', () => {
         var element = assembly.insertHtml('<div/>')
 
-        expect(() => elementTriggerEvent(element, 'asdf')).to.throw('event type "asdf" not recognised')
+        expect(() => assembly.dom.triggerEvent(element, 'asdf')).to.throw('event type "asdf" not recognised')
       })
 
       function watchEvents (element) {
@@ -415,7 +407,7 @@ describe('dom', () => {
               })
             })
 
-            elementTriggerEvent(element, eventName)
+            assembly.dom.triggerEvent(element, eventName)
 
             return eventReceived
           })
@@ -431,7 +423,7 @@ describe('dom', () => {
 
             var child = assembly.find('#child')
 
-            elementTriggerEvent(child, eventName)
+            assembly.dom.triggerEvent(child, eventName)
 
             return eventReceived
           })
@@ -443,19 +435,19 @@ describe('dom', () => {
       it('when element is visible it returns true', () => {
         var element = assembly.insertHtml('<div>hi</div>')
 
-        expect(elementVisible(element)).to.equal(true)
+        expect(assembly.dom.elementVisible(element)).to.equal(true)
       })
 
       it('when element is visible but empty returns true', () => {
         var element = assembly.insertHtml('<div></div>')
 
-        expect(elementVisible(element)).to.equal(true)
+        expect(assembly.dom.elementVisible(element)).to.equal(true)
       })
 
       it('when element is display:none it returns false', () => {
         var element = assembly.insertHtml('<div style="display: none">hi</div>')
 
-        expect(elementVisible(element)).to.equal(false)
+        expect(assembly.dom.elementVisible(element)).to.equal(false)
       })
 
       it('when element is visible but parent is not', () => {
@@ -463,7 +455,7 @@ describe('dom', () => {
 
         var element = assembly.find('#child')
 
-        expect(elementVisible(element)).to.equal(false)
+        expect(assembly.dom.elementVisible(element)).to.equal(false)
       })
 
       it('when element is option and select is visible, returns true', () => {
@@ -471,7 +463,7 @@ describe('dom', () => {
 
         var element = assembly.find('#option')
 
-        expect(elementVisible(element)).to.equal(true)
+        expect(assembly.dom.elementVisible(element)).to.equal(true)
       })
 
       it('when element is option and select is not visible, returns false', () => {
@@ -479,7 +471,7 @@ describe('dom', () => {
 
         var element = assembly.find('#option')
 
-        expect(elementVisible(element)).to.equal(false)
+        expect(assembly.dom.elementVisible(element)).to.equal(false)
       })
     })
 
@@ -487,24 +479,24 @@ describe('dom', () => {
       describe('tagName', function () {
         it('returns true when tagName matches', () => {
           var element = assembly.insertHtml('<div></div>')
-          expect(elementMatches(element, 'div')).to.equal(true)
+          expect(assembly.dom.elementMatches(element, 'div')).to.equal(true)
         })
 
         it('returns false when tagName doesnt match', () => {
           var element = assembly.insertHtml('<div></div>')
-          expect(elementMatches(element, 'select')).to.equal(false)
+          expect(assembly.dom.elementMatches(element, 'select')).to.equal(false)
         })
       })
 
       describe('class', function () {
         it('returns true when class matches', () => {
           var element = assembly.insertHtml('<div class="hobo"></div>')
-          expect(elementMatches(element, '.hobo')).to.equal(true)
+          expect(assembly.dom.elementMatches(element, '.hobo')).to.equal(true)
         })
 
         it('returns false when class doesnt match', () => {
           var element = assembly.insertHtml('<div></div>')
-          expect(elementMatches(element, '.hobo')).to.equal(false)
+          expect(assembly.dom.elementMatches(element, '.hobo')).to.equal(false)
         })
       })
     })

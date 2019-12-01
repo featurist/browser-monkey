@@ -4,18 +4,15 @@ import { ExecutedSimpleTransform } from './ExecutedSimpleTransform'
 import { ExecutedConcatTransform } from './ExecutedConcatTransform'
 import { ExecutedFirstOfTransform } from './ExecutedFirstOfTransform'
 import { ExecutedTransformError } from './ExecutedTransformError'
+import Dom from './Dom'
 import BrowserMonkeyAssertionError from './BrowserMonkeyAssertionError'
 import toExecutedTransform from './toExecutedTransform'
 var extend = require('lowscore/extend')
 var retry = require('trytryagain')
-var elementInnerText = require('./elementInnerText')
 var inspect = require('object-inspect')
 var uniq = require('lowscore/uniq')
 var debug = require('debug')('browser-monkey')
 var inputsSelector = require('./inputsSelector')
-const elementEnterText = require('./elementEnterText')
-var elementClick = require('./elementClick')
-var elementSubmit = require('./elementSubmit')
 
 type Transform = (elements: any, executedTransforms: ExecutedTransform[]) => any
 type Action = (elements: any, executedTransforms: ExecutedTransform[]) => void
@@ -41,6 +38,7 @@ class Query {
   private _actionExecuted: any
   private _action: Action
   private _hasExpectation: boolean
+  private _dom: Dom
 
   public constructor () {
     this._hasExpectation = false
@@ -66,6 +64,7 @@ class Query {
         fields: {},
       }
     }
+    this._dom = new Dom()
     this._input = undefined
   }
 

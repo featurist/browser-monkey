@@ -7,6 +7,7 @@ const pathUtils = require('path')
 const trytryagain = require('trytryagain')
 const { expect } = require('chai')
 const inspect = require('object-inspect')
+const Dom = require('../../lib/Dom').default
 
 module.exports = class DomAssembly {
   constructor () {
@@ -15,6 +16,7 @@ module.exports = class DomAssembly {
     this.retries = []
     this.delayedActions = []
     this.queuedRetries = 0
+    this.dom = new Dom()
   }
 
   div () {
