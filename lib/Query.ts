@@ -235,11 +235,11 @@ class Query {
 
       const transform = new ExecutedDetectTransform(
         firstSuccess
-        ? {
-          key: firstSuccess.key,
-          value: firstSuccess.value.value,
-        }
-        : undefined,
+          ? {
+            key: firstSuccess.key,
+            value: firstSuccess.value.value,
+          }
+          : undefined,
         entries.map(v => ({key: v.key, transform: v.error || v.value}))
       )
 
@@ -346,7 +346,7 @@ class Query {
     this._options.definitions = cloneDefinitions(from._options.definitions)
   }
 
-  expectNoElements (message?: string) {
+  public expectNoElements (message?: string): this {
     return this.expect(elements => {
       expectElements(elements)
 
@@ -356,7 +356,7 @@ class Query {
     })
   }
 
-  expectOneElement (message?: string) {
+  public expectOneElement (message?: string): this {
     return this.expect(elements => {
       expectElements(elements)
 
@@ -366,11 +366,11 @@ class Query {
     })
   }
 
-  element (): HTMLElement {
+  public element (): HTMLElement {
     return this.expectOneElement().result()[0]
   }
 
-  expectSomeElements (message?: string) {
+  public expectSomeElements (message?: string): this {
     return this.expect(function (elements) {
       expectElements(elements)
 
@@ -380,21 +380,21 @@ class Query {
     })
   }
 
-  click () {
+  public click (): this {
     return this.expectOneElement().action(([element]) => {
       debug('click', element)
       this._dom.click(element)
     })
   }
 
-  submit () {
+  public submit (): this {
     return this.expectOneElement().action(([element]) => {
       debug('submit', element)
       this._dom.submit(element)
     })
   }
 
-  scope (element: HTMLElement) {
+  public scope (element: HTMLElement): this {
     var selector = this.clone()
     selector.input([element])
 
@@ -407,7 +407,7 @@ class Query {
     }
   }
 
-  iframeContent () {
+  public iframeContent (): this {
     return this.transform(elements => {
       return elements.map(element => {
         if (isIframe(element)) {
@@ -423,18 +423,18 @@ class Query {
     })
   }
 
-  enabled () {
+  public enabled (): this {
     return this.filter(element => {
       var tagName = element.tagName
       return !((tagName === 'BUTTON' || tagName === 'INPUT') && element.disabled)
     }, 'enabled')
   }
 
-  clickButton (name) {
+  public clickButton (name: string): this {
     return this.button(name).click()
   }
 
-  set (selector, value) {
+  public set (selector, value): this {
     const model = value === undefined
       ? selector
       : {
@@ -454,6 +454,10 @@ class Query {
           setters.push(() => setter())
         },
 
+        expectOne: (query) => {
+          expectLength(query, 1).result()
+        },
+
         function: (query, model) => {
           setters.push(() => runModelFunction(model, query))
         }
@@ -468,17 +472,35 @@ class Query {
     })
   }
 
-  shouldExist (): this {
+  public shouldExist (): this {
     return this.expectSomeElements()
   }
 
-  shouldContain (model): this {
+  public shouldNotExist (): this {
+    return this.expectNoElements()
+  }
+
+  public shouldContain (model): this {
     return this.expect(elements => {
       let isError = false
 
       const actions = {
         arrayLengthError: () => {
           isError = true
+        },
+
+        expectOne: (query) => {
+          try {
+            expectLength(query, 1).result()
+            return {}
+          } catch (e) {
+            if (e instanceof BrowserMonkeyAssertionError) {
+              isError = true
+              return 'Error: ' + e.message
+            } else {
+              throw e
+            }
+          }
         },
 
         value: (query, model) => {
@@ -533,13 +555,13 @@ class Query {
     })
   }
 
-  index (index) {
+  public index (index: number): this {
     return this.transform(function (elements) {
       return new ExecutedSimpleTransform([elements[index]], 'index ' + index)
     })
   }
 
-  define (name, finder) {
+  public define (name, finder): this {
     if (typeof finder === 'function') {
       this._options.definitions.fields[name] = finder
     } else if (typeof finder === 'string') {
@@ -551,13 +573,13 @@ class Query {
     return this
   }
 
-  setter (model) {
+  public setter (model): this {
     return this.firstOf(this._options.definitions.fieldTypes.filter(def => def.setter).map(def => {
       return query => def.setter(query, model)
     }))
   }
 
-  valueAsserter (expected) {
+  public valueAsserter (expected: any): this {
     return this.firstOf(this._options.definitions.fieldTypes.filter(def => def.value).map(def => {
       return query => def.valueAsserter
         ? def.valueAsserter(query, expected)
@@ -571,11 +593,11 @@ class Query {
     }))
   }
 
-  defineFieldType (fieldTypeDefinition: FieldType) {
+  public defineFieldType (fieldTypeDefinition: FieldType): void {
     this._options.definitions.fieldTypes.unshift(fieldTypeDefinition)
   }
 
-  containing (model: any): this {
+  public containing (model: any): this {
     return this.transform(elements => {
       const actions = {
         arrayLengthError: (query, actualLength, expectedLength) => {
@@ -585,6 +607,10 @@ class Query {
         value: (query, value) => {
           const valueAsserter = query.valueAsserter(value).result()
           valueAsserter()
+        },
+
+        expectOne: (query) => {
+          query.expectOne().result()
         },
 
         function: (query, fn) => {
@@ -608,13 +634,13 @@ class Query {
     })
   }
 
-  value (): this {
+  public value (): this {
     return this.firstOf(this._options.definitions.fieldTypes.filter(def => def.value).map(def => {
       return query => def.value(query)
     }))
   }
 
-  installSetters (): this {
+  public installSetters (): this {
     this.define('css', (query, css) => query.css(css))
 
     this.defineFieldType({
@@ -732,7 +758,7 @@ class Query {
     return this
   }
 
-  css (selector: string): this {
+  public css (selector: string): this {
     const findElements = this.transform(elements => {
       expectElements(elements)
       return new ExecutedSimpleTransform(flatten(elements.map(element => {
@@ -743,7 +769,7 @@ class Query {
     return findElements
   }
 
-  find (selector: string): this {
+  public find (selector: string): this {
     // name(value)
     const match = /^\s*(.*?)\s*(\((.*)\)\s*)?$/.exec(selector)
 
@@ -763,14 +789,14 @@ class Query {
     return this.css(selector)
   }
 
-  is (selector: string): this {
+  public is (selector: string): this {
     return this.filter(element => {
       return this._dom.elementMatches(element, selector)
     }, 'is: ' + selector)
   }
 }
 
-function expectElements (elements) {
+function expectElements (elements): void {
   if (!isArrayOfHTMLElements(elements)) {
     throw new BrowserMonkeyAssertionError('expected an array of HTML elements')
   }
@@ -790,11 +816,11 @@ function cloneDefinitions(definitions: Definitions): Definitions {
   return result as Definitions
 }
 
-function isIframe (element) {
+function isIframe (element): boolean {
   return isHTMLElement(element, 'HTMLIFrameElement')
 }
 
-function isHTMLElement (element, subclass: string = 'HTMLElement') {
+function isHTMLElement (element, subclass: string = 'HTMLElement'): boolean {
   if (element.ownerDocument && element.ownerDocument.defaultView) {
     // an element inside an iframe
     return element instanceof element.ownerDocument.defaultView[subclass]
@@ -803,7 +829,7 @@ function isHTMLElement (element, subclass: string = 'HTMLElement') {
   }
 }
 
-function isArrayOfHTMLElements (elements) {
+function isArrayOfHTMLElements (elements): boolean {
   return elements instanceof Array &&
     elements.every(element => {
       return isHTMLElement(element)
@@ -834,7 +860,7 @@ function runQueryCreator (queryCreator: (q: Query) => Query, query: Query): Quer
   return q
 }
 
-function runModelFunction(fn, query) {
+function runModelFunction(fn: (Query) => Query, query: Query): void {
   const result = fn(query)
   if (result && typeof result.then === 'function') {
     query.error('model functions must not be asynchronous')
@@ -843,7 +869,7 @@ function runModelFunction(fn, query) {
 
 const missing = {}
 
-function expectLength (query, length) {
+function expectLength (query, length): Query {
   return query.expect(elements => {
     const actualLength = elements.length
     if (actualLength !== length) {
@@ -852,7 +878,14 @@ function expectLength (query, length) {
   })
 }
 
-function spliceModelArrayFromActual (model, query, actions) {
+interface Actions {
+  arrayLengthError (q: Query, actual: number, expected: number): void
+  function (q: Query, model: any): any
+  value (q: Query, model: any): any
+  expectOne (q: Query): any
+}
+
+function spliceModelArrayFromActual (model, query: Query, actions: Actions): any[] {
   const length = query.result().length
 
   if (length > model.length) {
@@ -874,8 +907,8 @@ function spliceModelArrayFromActual (model, query, actions) {
   }
 }
 
-function mapModel (query, model, actions) {
-  function map (query, model) {
+function mapModel (query: Query, model: any, actions: Actions): any {
+  function map (query: Query, model: any): any {
     if (model === missing) {
       return query.result().map(e => e.innerText).join()
     } else if (model instanceof Array) {
@@ -883,9 +916,17 @@ function mapModel (query, model, actions) {
         return map(query.index(index), item)
       })
     } else if (model.constructor === Object) {
-      return object(Object.entries(model).map(([selector, value]) => {
-        return [selector, map(query.find(selector), value)]
-      }))
+      const lengthQuery = expectLength(query, 1)
+
+      const entries = Object.entries(model)
+
+      if (entries.length) {
+        return object(entries.map(([selector, value]) => {
+          return [selector, map(lengthQuery.find(selector), value)]
+        }))
+      } else {
+        return actions.expectOne(query)
+      }
     } else if (typeof model === 'function') {
       return actions.function(query, model)
     } else {
@@ -896,11 +937,11 @@ function mapModel (query, model, actions) {
   return map(query, model)
 }
 
-const testEqual = (actual, expected) => {
+function testEqual (actual: any, expected: any): boolean {
   return expected instanceof RegExp ? expected.test(actual) : actual === expected
 }
 
-class Options {
+interface Options {
   visibleOnly: boolean
   timeout: number
   interval: number

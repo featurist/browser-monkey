@@ -188,6 +188,64 @@ describe('assert', function () {
           '.content': "Error: expected 1 element, found 0 (found: find('.content') [0])"
         })
       })
+
+      it("fails when contents are spread over two containers", async () => {
+        assembly.insertHtml(`
+          <div class="result">
+            <h1>Title</h1>
+          </div>
+          <div class="result">
+            <div class="content">The Content</div>
+          </div>
+        `)
+
+        await assembly.assertExpectedActual(browser, {
+          '.result': [{
+            'h1': 'Title',
+            '.content': 'The Content'
+          }]
+        }, {
+          '.result': [
+            {
+              'h1': 'Title',
+              '.content': "Error: expected 1 element, found 0 (found: find('.result') [2], index 0 [1], find('.content') [0])"
+            },
+            'The Content'
+          ]
+        })
+      })
+
+      describe('empty objects', () => {
+        it("can assert that an element exists, without testing it's contents", async () => {
+          assembly.insertHtml(`
+            <div>
+              <h1>Title</h1>
+              <div class="content">The Content</div>
+            </div>
+          `)
+
+          await browser.shouldContain({
+            'h1': 'Title',
+            '.content': {}
+          })
+        })
+
+        it("fails when an element doesn't exist", async () => {
+          assembly.insertHtml(`
+            <div>
+              <h1>Title</h1>
+            </div>
+          `)
+
+          await assembly.assertExpectedActual(browser, {
+            'h1': 'Title',
+            '.content': {}
+          }, {
+            'h1': 'Title',
+            '.content': "Error: expected 1 element, found 0 (found: find('.content') [0])"
+          })
+        })
+      })
     })
 
     describe('arrays', function () {
@@ -284,6 +342,36 @@ describe('assert', function () {
           ]
         })
       })
+
+      describe('empty arrays', () => {
+        it('asserts that no elements were found', async () => {
+          assembly.insertHtml(`
+            <div class="result">
+              Result 1
+            </div>
+          `)
+
+          await browser.shouldContain({
+            '.notfound': []
+          })
+        })
+
+        it('fails when elements are found', async () => {
+          assembly.insertHtml(`
+            <div class="result">
+              Result 1
+            </div>
+          `)
+
+          await assembly.assertExpectedActual(browser, {
+            '.result': []
+          }, {
+            '.result': [
+              'Result 1',
+            ]
+          })
+        })
+      })
     })
 
     describe('functions', () => {
@@ -298,7 +386,7 @@ describe('assert', function () {
         await browser.shouldContain({
           'h1': 'Title',
           '.content': query => {
-            if (!/Content/.test(query.expectOneElement().result()[0].innerText)) {
+            if (!/Content/.test(query.element().innerText)) {
               throw new BrowserMonkeyAssertionError('asdf')
             }
           }
@@ -316,7 +404,7 @@ describe('assert', function () {
         await assembly.assertExpectedActual(browser, {
           'h1': 'Title',
           '.content': query => {
-            if (/Content/.test(query.expectOneElement().result()[0].innerText)) {
+            if (/Content/.test(query.element().innerText)) {
               throw new BrowserMonkeyAssertionError('asdf')
             }
           }

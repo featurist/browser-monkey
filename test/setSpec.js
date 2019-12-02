@@ -105,7 +105,7 @@ describe('set', function () {
         demand(assembly.find('.first-name').value).to.equal('Barry')
       })
 
-      it("an object doesn't assert the number of matching elements", async () => {
+      it("an object asserts the number of matching elements", async () => {
         assembly.insertHtml(`
           <form>
             <div class="address">
@@ -117,15 +117,12 @@ describe('set', function () {
           </form>
         `)
 
-        await browser.set({
+        await assembly.assertRejection(browser.set({
           '.address': {
             '.street': '7 Lola St',
             '.city': 'Frisby City',
           },
-        })
-
-        demand(assembly.find('.address .street').value).to.equal('7 Lola St')
-        demand(assembly.find('.address .city').value).to.equal('Frisby City')
+        }), "expected 1 element, found 2 (found: find('.address') [2])")
       })
 
       it('a value does assert that there is only one matching element', async () => {
@@ -133,8 +130,6 @@ describe('set', function () {
           <form>
             <div class="address">
               <input type=text class="street"/>
-            </div>
-            <div class="address">
               <input type=text class="street"/>
               <input type=text class="city"/>
             </div>
@@ -146,7 +141,7 @@ describe('set', function () {
             '.street': '7 Lola St',
             '.city': 'Frisby City',
           },
-        }), "expected 1 element, found 2 (found: find('.address') [2], find('.street') [2])")
+        }), "expected 1 element, found 2 (found: find('.address') [1], find('.street') [2])")
       })
 
       it('deep fields disambiguate', async () => {
