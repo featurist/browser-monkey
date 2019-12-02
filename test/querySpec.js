@@ -438,5 +438,45 @@ describe('query', () => {
         await expect(promise).to.reject.with.error(/no expectations or actions in query/)
       })
     })
+
+    describe('detect', () => {
+      it('finds the first of two or more queries', async () => {
+        const promise = browserMonkey.detect({
+          a: q => q.find('.a').expectSomeElements(),
+          b: q => q.find('.b').expectSomeElements()
+        }).then()
+
+        const bPromise = assembly.eventuallyInsertHtml('<div class="b">B</div>')
+        const actualB = [await bPromise]
+
+        const {key, value} = await promise
+        await bPromise
+
+        expect(key).to.eql('b')
+        expect(value).to.eql(actualB)
+      })
+
+      it('returns descriptions of all queries used when none are successful', async () => {
+        assembly.insertHtml('<div class="content">content<div class="c"/>C</div>')
+
+        const promise = browserMonkey.find('.content').detect({
+          a: b => b.find('.a').expectSomeElements(),
+          b: b => b.find('.b').expectSomeElements()
+        })
+
+        await expect(promise).to.reject.with.error("all queries failed in detect (found: find('.content') [1], detect(a: expected one or more elements, found 0 (found: find('.a') [0]), b: expected one or more elements, found 0 (found: find('.b') [0])) [0])")
+      })
+
+      it('throws if one of the queries does not have an assertion or action', async () => {
+        assembly.insertHtml('<div class="content">content<div class="c"/>C</div>')
+
+        const promise = browserMonkey.find('.content').detect({
+          a: b => b.find('.a'),
+          b: b => b.find('.b').expectSomeElements()
+        })
+
+        await expect(promise).to.reject.with.error(/no expectations or actions in query/)
+      })
+    })
   })
 })

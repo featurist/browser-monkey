@@ -3,6 +3,7 @@ import { ExecutedTransformSequence } from './ExecutedTransformSequence'
 import { ExecutedSimpleTransform } from './ExecutedSimpleTransform'
 import { ExecutedConcatTransform } from './ExecutedConcatTransform'
 import { ExecutedFirstOfTransform } from './ExecutedFirstOfTransform'
+import ExecutedDetectTransform from './ExecutedDetectTransform'
 import { ExecutedTransformError } from './ExecutedTransformError'
 import Dom from './Dom'
 import BrowserMonkeyAssertionError from './BrowserMonkeyAssertionError'
@@ -195,6 +196,62 @@ class Query {
         return transform
       } else {
         var error = new BrowserMonkeyAssertionError('all queries failed in firstOf')
+        error.addExecutedTransform(transform)
+        throw error
+      }
+    })
+
+    transformed._hasExpectation = true
+
+    return transformed
+  }
+
+  public detect (queryCreators: {[key: string]: (q: Query) => Query}): this {
+    const transformed = this.transform((elements) => {
+      const resolved = this.resolve(elements)
+
+      var entries = Object.keys(queryCreators).map(key => {
+        const queryCreator = queryCreators[key]
+
+        try {
+          const q = runQueryCreator(queryCreator, resolved)
+          q.assertHasActionOrExpectation()
+          return {
+            key,
+            value: q.execute()
+          }
+        } catch (e) {
+          if (e instanceof BrowserMonkeyAssertionError) {
+            return {
+              key,
+              error: new ExecutedTransformError(e)
+            }
+          } else {
+            throw e
+          }
+        }
+      })
+
+      var firstSuccessIndex = entries.findIndex(v => {
+        return !v.error
+      })
+
+      const firstSuccess = entries[firstSuccessIndex]
+
+      const transform = new ExecutedDetectTransform(
+        firstSuccess
+        ? {
+          key: firstSuccess.key,
+          value: firstSuccess.value.value,
+        }
+        : undefined,
+        entries.map(v => ({key: v.key, transform: v.error || v.value}))
+      )
+
+      if (firstSuccess) {
+        return transform
+      } else {
+        var error = new BrowserMonkeyAssertionError('all queries failed in detect')
         error.addExecutedTransform(transform)
         throw error
       }

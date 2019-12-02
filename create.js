@@ -1,4 +1,4 @@
-var Query = require('./lib/query')
+var Query = require('./lib/Query')
 var finders = require('./lib/finders')
 var actions = require('./lib/actions')
 var button = require('./lib/button')

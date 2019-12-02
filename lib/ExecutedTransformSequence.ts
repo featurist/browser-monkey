@@ -31,7 +31,7 @@ export class ExecutedTransformSequence extends ExecutedTransform {
     const transformsUpUntilAndIncludingFirstFailure = this.transforms.reduce(({ keepTaking, array }, b) => {
       if (keepTaking) {
         return {
-          keepTaking: !!b.value.length,
+          keepTaking: !!(b.value && b.value.length),
           array: array.concat([b])
         }
       } else {
