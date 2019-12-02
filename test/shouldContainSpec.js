@@ -57,16 +57,31 @@ describe('assert', function () {
         })
       })
 
-      it('can assert select options', async () => {
-        assembly.insertHtml(`
-          <select>
-            <option>One</option>
-            <option selected>Two</option>
-          </select>
-        `)
+      describe('select', () => {
+        it('can assert select options by text', async () => {
+          assembly.insertHtml(`
+            <select>
+              <option>One</option>
+              <option selected>Two</option>
+            </select>
+          `)
 
-        await browser.shouldContain({
-          'select': 'Two',
+          await browser.shouldContain({
+            'select': 'Two',
+          })
+        })
+
+        it('can assert select options by value', async () => {
+          assembly.insertHtml(`
+            <select>
+              <option value="one">1</option>
+              <option value="two" selected>2</option>
+            </select>
+          `)
+
+          await browser.shouldContain({
+            'select': 'two',
+          })
         })
       })
 

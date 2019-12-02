@@ -22,8 +22,9 @@ var flatten = require('lowscore/flatten')
 type Transform = (elements: any, executedTransforms: ExecutedTransform[]) => any
 type Action = (elements: any, executedTransforms: ExecutedTransform[]) => void
 type FieldType = {
-  value: (query: Query) => Query
+  value?: (query: Query) => Query
   setter?: (query: Query, value: any) => Query
+  valueAsserter?: (query: Query, expected: any) => Query
 }
 
 interface Definitions {
@@ -481,10 +482,10 @@ class Query {
         },
 
         value: (query, model) => {
-          let asserter
+          let valueAsserter
 
           try {
-            asserter = query.asserter(model).result()
+            valueAsserter = query.valueAsserter(model).result()
           } catch (e) {
             if (e instanceof BrowserMonkeyAssertionError) {
               isError = true
@@ -495,7 +496,7 @@ class Query {
           }
 
           try {
-            asserter()
+            valueAsserter()
           } catch (e) {
             if (e instanceof BrowserMonkeyAssertionError) {
               isError = true
@@ -556,14 +557,18 @@ class Query {
     }))
   }
 
-  asserter (expected) {
-    return this.value().transform(actual => {
-      return () => {
-        if (expected instanceof RegExp ? !expected.test(actual) : actual !== expected) {
-          this.error('expected ' + inspect(actual) + ' to equal ' + inspect(expected), { actual, expected })
-        }
-      }
-    })
+  valueAsserter (expected) {
+    return this.firstOf(this._options.definitions.fieldTypes.filter(def => def.value).map(def => {
+      return query => def.valueAsserter
+        ? def.valueAsserter(query, expected)
+        : def.value(query).transform(actual => {
+          return () => {
+            if (!testEqual(actual, expected)) {
+              this.error('expected ' + inspect(actual) + ' to equal ' + inspect(expected), { actual, expected })
+            }
+          }
+        })
+    }))
   }
 
   defineFieldType (fieldTypeDefinition: FieldType) {
@@ -578,8 +583,8 @@ class Query {
         },
 
         value: (query, value) => {
-          const asserter = query.asserter(value).result()
-          asserter()
+          const valueAsserter = query.valueAsserter(value).result()
+          valueAsserter()
         },
 
         function: (query, fn) => {
@@ -657,6 +662,32 @@ class Query {
               const selectElement = option.parentNode
               debug('select', selectElement)
               query._dom.selectOption(selectElement, option)
+            }
+          })
+      },
+      valueAsserter: (query, expected) => {
+        return query
+          .is('select')
+          .expectOneElement('expected to be select element')
+          .transform(([select]) => {
+            return () => {
+              const value = select.value
+
+              if (testEqual(value, expected)) {
+                return
+              }
+
+              const selectedOption = select.options[select.selectedIndex]
+              if (selectedOption) {
+                const actual = query._dom.elementInnerText(selectedOption)
+                if (testEqual(actual, expected)) {
+                  return
+                } else {
+                  this.error('expected ' + inspect(actual) + ' or ' + inspect(value) + ' to equal ' + inspect(expected), { actual, expected })
+                }
+              }
+
+              this.error('expected ' + inspect(value) + ' to equal ' + inspect(expected), { actual: value, expected })
             }
           })
       },
@@ -863,6 +894,10 @@ function mapModel (query, model, actions) {
   }
 
   return map(query, model)
+}
+
+const testEqual = (actual, expected) => {
+  return expected instanceof RegExp ? expected.test(actual) : actual === expected
 }
 
 class Options {
