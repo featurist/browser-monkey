@@ -19,7 +19,7 @@ describe('assert', function () {
           <span class="address">12 Hapless Boulevard</span>
         `)
 
-        await browser.assert({
+        await browser.shouldContain({
           '.address': '12 Hapless Boulevard',
         })
       })
@@ -29,7 +29,7 @@ describe('assert', function () {
           <input type=text class="address" value="12 Hapless Boulevard"/>
         `)
 
-        await browser.assert({
+        await browser.shouldContain({
           '.address': '12 Hapless Boulevard',
         })
       })
@@ -65,7 +65,7 @@ describe('assert', function () {
           </select>
         `)
 
-        await browser.assert({
+        await browser.shouldContain({
           'select': 'Two',
         })
       })
@@ -75,7 +75,7 @@ describe('assert', function () {
           <input type=checkbox class="check" checked/>
         `)
 
-        await browser.assert({
+        await browser.shouldContain({
           '.check': true,
         })
       })
@@ -91,7 +91,7 @@ describe('assert', function () {
           </form>
         `)
 
-        await browser.find('.address .street').assert('7 Lola St')
+        await browser.find('.address .street').shouldContain('7 Lola St')
       })
 
       it('single argument, with scope asserts value', async () => {
@@ -127,7 +127,7 @@ describe('assert', function () {
           </form>
         `)
 
-        await browser.find('.address .street').assert(/\d+ Lola St/)
+        await browser.find('.address .street').shouldContain(/\d+ Lola St/)
       })
 
       it('fails if the regular expression does not match', async () => {
@@ -152,7 +152,7 @@ describe('assert', function () {
           </div>
         `)
 
-        await browser.assert({
+        await browser.shouldContain({
           'h1': 'Title',
           '.content': 'The Content'
         })
@@ -189,7 +189,7 @@ describe('assert', function () {
           </div>
         `)
 
-        await browser.assert({
+        await browser.shouldContain({
           '.result': [
             'Result 1',
             'Result 2',
@@ -256,7 +256,7 @@ describe('assert', function () {
           </div>
         `)
 
-        await browser.assert({
+        await browser.shouldContain({
           '.result': [
             {
               'h3': 'Title 1',
@@ -280,7 +280,7 @@ describe('assert', function () {
           </div>
         `)
 
-        await browser.assert({
+        await browser.shouldContain({
           'h1': 'Title',
           '.content': query => {
             if (!/Content/.test(query.expectOneElement().result()[0].innerText)) {
@@ -341,7 +341,7 @@ describe('assert', function () {
 
         browser.define('header', q => q.find('h1'))
 
-        await browser.assert({
+        await browser.shouldContain({
           header: 'Title',
           '.content': 'The Content'
         })
@@ -357,7 +357,7 @@ describe('assert', function () {
 
         browser.define('header', 'h1')
 
-        await browser.assert({
+        await browser.shouldContain({
           header: 'Title',
           '.content': 'The Content'
         })
@@ -376,7 +376,7 @@ describe('assert', function () {
           content: q => q.find('.content'),
         })
 
-        await browser.assert({
+        await browser.shouldContain({
           header: 'Title',
           content: 'The Content'
         })
@@ -403,7 +403,7 @@ describe('assert', function () {
           }),
         })
 
-        await browser.assert({
+        await browser.shouldContain({
           title: 'Title',
           content: {
             title: 'title',

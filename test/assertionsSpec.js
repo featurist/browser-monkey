@@ -9,7 +9,7 @@ describe('assertions', function () {
 
     beforeEach(function () {
       assembly = new Assembly()
-      browser = assembly.browserMonkey()
+      browser = assembly.browserMonkey().v2()
     })
 
     describe('shouldNotExist', function () {

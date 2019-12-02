@@ -22,7 +22,7 @@ export default class Dom {
     this.triggerEvent(element, 'change')
   }
 
-  elementInnerText (element: HTMLElement, selector): void {
+  elementInnerText (element: HTMLElement): void {
     return normaliseText(element.innerText)
   }
 

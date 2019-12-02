@@ -15,10 +15,8 @@ describe('reload button', function () {
 
     it('adds reload button that reloads to the initial url', function () {
       reloadButton()
-      return browser.find('a', { text: '⟳ reload' }).shouldHave({
-        attributes: {
-          href: window.location.href
-        }
+      return browser.find('a').containing('⟳ reload').shouldContain(q => {
+        expect(q.element().getAttribute('href')).to.equal(window.location.href)
       })
     }, { vdom: false })
 

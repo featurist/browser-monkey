@@ -35,7 +35,7 @@ describe('set', function () {
         `)
 
         await browser.set({
-          'select': 'Two',
+          select: 'Two',
         })
 
         const selectedItem = assembly.jQuery(assembly.find('select')).find(':selected').text()

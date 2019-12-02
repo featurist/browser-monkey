@@ -8,33 +8,33 @@ import { ExecutedTransformError } from './ExecutedTransformError'
 import Dom from './Dom'
 import BrowserMonkeyAssertionError from './BrowserMonkeyAssertionError'
 import toExecutedTransform from './toExecutedTransform'
+const pluralize = require('pluralize')
 var extend = require('lowscore/extend')
 var retry = require('trytryagain')
 var inspect = require('object-inspect')
 var uniq = require('lowscore/uniq')
 var debug = require('debug')('browser-monkey')
-var inputsSelector = require('./inputsSelector')
+var inputSelectors = require('./inputSelectors')
+const object = require('lowscore/object')
+const range = require('lowscore/range')
+var flatten = require('lowscore/flatten')
 
 type Transform = (elements: any, executedTransforms: ExecutedTransform[]) => any
 type Action = (elements: any, executedTransforms: ExecutedTransform[]) => void
+type FieldType = {
+  value: (query: Query) => Query
+  setter?: (query: Query, value: any) => Query
+}
+
 interface Definitions {
-  fieldTypes: {
-    value: (query: Query) => any
-    settter?: (query: Query, value: any) => () => void
-  }[]
-  button: ((monkey: any, name: any) => any)[]
+  fieldTypes: FieldType[]
+  button: ((query: Query, name: string) => Query)[]
   fields: {}
 }
 
 class Query {
   private _transforms: Transform[]
-  private _options: {
-    visibleOnly: boolean
-    timeout: number
-    interval: number
-    definitions: Definitions
-  }
-
+  private _options: Options
   private _input: any
   private _actionExecuted: any
   private _action: Action
@@ -51,15 +51,9 @@ class Query {
       definitions: {
         fieldTypes: [],
         button: [
-          function (monkey, name) {
-            return monkey.css('button', { exactText: name })
+          (query: Query, name: string): Query => {
+            return query.css('button, input[type=button], a').containing(name)
           },
-          function (monkey, name) {
-            return monkey.css('input[type=button]', { exactValue: name })
-          },
-          function (monkey, name) {
-            return monkey.css('a', { exactText: name })
-          }
         ],
 
         fields: {},
@@ -162,7 +156,7 @@ class Query {
     }
   }
 
-  public firstOf (queryCreators: [(q: Query) => Query]): this {
+  public firstOf (queryCreators: ((q: Query) => Query)[]): this {
     const transformed = this.transform((elements) => {
       const resolved = this.resolve(elements)
 
@@ -262,7 +256,7 @@ class Query {
     return transformed
   }
 
-  public options (options): any {
+  public options (options: Options): any {
     if (options) {
       extend(this._options, options)
     } else {
@@ -350,6 +344,405 @@ class Query {
     this._options = extend({}, from._options)
     this._options.definitions = cloneDefinitions(from._options.definitions)
   }
+
+  expectNoElements (message?: string) {
+    return this.expect(elements => {
+      expectElements(elements)
+
+      if (elements.length !== 0) {
+        this.error(message || 'expected no elements, found ' + elements.length)
+      }
+    })
+  }
+
+  expectOneElement (message?: string) {
+    return this.expect(elements => {
+      expectElements(elements)
+
+      if (elements.length !== 1) {
+        this.error(message || 'expected just one element, found ' + elements.length)
+      }
+    })
+  }
+
+  element (): HTMLElement {
+    return this.expectOneElement().result()[0]
+  }
+
+  expectSomeElements (message?: string) {
+    return this.expect(function (elements) {
+      expectElements(elements)
+
+      if (elements.length < 1) {
+        this.error(message || 'expected one or more elements, found ' + elements.length)
+      }
+    })
+  }
+
+  click () {
+    return this.expectOneElement().action(([element]) => {
+      debug('click', element)
+      this._dom.click(element)
+    })
+  }
+
+  submit () {
+    return this.expectOneElement().action(([element]) => {
+      debug('submit', element)
+      this._dom.submit(element)
+    })
+  }
+
+  scope (element: HTMLElement) {
+    var selector = this.clone()
+    selector.input([element])
+
+    if (isIframe(element)) {
+      return selector.iframeContent()
+    } else if (isHTMLElement(element)) {
+      return selector
+    } else {
+      throw new Error('scope() expects HTML element')
+    }
+  }
+
+  iframeContent () {
+    return this.transform(elements => {
+      return elements.map(element => {
+        if (isIframe(element)) {
+          if (element.contentDocument && element.contentDocument.readyState === 'complete') {
+            return element.contentDocument.body
+          } else {
+            throw new BrowserMonkeyAssertionError('iframe not loaded')
+          }
+        } else {
+          throw new BrowserMonkeyAssertionError('not iframe')
+        }
+      })
+    })
+  }
+
+  enabled () {
+    return this.filter(element => {
+      var tagName = element.tagName
+      return !((tagName === 'BUTTON' || tagName === 'INPUT') && element.disabled)
+    }, 'enabled')
+  }
+
+  clickButton (name) {
+    return this.button(name).click()
+  }
+
+  set (selector, value) {
+    const model = value === undefined
+      ? selector
+      : {
+        [selector]: value
+      }
+
+    return this.action(function (elements) {
+      const setters = []
+
+      const actions = {
+        arrayLengthError: (query, actualLength, expectedLength) => {
+          query.error('expected ' + expectedLength + ' ' + pluralize('elements', expectedLength) + ', found ' + actualLength)
+        },
+
+        value: (query, model) => {
+          var setter = query.setter(model).result()
+          setters.push(() => setter())
+        },
+
+        function: (query, model) => {
+          setters.push(() => runModelFunction(model, query))
+        }
+      }
+
+      const clone = this.resolve(elements)
+      mapModel(clone, model, actions)
+
+      setters.forEach(set => {
+        set()
+      })
+    })
+  }
+
+  shouldExist (): this {
+    return this.expectSomeElements()
+  }
+
+  shouldContain (model): this {
+    return this.expect(elements => {
+      let isError = false
+
+      const actions = {
+        arrayLengthError: () => {
+          isError = true
+        },
+
+        value: (query, model) => {
+          let asserter
+
+          try {
+            asserter = query.asserter(model).result()
+          } catch (e) {
+            if (e instanceof BrowserMonkeyAssertionError) {
+              isError = true
+              return 'Error: ' + e.message
+            } else {
+              throw e
+            }
+          }
+
+          try {
+            asserter()
+          } catch (e) {
+            if (e instanceof BrowserMonkeyAssertionError) {
+              isError = true
+              return e.actual === undefined ? 'Error: ' + e.message : e.actual
+            } else {
+              throw e
+            }
+          }
+
+          return model
+        },
+
+        function: (query, model) => {
+          try {
+            runModelFunction(model, query)
+            return model
+          } catch (e) {
+            if (e instanceof BrowserMonkeyAssertionError) {
+              isError = true
+              return 'Error: ' + e.message
+            } else {
+              throw e
+            }
+          }
+        }
+      }
+
+      const clone = this.resolve(elements)
+      const result = mapModel(clone, model, actions)
+
+      if (isError) {
+        this.error('could not match', {expected: model, actual: result})
+      }
+    })
+  }
+
+  index (index) {
+    return this.transform(function (elements) {
+      return new ExecutedSimpleTransform([elements[index]], 'index ' + index)
+    })
+  }
+
+  define (name, finder) {
+    if (typeof finder === 'function') {
+      this._options.definitions.fields[name] = finder
+    } else if (typeof finder === 'string') {
+      this._options.definitions.fields[name] = q => q.find(finder)
+    } else if (name.constructor === Object && finder === undefined) {
+      Object.entries(name).forEach(([name, finder]) => this.define(name, finder))
+    }
+
+    return this
+  }
+
+  setter (model) {
+    return this.firstOf(this._options.definitions.fieldTypes.filter(def => def.setter).map(def => {
+      return query => def.setter(query, model)
+    }))
+  }
+
+  asserter (expected) {
+    return this.value().transform(actual => {
+      return () => {
+        if (expected instanceof RegExp ? !expected.test(actual) : actual !== expected) {
+          this.error('expected ' + inspect(actual) + ' to equal ' + inspect(expected), { actual, expected })
+        }
+      }
+    })
+  }
+
+  defineFieldType (fieldTypeDefinition: FieldType) {
+    this._options.definitions.fieldTypes.unshift(fieldTypeDefinition)
+  }
+
+  containing (model: any): this {
+    return this.transform(elements => {
+      const actions = {
+        arrayLengthError: (query, actualLength, expectedLength) => {
+          query.error('expected ' + expectedLength + ' ' + pluralize('elements', expectedLength) + ', found ' + actualLength)
+        },
+
+        value: (query, value) => {
+          const asserter = query.asserter(value).result()
+          asserter()
+        },
+
+        function: (query, fn) => {
+          runModelFunction(fn, query)
+        }
+      }
+
+      return new ExecutedSimpleTransform(elements.filter(element => {
+        try {
+          const clone = this.resolve([element])
+          mapModel(clone, model, actions)
+          return true
+        } catch (e) {
+          if (e instanceof BrowserMonkeyAssertionError) {
+            return false
+          } else {
+            throw e
+          }
+        }
+      }), `containing(${JSON.stringify(model)})`)
+    })
+  }
+
+  value (): this {
+    return this.firstOf(this._options.definitions.fieldTypes.filter(def => def.value).map(def => {
+      return query => def.value(query)
+    }))
+  }
+
+  installSetters (): this {
+    this.define('css', (query, css) => query.css(css))
+
+    this.defineFieldType({
+      value: (query) => {
+        return query.expectOneElement().transform(([element]) => {
+          return query._dom.elementInnerText(element)
+        })
+      }
+    })
+
+    this.defineFieldType({
+      setter: (query, value) => {
+        return query
+          .is(inputSelectors.settable)
+          .expectOneElement()
+          .transform(([element]) => {
+            if (typeof value !== 'string') {
+              throw new Error('expected string as argument to set input')
+            }
+            return () => {
+              debug('set', element, value)
+              query._dom.enterText(element, value, {incremental: false})
+            }
+          })
+      },
+      value: (query) => {
+        return query.is(inputSelectors.gettable).expectOneElement().transform(([input]) => {
+          return input.value
+        })
+      }
+    })
+
+    this.defineFieldType({
+      setter: (query, value) => {
+        return query
+          .is('select')
+          .expectOneElement('expected to be select element')
+          .css('option')
+          .filter(o => {
+            return o.value === value || query._dom.elementInnerText(o) === value
+          }, `option with text or value ${JSON.stringify(value)}`)
+          .expectOneElement(`expected one option element with text or value ${JSON.stringify(value)}`)
+          .transform(function ([option]) {
+            return () => {
+              const selectElement = option.parentNode
+              debug('select', selectElement)
+              query._dom.selectOption(selectElement, option)
+            }
+          })
+      },
+      value: (query) => {
+        return query
+          .is('select')
+          .expectOneElement('expected to be select element')
+          .transform(([select]) => {
+            const selectedOption = select.options[select.selectedIndex]
+            return selectedOption && query._dom.elementInnerText(selectedOption)
+          })
+      }
+    })
+
+    this.defineFieldType({
+      setter: (query, value) => {
+        return query
+          .is('input[type=checkbox]')
+          .expectOneElement()
+          .transform(([checkbox]) => {
+            if (typeof value !== 'boolean') {
+              throw new Error('expected boolean as argument to set checkbox')
+            }
+            return () => {
+              if (query._dom.checked(checkbox) !== value) {
+                debug('checkbox', checkbox, value)
+                query._dom.click(checkbox)
+              }
+            }
+          })
+      },
+      value: (query) => {
+        return query
+          .is('input[type=checkbox]')
+          .expectOneElement()
+          .transform(([checkbox]) => {
+            return query._dom.checked(checkbox)
+          })
+      }
+    })
+
+    return this
+  }
+
+  css (selector: string): this {
+    const findElements = this.transform(elements => {
+      expectElements(elements)
+      return new ExecutedSimpleTransform(flatten(elements.map(element => {
+        return this._dom.querySelectorAll(element, selector, this._options)
+      })), 'find(' + inspect(selector) + ')')
+    })
+
+    return findElements
+  }
+
+  find (selector: string): this {
+    // name(value)
+    const match = /^\s*(.*?)\s*(\((.*)\)\s*)?$/.exec(selector)
+
+    if (match) {
+      const [, name,, value] = match
+      const finder = this._options.definitions.fields[name]
+
+      if (finder) {
+        if (value !== undefined) {
+          return finder(this, value.trim())
+        } else {
+          return finder(this)
+        }
+      }
+    }
+
+    return this.css(selector)
+  }
+
+  is (selector: string): this {
+    return this.filter(element => {
+      return this._dom.elementMatches(element, selector)
+    }, 'is: ' + selector)
+  }
+}
+
+function expectElements (elements) {
+  if (!isArrayOfHTMLElements(elements)) {
+    throw new BrowserMonkeyAssertionError('expected an array of HTML elements')
+  }
 }
 
 function cloneDefinitions(definitions: Definitions): Definitions {
@@ -364,6 +757,26 @@ function cloneDefinitions(definitions: Definitions): Definitions {
   })
 
   return result as Definitions
+}
+
+function isIframe (element) {
+  return isHTMLElement(element, 'HTMLIFrameElement')
+}
+
+function isHTMLElement (element, subclass: string = 'HTMLElement') {
+  if (element.ownerDocument && element.ownerDocument.defaultView) {
+    // an element inside an iframe
+    return element instanceof element.ownerDocument.defaultView[subclass]
+  } else {
+    return false
+  }
+}
+
+function isArrayOfHTMLElements (elements) {
+  return elements instanceof Array &&
+    elements.every(element => {
+      return isHTMLElement(element)
+    })
 }
 
 type Retry = (fn: () => any) => Promise<any>
@@ -388,6 +801,75 @@ function runQueryCreator (queryCreator: (q: Query) => Query, query: Query): Quer
   }
 
   return q
+}
+
+function runModelFunction(fn, query) {
+  const result = fn(query)
+  if (result && typeof result.then === 'function') {
+    query.error('model functions must not be asynchronous')
+  }
+}
+
+const missing = {}
+
+function expectLength (query, length) {
+  return query.expect(elements => {
+    const actualLength = elements.length
+    if (actualLength !== length) {
+      query.error('expected ' + length + ' ' + pluralize('elements', length) + ', found ' + actualLength)
+    }
+  })
+}
+
+function spliceModelArrayFromActual (model, query, actions) {
+  const length = query.result().length
+
+  if (length > model.length) {
+    actions.arrayLengthError(query, length, model.length)
+    return range(0, length).map((item, index) => {
+      const modelItem = model[index]
+
+      if (modelItem !== undefined) {
+        return modelItem
+      } else {
+        return missing
+      }
+    })
+  } else if (length < model.length) {
+    actions.arrayLengthError(query, length, model.length)
+    return model.slice(0, length)
+  } else {
+    return model
+  }
+}
+
+function mapModel (query, model, actions) {
+  function map (query, model) {
+    if (model === missing) {
+      return query.result().map(e => e.innerText).join()
+    } else if (model instanceof Array) {
+      return spliceModelArrayFromActual(model, query, actions).map((item, index) => {
+        return map(query.index(index), item)
+      })
+    } else if (model.constructor === Object) {
+      return object(Object.entries(model).map(([selector, value]) => {
+        return [selector, map(query.find(selector), value)]
+      }))
+    } else if (typeof model === 'function') {
+      return actions.function(query, model)
+    } else {
+      return actions.value(expectLength(query, 1), model)
+    }
+  }
+
+  return map(query, model)
+}
+
+class Options {
+  visibleOnly: boolean
+  timeout: number
+  interval: number
+  definitions: Definitions
 }
 
 module.exports = Query

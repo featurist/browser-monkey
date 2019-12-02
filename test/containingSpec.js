@@ -15,14 +15,40 @@ describe('containing', function () {
     describe('values', () => {
       it('filters elements that have the exact text', () => {
         assembly.insertHtml(`
-          <span class="car">car</span>
-          <span class="car">car</span>
+          <span class="found">car</span>
+          <span class="found">car</span>
           <span>horse</span>
           <span>cart</span>
         `)
 
         const transports = browser.find('span').containing('car').result()
-        const cars = assembly.findAll('.car')
+        const cars = assembly.findAll('.found')
+        expect(transports).to.eql(cars)
+      })
+
+      it('filters input elements that have the exact text', () => {
+        assembly.insertHtml(`
+          <input class="found" value="car"/>
+          <input class="found" value="car"/>
+          <input value="horse"/>
+          <input value="cart"/>
+        `)
+
+        const transports = browser.find('input').containing('car').result()
+        const cars = assembly.findAll('.found')
+        expect(transports).to.eql(cars)
+      })
+
+      it('filters input button elements that have the exact text', () => {
+        assembly.insertHtml(`
+          <input type=button class="found" value="car"/>
+          <input type=button class="found" value="car"/>
+          <input type=button value="horse"/>
+          <input type=button value="cart"/>
+        `)
+
+        const transports = browser.find('input').containing('car').result()
+        const cars = assembly.findAll('.found')
         expect(transports).to.eql(cars)
       })
     })

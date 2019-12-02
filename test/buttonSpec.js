@@ -80,7 +80,7 @@ describe('buttons', function () {
         const button = assembly.insertHtml('<button>Login</button>')
         button.addEventListener('click', () => events.push('click'))
 
-        return browser.click('Login').then(function () {
+        return browser.clickButton('Login').then(function () {
           demand(events).to.eql(['click'])
         })
       })
@@ -103,7 +103,7 @@ describe('buttons', function () {
 
         browser.defineButton((monkey, name) => monkey.find('div.button', { exactText: name }))
 
-        return browser.click('Login').then(function () {
+        return browser.clickButton('Login').then(function () {
           demand(events).to.eql(['click'])
         })
       })

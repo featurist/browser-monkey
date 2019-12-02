@@ -24,16 +24,16 @@ function testMount (appType, app, monkeyBuilder) {
     afterEach(() => page.options().mount.stop())
 
     it('loads some data', () => {
-      return page.find('.message').shouldHave({ text: 'default' }).then(() => {
+      return page.find('.message').shouldContain('default').then(() => {
         return page.find('button').click()
       }).then(() => {
-        return page.find('.message').shouldHave({ text: 'hello browser-monkey' })
+        return page.find('.message').shouldContain('hello browser-monkey')
       })
     })
 
     it('can enter form fields', async () => {
       await page.set({'input': 'hi'})
-      await page.assert({'.message': 'hi'})
+      await page.shouldContain({'.message': 'hi'})
     })
 
     it('exposes the app', () => {

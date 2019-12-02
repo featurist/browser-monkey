@@ -171,6 +171,20 @@ describe('query', () => {
       })
     })
 
+    describe('element', () => {
+      it('expects one html element and returns it', () => {
+        const expected = assembly.insertHtml(`
+          <div class="title"></div>
+        `)
+
+        const actual = browserMonkey
+          .find('.title')
+          .element()
+
+        expect(actual).to.equal(expected)
+      })
+    })
+
     describe('expectSomeElements', () => {
       it('when there are one or more elements, selects them', async () => {
         const contacts = browserMonkey

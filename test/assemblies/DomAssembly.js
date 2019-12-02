@@ -144,7 +144,7 @@ module.exports = class DomAssembly {
   }
 
   assertExpectedActual (query, expected, actual) {
-    return query.assert(expected).then(() => {
+    return query.shouldContain(expected).then(() => {
       throw new Error('expected rejection')
     }, e => {
       expect(e.message).to.contain('could not match')
