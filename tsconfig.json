@@ -2,11 +2,13 @@
   "compilerOptions": {
     "lib": ["es2015", "dom"],
     "noImplicitAny": false,
+    "esModuleInterop": true,
     "module": "commonjs",
     "target": "ES5",
     "outDir": "dist",
     "rootDir": ".",
-    "allowJs": true
+    "allowJs": true,
+    "jsx": "react"
   },
   "exclude": [
     "node_modules",

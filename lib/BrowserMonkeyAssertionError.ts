@@ -1,17 +1,17 @@
 import { ExecutedTransform } from './ExecutedTransform'
-import { ExecutedTransformSequence } from './ExecutedTransformSequence'
+import { ExecutedTransformPath } from './ExecutedTransformPath'
 
 class BrowserMonkeyAssertionError extends Error {
   private description: string
   public showDiff: boolean
   public expected: any
   public actual: any
-  public executedTransforms: ExecutedTransformSequence
+  public executedTransforms: ExecutedTransformPath
 
   public constructor (message, {
     expected = undefined,
     actual = undefined,
-    executedTransforms = new ExecutedTransformSequence(undefined)
+    executedTransforms = new ExecutedTransformPath(undefined)
   } = {}) {
     super(message)
     this.description = message
@@ -33,7 +33,7 @@ class BrowserMonkeyAssertionError extends Error {
     this.rewriteMessage()
   }
 
-  public prependExecutedTransforms (executedTransforms: ExecutedTransformSequence): void {
+  public prependExecutedTransforms (executedTransforms: ExecutedTransformPath): void {
     this.executedTransforms.prepend(executedTransforms)
     this.rewriteMessage()
   }

@@ -10,7 +10,7 @@
     "electron-mocha": "electron-mocha --disable-site-isolation-trials --full-trace -r test/register --renderer",
     "update-readme-example-links": "node ./docs/update-readme-example-links.js",
     "test-browser-compatibility": "browserify ./index.js > /dev/null",
-    "prepare": "tcs"
+    "prepare": "tsc"
   },
   "author": "Tim Macfarlane <timmacfarlane@gmail.com>",
   "license": "MIT",

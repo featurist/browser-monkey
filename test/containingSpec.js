@@ -89,7 +89,60 @@ describe('containing', function () {
 
         expect(() =>
           browser.find('.result').containing({'.title': 'Title', '.body': 'None'}).expectOneElement().result()
-        ).to.throw(`expected just one element, found 0 (found: find('.result') [3], containing({".title":"Title",".body":"None"}) [0])`)
+        ).to.throw(`expected just one element, found 0 (found: path(find('.result') [3], containing(...expected 1 element, found 0 (found: path(find('.title') [0]))) [0]))`)
+      })
+    })
+
+    describe('functions', () => {
+      it('function can assert existence', () => {
+        assembly.insertHtml(`
+          <div class="result">
+            <div class="title">Title</div>
+          </div>
+          <div class="result correct">
+            <div class="body">Body</div>
+          </div>
+        `)
+
+        const results = browser.find('.result').containing(result => result.find('.body').shouldExist()).result()
+        const expected = assembly.findAll('.correct')
+        expect(results).to.eql(expected)
+      })
+
+      it('shows what it found', () => {
+        assembly.insertHtml(`
+          <div class="result">
+            <div class="title">Title</div>
+          </div>
+          <div class="result correct">
+            <div class="body">Body</div>
+          </div>
+          <div class="result">
+            <div class="body">Body</div>
+          </div>
+        `)
+
+        expect(() =>
+          browser.find('.result').containing(result => result.find('.body').shouldExist()).find('.title').expectOneElement().result()
+        ).to.throw(`expected just one element, found 0 (found: path(find('.result') [3], containing(...path(find('.body') [1])) [2], find('.title') [0]))`)
+      })
+
+      it("shows why it couldn't find the element", () => {
+        assembly.insertHtml(`
+          <div class="result">
+            <div class="title">Title</div>
+          </div>
+          <div class="result correct">
+            <div class="title">Title</div>
+          </div>
+          <div class="result">
+            <div class="title">Title</div>
+          </div>
+        `)
+
+        expect(() =>
+          browser.find('.result').containing(result => result.find('.body').shouldExist()).find('.title').expectOneElement().result()
+        ).to.throw(`expected just one element, found 0 (found: path(find('.result') [3], containing(...expected one or more elements, found 0 (found: find('.body') [0])) [0], find('.title') [0])`)
       })
     })
   })

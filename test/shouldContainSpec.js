@@ -1,9 +1,8 @@
 const describeAssemblies = require('./describeAssemblies')
 const DomAssembly = require('./assemblies/DomAssembly')
 var BrowserMonkeyAssertionError = require('../lib/BrowserMonkeyAssertionError').default
-const {expect} = require('chai')
 
-describe('assert', function () {
+describe('shouldContain', function () {
   describeAssemblies([DomAssembly], function (Assembly) {
     var assembly
     var browser
@@ -53,7 +52,7 @@ describe('assert', function () {
         await assembly.assertExpectedActual(browser, {
           '.address': '12 Hapless Boulevard',
         }, {
-          '.address': "Error: expected 1 element, found 0 (found: find('.address') [0])",
+          '.address': "Error: expected 1 element, found 0 (found: path(find('.address') [0]))",
         })
       })
 
@@ -185,7 +184,7 @@ describe('assert', function () {
           '.content': 'The Content'
         }, {
           'h1': 'Title',
-          '.content': "Error: expected 1 element, found 0 (found: find('.content') [0])"
+          '.content': "Error: expected 1 element, found 0 (found: path(find('.content') [0]))"
         })
       })
 
@@ -208,7 +207,7 @@ describe('assert', function () {
           '.result': [
             {
               'h1': 'Title',
-              '.content': "Error: expected 1 element, found 0 (found: find('.result') [2], index 0 [1], find('.content') [0])"
+              '.content': "Error: expected 1 element, found 0 (found: path(find('.result') [2], index 0 [1], find('.content') [0]))"
             },
             'The Content'
           ]
@@ -242,7 +241,7 @@ describe('assert', function () {
             '.content': {}
           }, {
             'h1': 'Title',
-            '.content': "Error: expected 1 element, found 0 (found: find('.content') [0])"
+            '.content': "Error: expected 1 element, found 0 (found: path(find('.content') [0]))"
           })
         })
       })
@@ -431,6 +430,20 @@ describe('assert', function () {
           '.content': 'Error: model functions must not be asynchronous'
         })
       })
+
+      it('does not throw if the function returns a query', async () => {
+        assembly.insertHtml(`
+          <div>
+            <h1>Title</h1>
+            <div class="content">The Content</div>
+          </div>
+        `)
+
+        await browser.shouldContain({
+          'h1': 'Title',
+          '.content': q => q.shouldExist()
+        })
+      })
     })
 
     describe('define', () => {
@@ -442,10 +455,10 @@ describe('assert', function () {
           </div>
         `)
 
-        browser.define('header', q => q.find('h1'))
+        browser.define('Header', q => q.find('h1'))
 
         await browser.shouldContain({
-          header: 'Title',
+          Header: 'Title',
           '.content': 'The Content'
         })
       })
@@ -458,10 +471,10 @@ describe('assert', function () {
           </div>
         `)
 
-        browser.define('header', 'h1')
+        browser.define('Header', 'h1')
 
         await browser.shouldContain({
-          header: 'Title',
+          Header: 'Title',
           '.content': 'The Content'
         })
       })
@@ -475,13 +488,36 @@ describe('assert', function () {
         `)
 
         browser.define({
-          header: 'h1',
-          content: q => q.find('.content'),
+          Header: 'h1',
+          Content: q => q.find('.content'),
         })
 
         await browser.shouldContain({
-          header: 'Title',
-          content: 'The Content'
+          Header: 'Title',
+          Content: 'The Content'
+        })
+      })
+
+      it('can define a section by its contents', async () => {
+        assembly.insertHtml(`
+          <section>
+            <h1>Section A</h1>
+            <div class="content">Section A Content</div>
+          </section>
+          <section>
+            <h1>Section B</h1>
+            <div class="content">Section B Content</div>
+          </section>
+        `)
+
+        browser.define('Section', (query, value) => {
+          return query.find('section').containing(section => section.find('h1').containing(value).shouldExist())
+        })
+
+        await browser.shouldContain({
+          'Section(/S.* A/)': {
+            '.content': 'Section A Content'
+          }
         })
       })
 
@@ -499,18 +535,18 @@ describe('assert', function () {
         `)
 
         browser.define({
-          title: 'h1',
-          content: q => q.find('.content').define({
-            title: '.title',
-            body: '.body'
+          Title: 'h1',
+          Content: q => q.find('.content').define({
+            Title: '.title',
+            Body: '.body'
           }),
         })
 
         await browser.shouldContain({
-          title: 'Title',
-          content: {
-            title: 'title',
-            body: 'body'
+          Title: 'Title',
+          Content: {
+            Title: 'title',
+            Body: 'body'
           }
         })
       })

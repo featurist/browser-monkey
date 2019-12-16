@@ -1,9 +1,10 @@
 import { ExecutedTransform } from './ExecutedTransform'
-import { ExecutedTransformSequence } from './ExecutedTransformSequence'
+import { ExecutedTransformPath } from './ExecutedTransformPath'
 import { ExecutedSimpleTransform } from './ExecutedSimpleTransform'
 import { ExecutedConcatTransform } from './ExecutedConcatTransform'
+import { ExecutedContainingTransform } from './ExecutedContainingTransform'
 import { ExecutedFirstOfTransform } from './ExecutedFirstOfTransform'
-import ExecutedDetectTransform from './ExecutedDetectTransform'
+import { ExecutedDetectTransform } from './ExecutedDetectTransform'
 import { ExecutedTransformError } from './ExecutedTransformError'
 import Dom from './Dom'
 import BrowserMonkeyAssertionError from './BrowserMonkeyAssertionError'
@@ -21,7 +22,7 @@ var flatten = require('lowscore/flatten')
 
 type Transform = (elements: any, executedTransforms: ExecutedTransform[]) => any
 type Action = (elements: any, executedTransforms: ExecutedTransform[]) => void
-type FieldType = {
+interface FieldType {
   value?: (query: Query) => Query
   setter?: (query: Query, value: any) => Query
   valueAsserter?: (query: Query, expected: any) => Query
@@ -30,6 +31,7 @@ type FieldType = {
 interface Definitions {
   fieldTypes: FieldType[]
   button: ((query: Query, name: string) => Query)[]
+  label: ((query: Query, name: string) => Query)[]
   fields: {}
 }
 
@@ -56,8 +58,36 @@ class Query {
             return query.css('button, input[type=button], a').containing(name)
           },
         ],
-
-        fields: {},
+        label: [
+          (query, name) => {
+            return query.find('label').containing(name).find('input')
+          },
+          (query, name) => {
+            return query.find('label[for]').containing(name).map(label => {
+              const id = label.getAttribute('for')
+              return label.ownerDocument.getElementById(id)
+            }, 'for attribute').filter(Boolean)
+          },
+          (query, name) => {
+            return query.find('[aria-label]').filter(element => {
+              const label = element.getAttribute('aria-label')
+              return label === name
+            }, 'aria-label')
+          },
+          (query, name) => {
+            return query.find('[aria-labelledby]').filter(element => {
+              const id = element.getAttribute('aria-labelledby')
+              const labelElement = element.ownerDocument.getElementById(id)
+              if (labelElement) {
+                return query._dom.elementInnerText(labelElement) === name
+              }
+            }, 'aria-label')
+          },
+        ],
+        fields: {
+          Label: (q, value) => q.label(value),
+          Button: (q, value) => q.button(value),
+        },
       }
     }
     this._dom = new Dom()
@@ -97,8 +127,20 @@ class Query {
     }))
   }
 
+  public label (name: string): this {
+    return this.concat(this._options.definitions.label.map(definition => {
+      return (q: Query): Query => {
+        return definition(q, name)
+      }
+    }))
+  }
+
   public defineButton (definition: (q: Query, name?: string) => Query): void {
     this._options.definitions.button.push(definition)
+  }
+
+  public defineLabel (definition: (q: Query, name?: string) => Query): void {
+    this._options.definitions.label.push(definition)
   }
 
   public result (): any {
@@ -112,7 +154,13 @@ class Query {
     return resolved
   }
 
-  public filter (filter: (a: any) => boolean, description: string): this {
+  public map (map: (a: any) => any, description?: string): this {
+    return this.transform((elements) => {
+      return new ExecutedSimpleTransform(elements.map(map), description)
+    })
+  }
+
+  public filter (filter: (a: any) => boolean, description?: string): this {
     return this.transform((elements) => {
       return new ExecutedSimpleTransform(elements.filter(filter), description)
     })
@@ -133,24 +181,24 @@ class Query {
     throw new BrowserMonkeyAssertionError(message, { expected, actual })
   }
 
-  private execute (): ExecutedTransformSequence {
-    const transformSequence = new ExecutedTransformSequence(this._input)
+  private execute (): ExecutedTransformPath {
+    const transformPath = new ExecutedTransformPath(this._input)
 
     try {
       this._transforms.forEach(transform => {
-        const executedTransform = toExecutedTransform(transform.call(this, transformSequence.value, transformSequence.transforms))
-        transformSequence.addTransform(executedTransform)
+        const executedTransform = toExecutedTransform(transform.call(this, transformPath.value, transformPath.transforms))
+        transformPath.addTransform(executedTransform)
       })
 
       if (this._action && !this._actionExecuted) {
-        this._action(transformSequence.value, transformSequence.transforms)
+        this._action(transformPath.value, transformPath.transforms)
         this._actionExecuted = true
       }
 
-      return transformSequence
+      return transformPath
     } catch (e) {
       if (e instanceof BrowserMonkeyAssertionError) {
-        e.prependExecutedTransforms(transformSequence)
+        e.prependExecutedTransforms(transformPath)
       }
 
       throw e
@@ -370,6 +418,10 @@ class Query {
     return this.expectOneElement().result()[0]
   }
 
+  public elements (): HTMLElement {
+    return this.expectSomeElements().result()[0]
+  }
+
   public expectSomeElements (message?: string): this {
     return this.expect(function (elements) {
       expectElements(elements)
@@ -380,8 +432,8 @@ class Query {
     })
   }
 
-  public click (): this {
-    return this.expectOneElement().action(([element]) => {
+  public click (selector?: string): this {
+    return (selector ? this.find(selector) : this).expectOneElement().action(([element]) => {
       debug('click', element)
       this._dom.click(element)
     })
@@ -395,13 +447,13 @@ class Query {
   }
 
   public scope (element: HTMLElement): this {
-    var selector = this.clone()
-    selector.input([element])
+    var query = this.clone()
+    query.input([element])
 
     if (isIframe(element)) {
-      return selector.iframeContent()
+      return query.iframeContent()
     } else if (isHTMLElement(element)) {
-      return selector
+      return query
     } else {
       throw new Error('scope() expects HTML element')
     }
@@ -459,7 +511,7 @@ class Query {
         },
 
         function: (query, model) => {
-          setters.push(() => runModelFunction(model, query))
+          setters.push(() => this.runModelFunction(model, query))
         }
       }
 
@@ -533,7 +585,7 @@ class Query {
 
         function: (query, model) => {
           try {
-            runModelFunction(model, query)
+            this.runModelFunction(model, query)
             return model
           } catch (e) {
             if (e instanceof BrowserMonkeyAssertionError) {
@@ -567,7 +619,7 @@ class Query {
     } else if (typeof finder === 'string') {
       this._options.definitions.fields[name] = q => q.find(finder)
     } else if (name.constructor === Object && finder === undefined) {
-      Object.entries(name).forEach(([name, finder]) => this.define(name, finder))
+      Object.keys(name).forEach(key => this.define(key, name[key]))
     }
 
     return this
@@ -610,27 +662,33 @@ class Query {
         },
 
         expectOne: (query) => {
-          query.expectOne().result()
+          query.expectOne().execute()
         },
 
         function: (query, fn) => {
-          runModelFunction(fn, query)
+          return this.runModelFunction(fn, query)
         }
       }
 
-      return new ExecutedSimpleTransform(elements.filter(element => {
+      let lastError
+      let lastSuccess
+
+      const matchingElements = elements.filter(element => {
         try {
           const clone = this.resolve([element])
-          mapModel(clone, model, actions)
+          lastSuccess = mapModel(clone, model, actions)
           return true
         } catch (e) {
           if (e instanceof BrowserMonkeyAssertionError) {
+            lastError = new ExecutedTransformError(e)
             return false
           } else {
             throw e
           }
         }
-      }), `containing(${JSON.stringify(model)})`)
+      })
+
+      return new ExecutedContainingTransform(matchingElements, lastSuccess ? lastSuccess : lastError)
     })
   }
 
@@ -770,19 +828,23 @@ class Query {
   }
 
   public find (selector: string): this {
-    // name(value)
-    const match = /^\s*(.*?)\s*(\((.*)\)\s*)?$/.exec(selector)
+    // name(arg1, arg2, ...)
+    const match = /^\s*([$a-z_][0-9a-z_$]*)\s*(\((.*)\)\s*)?$/i.exec(selector)
 
     if (match) {
       const [, name,, value] = match
       const finder = this._options.definitions.fields[name]
 
-      if (finder) {
-        if (value !== undefined) {
-          return finder(this, value.trim())
+      if (value !== undefined) {
+        if (finder) {
+          const func = new Function(`return [${value}]`)
+          const args = func()
+          return finder(this, ...args)
         } else {
-          return finder(this)
+          throw new Error('no such definition ' + name)
         }
+      } else if (finder) {
+        return finder(this)
       }
     }
 
@@ -793,6 +855,15 @@ class Query {
     return this.filter(element => {
       return this._dom.elementMatches(element, selector)
     }, 'is: ' + selector)
+  }
+
+  private runModelFunction(fn: (Query) => any, query: Query): ExecutedTransform | undefined {
+    const result = fn(query)
+    if (result instanceof Query) {
+      return result.execute()
+    } else if (result && typeof result.then === 'function') {
+      query.error('model functions must not be asynchronous')
+    }
   }
 }
 
@@ -860,13 +931,6 @@ function runQueryCreator (queryCreator: (q: Query) => Query, query: Query): Quer
   return q
 }
 
-function runModelFunction(fn: (Query) => Query, query: Query): void {
-  const result = fn(query)
-  if (result && typeof result.then === 'function') {
-    query.error('model functions must not be asynchronous')
-  }
-}
-
 const missing = {}
 
 function expectLength (query, length): Query {
@@ -918,10 +982,11 @@ function mapModel (query: Query, model: any, actions: Actions): any {
     } else if (model.constructor === Object) {
       const lengthQuery = expectLength(query, 1)
 
-      const entries = Object.entries(model)
+      const keys = Object.keys(model)
 
-      if (entries.length) {
-        return object(entries.map(([selector, value]) => {
+      if (keys.length) {
+        return object(keys.map(selector => {
+          const value = model[selector]
           return [selector, map(lengthQuery.find(selector), value)]
         }))
       } else {

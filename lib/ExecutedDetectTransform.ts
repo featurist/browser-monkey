@@ -1,6 +1,6 @@
 import { ExecutedTransform } from './ExecutedTransform'
 
-export default class ExecutedDetectTransform extends ExecutedTransform {
+export class ExecutedDetectTransform extends ExecutedTransform {
   public items: {key: string, transform: ExecutedTransform}[]
 
   public constructor (value: {key: string, value: any}, items: {key: string, transform: ExecutedTransform}[]) {

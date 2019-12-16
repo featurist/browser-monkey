@@ -1,7 +1,6 @@
 var describeAssemblies = require('./describeAssemblies')
-const expect = require('must')
+const {expect} = require('chai')
 const DomAssembly = require('./assemblies/DomAssembly')
-const BrowserMonkeyAssertionError = require('../lib/BrowserMonkeyAssertionError').default
 
 describe('query', () => {
   describeAssemblies([DomAssembly], Assembly => {
@@ -115,7 +114,7 @@ describe('query', () => {
           .then()
 
         assembly.eventuallyDeleteHtml('.message')
-        await expect(contacts).reject.with.error(/expected no elements/)
+        await assembly.assertRejection(contacts, 'expected no elements')
       })
     })
 
@@ -153,7 +152,7 @@ describe('query', () => {
           </div>
         `)
 
-        await expect(contacts).reject.with.error(/expected just one element, found 2/)
+        await assembly.assertRejection(contacts, 'expected just one element, found 2')
       })
 
       it('when there no elements, throws an error', async () => {
@@ -167,7 +166,7 @@ describe('query', () => {
           <div class="title"></div>
         `)
 
-        await expect(contacts).reject.with.error(/expected just one element, found 0/)
+        await assembly.assertRejection(contacts, 'expected just one element, found 0')
       })
     })
 
@@ -182,6 +181,50 @@ describe('query', () => {
           .element()
 
         expect(actual).to.equal(expected)
+      })
+
+      it('fails if there are more than one element', () => {
+        assembly.insertHtml(`
+          <div class="title"></div>
+          <div class="title"></div>
+        `)
+
+        expect(() => browserMonkey
+          .find('.title')
+          .element()).to.throw('expected just one element, found 2')
+      })
+
+      it('fails if there are no elements', () => {
+        assembly.insertHtml(`
+        `)
+
+        expect(() => browserMonkey
+          .find('.title')
+          .element()).to.throw('expected just one element, found 0')
+      })
+    })
+
+    describe('elements', () => {
+      it('expects one or more html elements and returns them', () => {
+        const expected = assembly.insertHtml(`
+          <div class="title"></div>
+          <div class="title"></div>
+        `)
+
+        const actual = browserMonkey
+          .find('.title')
+          .elements()
+
+        expect(actual).to.equal(expected)
+      })
+
+      it('fails if there are no elements', () => {
+        assembly.insertHtml(`
+        `)
+
+        expect(() => browserMonkey
+          .find('.title')
+          .elements()).to.throw('expected one or more elements, found 0')
       })
     })
 
@@ -217,7 +260,7 @@ describe('query', () => {
           <div class="title"></div>
         `)
 
-        await expect(contacts).reject.with.error(/expected one or more elements, found 0/)
+        await assembly.assertRejection(contacts, 'expected one or more elements, found 0')
       })
     })
 
@@ -267,7 +310,7 @@ describe('query', () => {
           <div>goodbye</div>
         `)
 
-        await expect(hello).to.reject.with.error(/expected to see hello/)
+        await assembly.assertRejection(hello, 'expected to see hello')
       })
     })
 
@@ -278,7 +321,7 @@ describe('query', () => {
           .transform(names => {
             return names.map(contact => contact.innerText).join(', ')
           })
-          .expect(x => expect(x).to.not.be.empty())
+          .expect(x => expect(x).to.not.be.empty)
           .then()
 
         assembly.eventuallyInsertHtml(`
@@ -312,6 +355,31 @@ describe('query', () => {
         `)
 
         expect(await contacts).to.eql([assembly.find('.contact:nth-child(1)')])
+      })
+    })
+
+    describe('map', () => {
+      it('can map elements', async () => {
+        const contacts = browserMonkey
+          .find('.contact')
+          .map(contact => {
+            return contact.querySelector('.name')
+          })
+          .expectSomeElements()
+          .then()
+
+        assembly.eventuallyInsertHtml(`
+          <div class="contact">
+            <div class="name">Sally</div>
+            <div class="address">32 Yellow Drive</div>
+          </div>
+          <div class="contact">
+            <div class="name">Bob</div>
+            <div class="address">32 Red Drive</div>
+          </div>
+        `)
+
+        expect(await contacts).to.eql(assembly.findAll('.name'))
       })
     })
 
@@ -371,7 +439,7 @@ describe('query', () => {
           </div>
         `)
 
-        await expect(name).to.reject.with.error("expected just one element, found 0 (found: find('.container') [1], find('.contact') [2], find('.name') [0])")
+        await assembly.assertRejection(name, "expected just one element, found 0 (found: path(find('.container') [1], find('.contact') [2], find('.name') [0]))")
       })
     })
 
@@ -411,7 +479,7 @@ describe('query', () => {
           b => b.find('.b')
         ]).find('.child').expectSomeElements()
 
-        return expect(promise).to.reject.with.error("expected one or more elements, found 0 (found: concat (find('.a') [1], find('.b') [1]) [2], find('.child') [0])")
+        return assembly.assertRejection(promise, "expected one or more elements, found 0 (found: path(concat(find('.a') [1], find('.b') [1]) [2], find('.child') [0])")
       })
     })
 
@@ -438,7 +506,7 @@ describe('query', () => {
           b => b.find('.b').expectSomeElements()
         ])
 
-        await expect(promise).to.reject.with.error("all queries failed in firstOf (found: find('.content') [1], firstOf(expected one or more elements, found 0 (found: find('.a') [0]), expected one or more elements, found 0 (found: find('.b') [0])) [0])")
+        await assembly.assertRejection(promise, "all queries failed in firstOf (found: path(find('.content') [1], firstOf(expected one or more elements, found 0 (found: find('.a') [0]), expected one or more elements, found 0 (found: find('.b') [0])) [0]))")
       })
 
       it('throws if one of the queries does not have an assertion or action', async () => {
@@ -449,7 +517,7 @@ describe('query', () => {
           b => b.find('.b').expectSomeElements()
         ])
 
-        await expect(promise).to.reject.with.error(/no expectations or actions in query/)
+        await assembly.assertRejection(promise, 'no expectations or actions in query')
       })
     })
 
@@ -478,7 +546,7 @@ describe('query', () => {
           b: b => b.find('.b').expectSomeElements()
         })
 
-        await expect(promise).to.reject.with.error("all queries failed in detect (found: find('.content') [1], detect(a: expected one or more elements, found 0 (found: find('.a') [0]), b: expected one or more elements, found 0 (found: find('.b') [0])) [0])")
+        await assembly.assertRejection(promise, "all queries failed in detect (found: path(find('.content') [1], detect(a: expected one or more elements, found 0 (found: find('.a') [0]), b: expected one or more elements, found 0 (found: find('.b') [0])) [0]))")
       })
 
       it('throws if one of the queries does not have an assertion or action', async () => {
@@ -489,7 +557,7 @@ describe('query', () => {
           b: b => b.find('.b').expectSomeElements()
         })
 
-        await expect(promise).to.reject.with.error(/no expectations or actions in query/)
+        await assembly.assertRejection(promise, 'no expectations or actions in query')
       })
     })
   })

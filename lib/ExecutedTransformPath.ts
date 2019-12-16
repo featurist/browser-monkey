@@ -1,6 +1,6 @@
 import { ExecutedTransform } from './ExecutedTransform'
 
-export class ExecutedTransformSequence extends ExecutedTransform {
+export class ExecutedTransformPath extends ExecutedTransform {
   public transforms: ExecutedTransform[]
 
   public constructor (value: any) {
@@ -18,7 +18,7 @@ export class ExecutedTransformSequence extends ExecutedTransform {
     this.transforms.push(...transforms)
   }
 
-  public prepend (transforms: ExecutedTransformSequence): void {
+  public prepend (transforms: ExecutedTransformPath): void {
     this.value = transforms.value
     this.transforms.unshift(...transforms.transforms)
   }
@@ -28,25 +28,16 @@ export class ExecutedTransformSequence extends ExecutedTransform {
   }
 
   public renderError (): string {
-    const transformsUpUntilAndIncludingFirstFailure = this.transforms.reduce(({ keepTaking, array }, b) => {
-      if (keepTaking) {
-        return {
-          keepTaking: !!(b.value && b.value.length),
-          array: array.concat([b])
-        }
-      } else {
-        return { array }
-      }
-    }, {
-      array: [],
-      keepTaking: true
-    }).array
-
-    return transformsUpUntilAndIncludingFirstFailure.map(t => t.renderError()).filter(Boolean).join(', ')
+    const errors = this.transforms.map(t => t.renderError()).filter(Boolean).join(', ')
+    if (this.transforms.length > 1) {
+      return `path(${errors})`
+    } else {
+      return errors
+    }
   }
 
-  public clone (): ExecutedTransformSequence {
-    const e = new ExecutedTransformSequence(this.value)
+  public clone (): ExecutedTransformPath {
+    const e = new ExecutedTransformPath(this.value)
     e.transforms = this.transforms.slice()
     return e
   }

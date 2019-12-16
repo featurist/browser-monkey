@@ -9,6 +9,6 @@ export class ExecutedConcatTransform extends ExecutedTransform {
   }
 
   public renderError (): string {
-    return `concat (${this.items.map(i => i.renderError()).join(', ')}) [${this.value.length}]`
+    return `concat(${this.items.map(i => i.renderError()).join(', ')}) [${this.value.length}]`
   }
 }
