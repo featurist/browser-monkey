@@ -35,7 +35,7 @@ interface Definitions {
   fields: {}
 }
 
-class Query {
+class Query implements PromiseLike<any> {
   private _transforms: Transform[]
   private _options: Options
   private _input: any
@@ -52,7 +52,116 @@ class Query {
       timeout: 1000,
       interval: 10,
       definitions: {
-        fieldTypes: [],
+        fieldTypes: [
+          {
+            setter: (query, value) => {
+              return query
+                .is('input[type=checkbox]')
+                .expectOneElement()
+                .transform(([checkbox]) => {
+                  if (typeof value !== 'boolean') {
+                    throw new Error('expected boolean as argument to set checkbox')
+                  }
+                  return () => {
+                    if (query._dom.checked(checkbox) !== value) {
+                      debug('checkbox', checkbox, value)
+                      query._dom.click(checkbox)
+                    }
+                  }
+                })
+            },
+            value: (query) => {
+              return query
+                .is('input[type=checkbox]')
+                .expectOneElement()
+                .transform(([checkbox]) => {
+                  return query._dom.checked(checkbox)
+                })
+            }
+          },
+          {
+            setter: (query, value) => {
+              return query
+                .is('select')
+                .expectOneElement('expected to be select element')
+                .css('option')
+                .filter(o => {
+                  return o.value === value || query._dom.elementInnerText(o) === value
+                }, `option with text or value ${JSON.stringify(value)}`)
+                .expectOneElement(`expected one option element with text or value ${JSON.stringify(value)}`)
+                .transform(function ([option]) {
+                  return () => {
+                    const selectElement = option.parentNode
+                    debug('select', selectElement)
+                    query._dom.selectOption(selectElement, option)
+                  }
+                })
+            },
+            valueAsserter: (query, expected) => {
+              return query
+                .is('select')
+                .expectOneElement('expected to be select element')
+                .transform(([select]) => {
+                  return () => {
+                    const value = select.value
+
+                    if (testEqual(value, expected)) {
+                      return
+                    }
+
+                    const selectedOption = select.options[select.selectedIndex]
+                    if (selectedOption) {
+                      const actual = query._dom.elementInnerText(selectedOption)
+                      if (testEqual(actual, expected)) {
+                        return
+                      } else {
+                        this.error('expected ' + inspect(actual) + ' or ' + inspect(value) + ' to equal ' + inspect(expected), { actual, expected })
+                      }
+                    }
+
+                    this.error('expected ' + inspect(value) + ' to equal ' + inspect(expected), { actual: value, expected })
+                  }
+                })
+            },
+            value: (query) => {
+              return query
+                .is('select')
+                .expectOneElement('expected to be select element')
+                .transform(([select]) => {
+                  const selectedOption = select.options[select.selectedIndex]
+                  return selectedOption && query._dom.elementInnerText(selectedOption)
+                })
+            }
+          },
+          {
+            setter: (query, value) => {
+              return query
+                .is(inputSelectors.settable)
+                .expectOneElement()
+                .transform(([element]) => {
+                  if (typeof value !== 'string') {
+                    throw new Error('expected string as argument to set input')
+                  }
+                  return () => {
+                    debug('set', element, value)
+                    query._dom.enterText(element, value, {incremental: false})
+                  }
+                })
+            },
+            value: (query) => {
+              return query.is(inputSelectors.gettable).expectOneElement().transform(([input]) => {
+                return input.value
+              })
+            }
+          },
+          {
+            value: (query) => {
+              return query.expectOneElement().transform(([element]) => {
+                return query._dom.elementInnerText(element)
+              })
+            }
+          },
+        ],
         button: [
           (query: Query, name: string): Query => {
             return query.css('button, input[type=button], a').containing(name)
@@ -87,11 +196,16 @@ class Query {
         fields: {
           Label: (q, value) => q.label(value),
           Button: (q, value) => q.button(value),
+          Css: (q, value) => q.css(value),
         },
       }
     }
     this._dom = new Dom()
     this._input = undefined
+  }
+
+  public get [Symbol.toStringTag](): string {
+    return 'Query';
   }
 
   public transform (transform: Transform): this {
@@ -319,7 +433,7 @@ class Query {
     }
   }
 
-  public then (...args): Promise<any> {
+  public then (resolve: (r) => any, reject: (e) => any): Promise<any> {
     this.assertHasActionOrExpectation()
 
     var self = this
@@ -343,7 +457,7 @@ class Query {
       throw error
     })
 
-    return promise.then.apply(promise, args)
+    return promise.then.call(promise, resolve, reject)
   }
 
   public catch (fn): Promise<void> {
@@ -414,12 +528,12 @@ class Query {
     })
   }
 
-  public element (): HTMLElement {
+  public elementResult (): HTMLElement {
     return this.expectOneElement().result()[0]
   }
 
-  public elements (): HTMLElement {
-    return this.expectSomeElements().result()[0]
+  public elementsResult (): HTMLElement {
+    return this.expectSomeElements().result()
   }
 
   public expectSomeElements (message?: string): this {
@@ -439,11 +553,22 @@ class Query {
     })
   }
 
-  public submit (): this {
-    return this.expectOneElement().action(([element]) => {
-      debug('submit', element)
-      this._dom.submit(element)
-    })
+  public clickButton (name: string): this {
+    return this.button(name).click()
+  }
+
+  public submit (selector?: string): this {
+    return (selector ? this.find(selector) : this)
+      .expectOneElement()
+      .expect(([element]) => {
+        if (!element.form) {
+          throw new BrowserMonkeyAssertionError('expected element to be inside a form for submit')
+        }
+      })
+      .action(([element]) => {
+        debug('submit', element)
+        this._dom.submit(element)
+      })
   }
 
   public scope (element: HTMLElement): this {
@@ -482,10 +607,6 @@ class Query {
     }, 'enabled')
   }
 
-  public clickButton (name: string): this {
-    return this.button(name).click()
-  }
-
   public set (selector, value): this {
     const model = value === undefined
       ? selector
@@ -507,7 +628,7 @@ class Query {
         },
 
         expectOne: (query) => {
-          expectLength(query, 1).result()
+          query.expectOneElement().result()
         },
 
         function: (query, model) => {
@@ -532,6 +653,18 @@ class Query {
     return this.expectNoElements()
   }
 
+  public async shouldAppearAfter (action: () => void): Promise<void> {
+    await this.shouldNotExist()
+    await action()
+    await this.shouldExist()
+  }
+
+  public async shouldDisappearAfter (action: () => void): Promise<void> {
+    await this.shouldExist()
+    await action()
+    await this.shouldNotExist()
+  }
+
   public shouldContain (model): this {
     return this.expect(elements => {
       let isError = false
@@ -543,7 +676,7 @@ class Query {
 
         expectOne: (query) => {
           try {
-            expectLength(query, 1).result()
+            query.expectOneElement().result()
             return {}
           } catch (e) {
             if (e instanceof BrowserMonkeyAssertionError) {
@@ -625,13 +758,13 @@ class Query {
     return this
   }
 
-  public setter (model): this {
+  private setter (model): this {
     return this.firstOf(this._options.definitions.fieldTypes.filter(def => def.setter).map(def => {
       return query => def.setter(query, model)
     }))
   }
 
-  public valueAsserter (expected: any): this {
+  private valueAsserter (expected: any): this {
     return this.firstOf(this._options.definitions.fieldTypes.filter(def => def.value).map(def => {
       return query => def.valueAsserter
         ? def.valueAsserter(query, expected)
@@ -696,124 +829,6 @@ class Query {
     return this.firstOf(this._options.definitions.fieldTypes.filter(def => def.value).map(def => {
       return query => def.value(query)
     }))
-  }
-
-  public installSetters (): this {
-    this.define('css', (query, css) => query.css(css))
-
-    this.defineFieldType({
-      value: (query) => {
-        return query.expectOneElement().transform(([element]) => {
-          return query._dom.elementInnerText(element)
-        })
-      }
-    })
-
-    this.defineFieldType({
-      setter: (query, value) => {
-        return query
-          .is(inputSelectors.settable)
-          .expectOneElement()
-          .transform(([element]) => {
-            if (typeof value !== 'string') {
-              throw new Error('expected string as argument to set input')
-            }
-            return () => {
-              debug('set', element, value)
-              query._dom.enterText(element, value, {incremental: false})
-            }
-          })
-      },
-      value: (query) => {
-        return query.is(inputSelectors.gettable).expectOneElement().transform(([input]) => {
-          return input.value
-        })
-      }
-    })
-
-    this.defineFieldType({
-      setter: (query, value) => {
-        return query
-          .is('select')
-          .expectOneElement('expected to be select element')
-          .css('option')
-          .filter(o => {
-            return o.value === value || query._dom.elementInnerText(o) === value
-          }, `option with text or value ${JSON.stringify(value)}`)
-          .expectOneElement(`expected one option element with text or value ${JSON.stringify(value)}`)
-          .transform(function ([option]) {
-            return () => {
-              const selectElement = option.parentNode
-              debug('select', selectElement)
-              query._dom.selectOption(selectElement, option)
-            }
-          })
-      },
-      valueAsserter: (query, expected) => {
-        return query
-          .is('select')
-          .expectOneElement('expected to be select element')
-          .transform(([select]) => {
-            return () => {
-              const value = select.value
-
-              if (testEqual(value, expected)) {
-                return
-              }
-
-              const selectedOption = select.options[select.selectedIndex]
-              if (selectedOption) {
-                const actual = query._dom.elementInnerText(selectedOption)
-                if (testEqual(actual, expected)) {
-                  return
-                } else {
-                  this.error('expected ' + inspect(actual) + ' or ' + inspect(value) + ' to equal ' + inspect(expected), { actual, expected })
-                }
-              }
-
-              this.error('expected ' + inspect(value) + ' to equal ' + inspect(expected), { actual: value, expected })
-            }
-          })
-      },
-      value: (query) => {
-        return query
-          .is('select')
-          .expectOneElement('expected to be select element')
-          .transform(([select]) => {
-            const selectedOption = select.options[select.selectedIndex]
-            return selectedOption && query._dom.elementInnerText(selectedOption)
-          })
-      }
-    })
-
-    this.defineFieldType({
-      setter: (query, value) => {
-        return query
-          .is('input[type=checkbox]')
-          .expectOneElement()
-          .transform(([checkbox]) => {
-            if (typeof value !== 'boolean') {
-              throw new Error('expected boolean as argument to set checkbox')
-            }
-            return () => {
-              if (query._dom.checked(checkbox) !== value) {
-                debug('checkbox', checkbox, value)
-                query._dom.click(checkbox)
-              }
-            }
-          })
-      },
-      value: (query) => {
-        return query
-          .is('input[type=checkbox]')
-          .expectOneElement()
-          .transform(([checkbox]) => {
-            return query._dom.checked(checkbox)
-          })
-      }
-    })
-
-    return this
   }
 
   public css (selector: string): this {
@@ -933,15 +948,6 @@ function runQueryCreator (queryCreator: (q: Query) => Query, query: Query): Quer
 
 const missing = {}
 
-function expectLength (query, length): Query {
-  return query.expect(elements => {
-    const actualLength = elements.length
-    if (actualLength !== length) {
-      query.error('expected ' + length + ' ' + pluralize('elements', length) + ', found ' + actualLength)
-    }
-  })
-}
-
 interface Actions {
   arrayLengthError (q: Query, actual: number, expected: number): void
   function (q: Query, model: any): any
@@ -980,7 +986,7 @@ function mapModel (query: Query, model: any, actions: Actions): any {
         return map(query.index(index), item)
       })
     } else if (model.constructor === Object) {
-      const lengthQuery = expectLength(query, 1)
+      const lengthQuery = query.expectOneElement()
 
       const keys = Object.keys(model)
 
@@ -995,7 +1001,7 @@ function mapModel (query: Query, model: any, actions: Actions): any {
     } else if (typeof model === 'function') {
       return actions.function(query, model)
     } else {
-      return actions.value(expectLength(query, 1), model)
+      return actions.value(query.expectOneElement(), model)
     }
   }
 

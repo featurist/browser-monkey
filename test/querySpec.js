@@ -170,7 +170,7 @@ describe('query', () => {
       })
     })
 
-    describe('element', () => {
+    describe('elementResult', () => {
       it('expects one html element and returns it', () => {
         const expected = assembly.insertHtml(`
           <div class="title"></div>
@@ -178,7 +178,7 @@ describe('query', () => {
 
         const actual = browserMonkey
           .find('.title')
-          .element()
+          .elementResult()
 
         expect(actual).to.equal(expected)
       })
@@ -191,7 +191,7 @@ describe('query', () => {
 
         expect(() => browserMonkey
           .find('.title')
-          .element()).to.throw('expected just one element, found 2')
+          .elementResult()).to.throw('expected just one element, found 2')
       })
 
       it('fails if there are no elements', () => {
@@ -200,22 +200,24 @@ describe('query', () => {
 
         expect(() => browserMonkey
           .find('.title')
-          .element()).to.throw('expected just one element, found 0')
+          .elementResult()).to.throw('expected just one element, found 0')
       })
     })
 
-    describe('elements', () => {
+    describe('elementsResult', () => {
       it('expects one or more html elements and returns them', () => {
-        const expected = assembly.insertHtml(`
+        const div1 = assembly.insertHtml(`
           <div class="title"></div>
+        `)
+        const div2 = assembly.insertHtml(`
           <div class="title"></div>
         `)
 
         const actual = browserMonkey
           .find('.title')
-          .elements()
+          .elementsResult()
 
-        expect(actual).to.equal(expected)
+        expect(actual).to.eql([div1, div2])
       })
 
       it('fails if there are no elements', () => {
@@ -224,7 +226,7 @@ describe('query', () => {
 
         expect(() => browserMonkey
           .find('.title')
-          .elements()).to.throw('expected one or more elements, found 0')
+          .elementsResult()).to.throw('expected one or more elements, found 0')
       })
     })
 

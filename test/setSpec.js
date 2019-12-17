@@ -122,7 +122,7 @@ describe('set', function () {
             '.street': '7 Lola St',
             '.city': 'Frisby City',
           },
-        }), "expected 1 element, found 2 (found: path(find('.address') [2]))")
+        }), "expected just one element, found 2 (found: path(find('.address') [2]))")
       })
 
       it('a value does assert that there is only one matching element', async () => {
@@ -141,7 +141,7 @@ describe('set', function () {
             '.street': '7 Lola St',
             '.city': 'Frisby City',
           },
-        }), "expected 1 element, found 2 (found: path(find('.address') [1], find('.street') [2]))")
+        }), "expected just one element, found 2 (found: path(find('.address') [1], find('.street') [2]))")
       })
 
       it('deep fields disambiguate', async () => {
@@ -276,7 +276,7 @@ describe('set', function () {
           '.phone': '123123123',
           '.first-name': 'Barry'
         })
-        await assembly.assertRejection(promise, "expected 1 element, found 0 (found: path(find('form') [1], find('.street') [0]))")
+        await assembly.assertRejection(promise, "expected just one element, found 0 (found: path(find('form') [1], find('.street') [0]))")
 
         demand(assembly.find('.phone').value).to.equal('')
         demand(assembly.find('.first-name').value).to.equal('')

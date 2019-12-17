@@ -52,7 +52,7 @@ describe('shouldContain', function () {
         await assembly.assertExpectedActual(browser, {
           '.address': '12 Hapless Boulevard',
         }, {
-          '.address': "Error: expected 1 element, found 0 (found: path(find('.address') [0]))",
+          '.address': "Error: expected just one element, found 0 (found: path(find('.address') [0]))",
         })
       })
 
@@ -184,7 +184,7 @@ describe('shouldContain', function () {
           '.content': 'The Content'
         }, {
           'h1': 'Title',
-          '.content': "Error: expected 1 element, found 0 (found: path(find('.content') [0]))"
+          '.content': "Error: expected just one element, found 0 (found: path(find('.content') [0]))"
         })
       })
 
@@ -207,7 +207,7 @@ describe('shouldContain', function () {
           '.result': [
             {
               'h1': 'Title',
-              '.content': "Error: expected 1 element, found 0 (found: path(find('.result') [2], index 0 [1], find('.content') [0]))"
+              '.content': "Error: expected just one element, found 0 (found: path(find('.result') [2], index 0 [1], find('.content') [0]))"
             },
             'The Content'
           ]
@@ -241,7 +241,7 @@ describe('shouldContain', function () {
             '.content': {}
           }, {
             'h1': 'Title',
-            '.content': "Error: expected 1 element, found 0 (found: path(find('.content') [0]))"
+            '.content': "Error: expected just one element, found 0 (found: path(find('.content') [0]))"
           })
         })
       })
@@ -385,7 +385,7 @@ describe('shouldContain', function () {
         await browser.shouldContain({
           'h1': 'Title',
           '.content': query => {
-            if (!/Content/.test(query.element().innerText)) {
+            if (!/Content/.test(query.elementResult().innerText)) {
               throw new BrowserMonkeyAssertionError('asdf')
             }
           }
@@ -403,7 +403,7 @@ describe('shouldContain', function () {
         await assembly.assertExpectedActual(browser, {
           'h1': 'Title',
           '.content': query => {
-            if (/Content/.test(query.element().innerText)) {
+            if (/Content/.test(query.elementResult().innerText)) {
               throw new BrowserMonkeyAssertionError('asdf')
             }
           }
@@ -511,7 +511,7 @@ describe('shouldContain', function () {
         `)
 
         browser.define('Section', (query, value) => {
-          return query.find('section').containing(section => section.find('h1').containing(value).shouldExist())
+          return query.find('section').containing({h1: value})
         })
 
         await browser.shouldContain({

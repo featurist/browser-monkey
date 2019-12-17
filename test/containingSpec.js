@@ -89,7 +89,7 @@ describe('containing', function () {
 
         expect(() =>
           browser.find('.result').containing({'.title': 'Title', '.body': 'None'}).expectOneElement().result()
-        ).to.throw(`expected just one element, found 0 (found: path(find('.result') [3], containing(...expected 1 element, found 0 (found: path(find('.title') [0]))) [0]))`)
+        ).to.throw(`expected just one element, found 0 (found: path(find('.result') [3], containing(...expected just one element, found 0 (found: path(find('.title') [0]))) [0]))`)
       })
     })
 
