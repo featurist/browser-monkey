@@ -1,6 +1,6 @@
 var demand = require('must')
 const describeAssemblies = require('./describeAssemblies')
-const DomAssembly = require('./assemblies/DomAssembly')
+const {DomAssembly} = require('./assemblies/DomAssembly')
 
 describe('options', function () {
   describeAssemblies([DomAssembly], function (Assembly) {

@@ -7,36 +7,46 @@ const pathUtils = require('path')
 const trytryagain = require('trytryagain')
 const { expect } = require('chai')
 const inspect = require('object-inspect')
-const Dom = require('../../lib/Dom').default
+import Dom from '../../lib/Dom'
+import {Query} from '../../lib/Query'
+const object = require('lowscore/object')
 
-module.exports = class DomAssembly {
-  constructor () {
+export class DomAssembly {
+  private delayedOperations: number
+  private jQuery: JQuery
+  private retries: (() => void)[]
+  private queuedRetries: number
+  private dom: Dom
+  private _div: HTMLElement
+  private _normalRetry: boolean
+
+  public constructor () {
     this.delayedOperations = 0
     this.jQuery = $
     this.retries = []
-    this.delayedActions = []
     this.queuedRetries = 0
     this.dom = new Dom()
+    this._normalRetry = false
   }
 
-  div () {
+  private div (): void {
     this._div = createTestDiv()
   }
 
-  browserMonkey () {
+  public browserMonkey (): Query {
     this.div()
 
     const browserMonkey = createBrowserMonkey(this._div)
 
     browserMonkey.options({
-      retry: (retry) => {
+      retry: (fn) => {
         if (this._normalRetry) {
-          return trytryagain(retry)
+          return trytryagain(fn)
         } else {
           return new Promise((resolve, reject) => {
             this.retries.push(() => {
               try {
-                resolve(retry())
+                resolve(fn())
               } catch (e) {
                 if (this.queuedRetries === 0) {
                   reject(e)
@@ -52,7 +62,7 @@ module.exports = class DomAssembly {
     return browserMonkey
   }
 
-  tick () {
+  public tick (): void {
     if (this._normalRetry) {
       return
     }
@@ -65,33 +75,33 @@ module.exports = class DomAssembly {
     }
   }
 
-  localUrl (path) {
+  public localUrl (path): string {
     return location.protocol === 'file:'
       ? 'file://' + path
       : '/base/' + pathUtils.relative(pathUtils.join(__dirname, '../..'), path)
   }
 
-  useNormalRetry () {
+  public useNormalRetry (): void {
     this._normalRetry = true
   }
 
-  findAll (css) {
+  public findAll (css): HTMLElement[] {
     return Array.prototype.slice.call(this._div.querySelectorAll(css))
   }
 
-  find (css) {
+  public find (css): HTMLElement {
     return this._div.querySelector(css)
   }
 
-  insertHtml (html) {
+  public insertHtml (html): void {
     return $(html).appendTo(this._div).get(0)
   }
 
-  eventuallyDoNothing () {
+  public eventuallyDoNothing (): void {
     this.eventually(() => {})
   }
 
-  eventually (fn) {
+  public eventually <T>(fn: () => T): Promise<T> {
     if (!this._normalRetry && !this.retries.length) {
       throw new Error('nothing retrying yet, start retrying by calling .then() on a query')
     }
@@ -100,21 +110,21 @@ module.exports = class DomAssembly {
 
     return new Promise((resolve) => {
       setTimeout(() => {
-        const result =fn()
+        const result = fn()
         this.tick()
         resolve(result)
       }, 0)
     })
   }
 
-  eventuallyDeleteHtml (selector) {
-    return this.eventually(() => {
+  public async eventuallyDeleteHtml (selector: string): Promise<void> {
+    await this.eventually(() => {
       $(selector).remove()
     })
   }
 
-  eventuallyInsertHtml (html, selector) {
-    return this.eventually(() => {
+  public async eventuallyInsertHtml (html: string, selector: string): Promise<HTMLElement> {
+    return await this.eventually(() => {
       var div = selector
         ? $(this._div).find(selector).get(0)
         : this._div
@@ -123,17 +133,17 @@ module.exports = class DomAssembly {
     })
   }
 
-  eventuallyAppendHtml (element, html) {
-    return this.eventually(() => {
+  public async eventuallyAppendHtml (element, html): Promise<HTMLElement> {
+    return await this.eventually(() => {
       return $(html).appendTo(element).get(0)
     })
   }
 
-  assertElementIsFocussed (element) {
+  public assertElementIsFocussed (element): void {
     expect(document.activeElement).to.equal(element)
   }
 
-  assertRejection (promise, expectedMessage) {
+  public assertRejection (promise: Promise<any>, expectedMessage): Promise<void> {
     return promise.then(() => {
       throw new Error('expected rejection ' + JSON.stringify(expectedMessage))
     }, e => {
@@ -143,16 +153,38 @@ module.exports = class DomAssembly {
     })
   }
 
-  assertExpectedActual (query, expected, actual) {
-    return query.shouldContain(expected).then(() => {
+  public async assertExpectedActual (query: Query, expected: any, actual: any, finalExpected?: any): Promise<void> {
+    await query.shouldContain(expected).then(() => {
       throw new Error('expected rejection')
     }, e => {
       expect(e.message).to.contain('could not match')
-      expect(e.actual).to.eql(actual)
+      const actualWithErrorsAsStrings = deepMap(e.actual, value => {
+        if (value instanceof Error) {
+          return value.toString()
+        } else {
+          return value
+        }
+      })
+      expect(actualWithErrorsAsStrings).to.eql(actual)
+      expect(e.expected).to.eql(finalExpected || expected)
     })
   }
 
-  static hasDom () {
+  public static hasDom (): boolean {
     return true
   }
+}
+
+function deepMap (obj: any, mapper: (any, index?: number | string) => any): any {
+  function map (obj: any, index?: number | string): any {
+    if (obj instanceof Array) {
+      return obj.map((item, index) => map(item, index))
+    } else if (obj && obj.constructor === Object) {
+      return object(Object.keys(obj).map(key => [key, map(obj[key], key)]))
+    } else {
+      return mapper(obj, index)
+    }
+  }
+
+  return map(obj)
 }

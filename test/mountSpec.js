@@ -1,7 +1,7 @@
 const { expect } = require('chai')
 const pathUtils = require('path')
 const describeAssemblies = require('./describeAssemblies')
-const DomAssembly = require('./assemblies/DomAssembly')
+const {DomAssembly} = require('./assemblies/DomAssembly')
 
 describeAssemblies([DomAssembly], (Assembly) => {
   const assembly = new Assembly()

@@ -1,5 +1,5 @@
 const describeAssemblies = require('./describeAssemblies')
-const DomAssembly = require('./assemblies/DomAssembly')
+const {DomAssembly} = require('./assemblies/DomAssembly')
 const demand = require('must')
 const {expect} = require('chai')
 

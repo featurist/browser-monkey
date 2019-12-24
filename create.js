@@ -1,4 +1,4 @@
-var Query = require('./lib/Query')
+var {Query} = require('./lib/Query')
 
 module.exports = function (rootSelector = document.body) {
   return new Query()

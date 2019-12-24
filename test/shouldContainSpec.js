@@ -1,6 +1,7 @@
 const describeAssemblies = require('./describeAssemblies')
-const DomAssembly = require('./assemblies/DomAssembly')
+const {DomAssembly} = require('./assemblies/DomAssembly')
 var BrowserMonkeyAssertionError = require('../lib/BrowserMonkeyAssertionError').default
+const {elementAttributes} = require('../matchers')
 
 describe('shouldContain', function () {
   describeAssemblies([DomAssembly], function (Assembly) {
@@ -404,12 +405,15 @@ describe('shouldContain', function () {
           'h1': 'Title',
           '.content': query => {
             if (/Content/.test(query.elementResult().innerText)) {
-              throw new BrowserMonkeyAssertionError('asdf')
+              throw new BrowserMonkeyAssertionError('asdf', {actual: 'error actual', expected: 'error expected'})
             }
           }
         }, {
           'h1': 'Title',
-          '.content': 'Error: asdf'
+          '.content': 'error actual'
+        }, {
+          'h1': 'Title',
+          '.content': 'error expected'
         })
       })
 
@@ -421,14 +425,14 @@ describe('shouldContain', function () {
           </div>
         `)
 
-        await assembly.assertExpectedActual(browser, {
-          'h1': 'Title',
-          '.content': async () => {
-          }
-        }, {
-          'h1': 'Title',
-          '.content': 'Error: model functions must not be asynchronous'
-        })
+        await assembly.assertRejection(
+          browser.shouldContain({
+            'h1': 'Title',
+            '.content': async () => {
+            }
+          }),
+          'model functions must not be asynchronous'
+        )
       })
 
       it('does not throw if the function returns a query', async () => {
@@ -442,6 +446,80 @@ describe('shouldContain', function () {
         await browser.shouldContain({
           'h1': 'Title',
           '.content': q => q.shouldExist()
+        })
+      })
+    })
+
+    describe('attributes', () => {
+      it('can assert attributes', async () => {
+        assembly.insertHtml(`
+          <input type="text" placeholder="Username" />
+        `)
+
+        await browser.shouldContain({
+          input: elementAttributes({
+            placeholder: 'Username'
+          }),
+        })
+      })
+
+      it("fails when the attributes don't match", async () => {
+        assembly.insertHtml(`
+          <input type="text" placeholder="Username" />
+        `)
+
+        await assembly.assertExpectedActual(browser,
+          {
+            input: elementAttributes({
+              placeholder: 'User'
+            })
+          },
+          {
+            input: {
+              placeholder: 'Username',
+            },
+          },
+          {
+            input: {
+              placeholder: 'User',
+            },
+          }
+        )
+      })
+
+      it("can use regexp", async () => {
+        assembly.insertHtml(`
+          <input type="text" placeholder="Username" />
+        `)
+
+        await browser.shouldContain({
+          input: elementAttributes({
+            placeholder: /User/
+          })
+        })
+      })
+
+      it("can assert boolean", async () => {
+        assembly.insertHtml(`
+          <input type="checkbox" checked />
+        `)
+
+        await browser.shouldContain({
+          input: elementAttributes({
+            checked: true
+          })
+        })
+      })
+
+      it("can assert integer", async () => {
+        assembly.insertHtml(`
+          <input type="checkbox" checked />
+        `)
+
+        await browser.shouldContain({
+          input: elementAttributes({
+            tabIndex: 0
+          })
         })
       })
     })

@@ -1,7 +1,7 @@
 var expect = require('chai').expect
 var reloadButton = require('../lib/reloadButton')
 var describeAssemblies = require('./describeAssemblies')
-const DomAssembly = require('./assemblies/DomAssembly')
+const {DomAssembly} = require('./assemblies/DomAssembly')
 
 describe('reload button', function () {
   describeAssemblies([DomAssembly], Assembly => {

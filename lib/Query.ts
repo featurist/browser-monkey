@@ -19,6 +19,7 @@ var inputSelectors = require('./inputSelectors')
 const object = require('lowscore/object')
 const range = require('lowscore/range')
 var flatten = require('lowscore/flatten')
+import {match} from './match'
 
 type Transform = (elements: any, executedTransforms: ExecutedTransform[]) => any
 type Action = (elements: any, executedTransforms: ExecutedTransform[]) => void
@@ -28,14 +29,20 @@ interface FieldType {
   valueAsserter?: (query: Query, expected: any) => Query
 }
 
+type LabelName = string | RegExp
+type LabelDefinition = <Q extends Query>(query: Q, name: LabelName) => Q
+type FieldDefinition = <Q extends Query>(query: Q, ...any) => Q
+
 interface Definitions {
   fieldTypes: FieldType[]
-  button: ((query: Query, name: string) => Query)[]
-  label: ((query: Query, name: string) => Query)[]
-  fields: {}
+  button: LabelDefinition[]
+  label: ({name: string, definition: LabelDefinition})[]
+  fields: {
+    [key: string]: FieldDefinition
+  }
 }
 
-class Query implements PromiseLike<any> {
+export class Query implements PromiseLike<any> {
   private _transforms: Transform[]
   private _options: Options
   private _input: any
@@ -84,12 +91,12 @@ class Query implements PromiseLike<any> {
               return query
                 .is('select')
                 .expectOneElement('expected to be select element')
-                .css('option')
+                .findCss('option')
                 .filter(o => {
                   return o.value === value || query._dom.elementInnerText(o) === value
                 }, `option with text or value ${JSON.stringify(value)}`)
                 .expectOneElement(`expected one option element with text or value ${JSON.stringify(value)}`)
-                .transform(function ([option]) {
+                .transform(([option]) => {
                   return () => {
                     const selectElement = option.parentNode
                     debug('select', selectElement)
@@ -105,14 +112,14 @@ class Query implements PromiseLike<any> {
                   return () => {
                     const value = select.value
 
-                    if (testEqual(value, expected)) {
+                    if (match(expected, value).isMatch) {
                       return
                     }
 
                     const selectedOption = select.options[select.selectedIndex]
                     if (selectedOption) {
                       const actual = query._dom.elementInnerText(selectedOption)
-                      if (testEqual(actual, expected)) {
+                      if (match(expected, actual).isMatch) {
                         return
                       } else {
                         this.error('expected ' + inspect(actual) + ' or ' + inspect(value) + ' to equal ' + inspect(expected), { actual, expected })
@@ -163,40 +170,52 @@ class Query implements PromiseLike<any> {
           },
         ],
         button: [
-          (query: Query, name: string): Query => {
-            return query.css('button, input[type=button], a').containing(name)
+          (query, name) => {
+            return query.findCss('button, input[type=button], a').containing(name)
           },
         ],
         label: [
-          (query, name) => {
-            return query.find('label').containing(name).find('input')
+          {
+            name: 'label',
+            definition: (query, name) => {
+              return query.find('label').containing(name).find('input')
+            },
           },
-          (query, name) => {
-            return query.find('label[for]').containing(name).map(label => {
-              const id = label.getAttribute('for')
-              return label.ownerDocument.getElementById(id)
-            }, 'for attribute').filter(Boolean)
+          {
+            name: 'label-for',
+            definition: (query, name) => {
+              return query.find('label[for]').containing(name).map(label => {
+                const id = label.getAttribute('for')
+                return label.ownerDocument.getElementById(id)
+              }, 'for attribute').filter(Boolean)
+            },
           },
-          (query, name) => {
-            return query.find('[aria-label]').filter(element => {
-              const label = element.getAttribute('aria-label')
-              return label === name
-            }, 'aria-label')
+          {
+            name: 'aria-label',
+            definition: (query, name) => {
+              return query.find('[aria-label]').filter(element => {
+                const label = element.getAttribute('aria-label')
+                return label === name
+              }, 'aria-label')
+            },
           },
-          (query, name) => {
-            return query.find('[aria-labelledby]').filter(element => {
-              const id = element.getAttribute('aria-labelledby')
-              const labelElement = element.ownerDocument.getElementById(id)
-              if (labelElement) {
-                return query._dom.elementInnerText(labelElement) === name
-              }
-            }, 'aria-label')
+          {
+            name: 'aria-labelledby',
+            definition: (query, name) => {
+              return query.find('[aria-labelledby]').filter(element => {
+                const id = element.getAttribute('aria-labelledby')
+                const labelElement = element.ownerDocument.getElementById(id)
+                if (labelElement) {
+                  return query._dom.elementInnerText(labelElement) === name
+                }
+              }, 'aria-label')
+            },
           },
         ],
         fields: {
-          Label: (q, value) => q.label(value),
-          Button: (q, value) => q.button(value),
-          Css: (q, value) => q.css(value),
+          Label: (q, value) => q.findLabel(value),
+          Button: (q, value) => q.findButton(value),
+          Css: (q, value) => q.findCss(value),
         },
       }
     }
@@ -233,7 +252,7 @@ class Query implements PromiseLike<any> {
     })
   }
 
-  public button (name: string): this {
+  public findButton (name: LabelName): this {
     return this.concat(this._options.definitions.button.map(definition => {
       return (q: Query): Query => {
         return definition(q, name)
@@ -241,20 +260,32 @@ class Query implements PromiseLike<any> {
     }))
   }
 
-  public label (name: string): this {
-    return this.concat(this._options.definitions.label.map(definition => {
+  public findLabel (name: string): this {
+    return this.concat(this._options.definitions.label.map(({definition}) => {
       return (q: Query): Query => {
         return definition(q, name)
       }
     }))
   }
 
-  public defineButton (definition: (q: Query, name?: string) => Query): void {
+  public addButtonDefinition (definition: LabelDefinition): void {
     this._options.definitions.button.push(definition)
   }
 
-  public defineLabel (definition: (q: Query, name?: string) => Query): void {
-    this._options.definitions.label.push(definition)
+  public addLabelDefinition (name: string | LabelDefinition, definition?: LabelDefinition): void {
+    if (!definition) {
+      definition = name as LabelDefinition
+      name = undefined
+    }
+
+    this._options.definitions.label.push({name: name as string, definition})
+  }
+
+  public removeLabelDefinition (name: string): void {
+    const index = this._options.definitions.label.findIndex(def => def.name === name)
+    if (index >= 0) {
+      this._options.definitions.label.splice(index, 1)
+    }
   }
 
   public result (): any {
@@ -440,15 +471,15 @@ class Query implements PromiseLike<any> {
     var retry = retryFromOptions(this._options)
     var originalStack = new Error().stack
 
-    var promise = Promise.resolve(retry(function () {
+    var promise = Promise.resolve(retry(() => {
       return self.execute().value
-    })).catch(function (error) {
+    })).catch(error => {
       if (error instanceof BrowserMonkeyAssertionError) {
         error.stack = originalStack
 
         if (debug.enabled) {
           debug('assertion error', error.message)
-          error.executedTransforms.transforms.forEach(function (transform) {
+          error.executedTransforms.transforms.forEach(transform => {
             transform.print()
           })
         }
@@ -485,7 +516,7 @@ class Query implements PromiseLike<any> {
     }
 
     Component.prototype = new (this.constructor as any)()
-    Object.keys(methods).forEach(function (method) {
+    Object.keys(methods).forEach(method => {
       var descriptor = Object.getOwnPropertyDescriptor(methods, method)
       if (descriptor) {
         Object.defineProperty(Component.prototype, method, descriptor)
@@ -537,7 +568,7 @@ class Query implements PromiseLike<any> {
   }
 
   public expectSomeElements (message?: string): this {
-    return this.expect(function (elements) {
+    return this.expect(elements => {
       expectElements(elements)
 
       if (elements.length < 1) {
@@ -553,8 +584,8 @@ class Query implements PromiseLike<any> {
     })
   }
 
-  public clickButton (name: string): this {
-    return this.button(name).click()
+  public clickButton (name: LabelName): this {
+    return this.findButton(name).click()
   }
 
   public submit (selector?: string): this {
@@ -607,32 +638,38 @@ class Query implements PromiseLike<any> {
     }, 'enabled')
   }
 
-  public set (selector, value): this {
-    const model = value === undefined
-      ? selector
-      : {
-        [selector]: value
-      }
-
-    return this.action(function (elements) {
+  public set (model: any): this {
+    return this.action(elements => {
       const setters = []
 
       const actions = {
-        arrayLengthError: (query, actualLength, expectedLength) => {
+        arrayLengthError: (query, actualLength, expectedLength): void => {
           query.error('expected ' + expectedLength + ' ' + pluralize('elements', expectedLength) + ', found ' + actualLength)
         },
 
-        value: (query, model) => {
+        value: (query, model): ActualExpected => {
           var setter = query.setter(model).result()
           setters.push(() => setter())
+          return {
+            actual: undefined,
+            expected: undefined,
+          }
         },
 
-        expectOne: (query) => {
+        expectOne: (query): ActualExpected => {
           query.expectOneElement().result()
+          return {
+            actual: {},
+            expected: {},
+          }
         },
 
-        function: (query, model) => {
+        function: (query, model): ActualExpected => {
           setters.push(() => this.runModelFunction(model, query))
+          return {
+            actual: undefined,
+            expected: undefined,
+          }
         }
       }
 
@@ -670,25 +707,28 @@ class Query implements PromiseLike<any> {
       let isError = false
 
       const actions = {
-        arrayLengthError: () => {
+        arrayLengthError: (): void => {
           isError = true
         },
 
-        expectOne: (query) => {
+        expectOne: (query): ActualExpected => {
           try {
             query.expectOneElement().result()
-            return {}
+            return {actual: {}, expected: {}}
           } catch (e) {
             if (e instanceof BrowserMonkeyAssertionError) {
               isError = true
-              return 'Error: ' + e.message
+              return {
+                actual: 'Error: ' + e.message,
+                expected: {},
+              }
             } else {
               throw e
             }
           }
         },
 
-        value: (query, model) => {
+        value: (query, model): ActualExpected => {
           let valueAsserter
 
           try {
@@ -696,7 +736,10 @@ class Query implements PromiseLike<any> {
           } catch (e) {
             if (e instanceof BrowserMonkeyAssertionError) {
               isError = true
-              return 'Error: ' + e.message
+              return {
+                actual: e,
+                expected: model,
+              }
             } else {
               throw e
             }
@@ -707,23 +750,35 @@ class Query implements PromiseLike<any> {
           } catch (e) {
             if (e instanceof BrowserMonkeyAssertionError) {
               isError = true
-              return e.actual === undefined ? 'Error: ' + e.message : e.actual
+              return {
+                actual: e.actual,
+                expected: e.expected,
+              }
             } else {
               throw e
             }
           }
 
-          return model
+          return {
+            actual: model,
+            expected: model,
+          }
         },
 
-        function: (query, model) => {
+        function: (query, model): ActualExpected => {
           try {
             this.runModelFunction(model, query)
-            return model
+            return {
+              actual: model,
+              expected: model,
+            }
           } catch (e) {
             if (e instanceof BrowserMonkeyAssertionError) {
               isError = true
-              return 'Error: ' + e.message
+              return {
+                actual: e.actual,
+                expected: e.expected,
+              }
             } else {
               throw e
             }
@@ -735,23 +790,23 @@ class Query implements PromiseLike<any> {
       const result = mapModel(clone, model, actions)
 
       if (isError) {
-        this.error('could not match', {expected: model, actual: result})
+        this.error('could not match', {expected: result.expected, actual: result.actual})
       }
     })
   }
 
   public index (index: number): this {
-    return this.transform(function (elements) {
+    return this.transform(elements => {
       return new ExecutedSimpleTransform([elements[index]], 'index ' + index)
     })
   }
 
-  public define (name, finder): this {
-    if (typeof finder === 'function') {
-      this._options.definitions.fields[name] = finder
-    } else if (typeof finder === 'string') {
-      this._options.definitions.fields[name] = q => q.find(finder)
-    } else if (name.constructor === Object && finder === undefined) {
+  public define (name: string, fieldDefinition): this {
+    if (typeof fieldDefinition === 'function') {
+      this._options.definitions.fields[name] = fieldDefinition
+    } else if (typeof fieldDefinition === 'string') {
+      this._options.definitions.fields[name] = q => q.find(fieldDefinition)
+    } else if (name.constructor === Object && fieldDefinition === undefined) {
       Object.keys(name).forEach(key => this.define(key, name[key]))
     }
 
@@ -770,7 +825,7 @@ class Query implements PromiseLike<any> {
         ? def.valueAsserter(query, expected)
         : def.value(query).transform(actual => {
           return () => {
-            if (!testEqual(actual, expected)) {
+            if (!match(actual, expected).isMatch) {
               this.error('expected ' + inspect(actual) + ' to equal ' + inspect(expected), { actual, expected })
             }
           }
@@ -785,21 +840,31 @@ class Query implements PromiseLike<any> {
   public containing (model: any): this {
     return this.transform(elements => {
       const actions = {
-        arrayLengthError: (query, actualLength, expectedLength) => {
+        arrayLengthError: (query, actualLength, expectedLength): void => {
           query.error('expected ' + expectedLength + ' ' + pluralize('elements', expectedLength) + ', found ' + actualLength)
         },
 
-        value: (query, value) => {
+        value: (query, value): ActualExpected => {
           const valueAsserter = query.valueAsserter(value).result()
           valueAsserter()
+
+          return {
+            actual: value,
+            expected: value
+          }
         },
 
-        expectOne: (query) => {
+        expectOne: (query): ActualExpected => {
           query.expectOne().execute()
+          return {
+            actual: {},
+            expected: {},
+          }
         },
 
-        function: (query, fn) => {
-          return this.runModelFunction(fn, query)
+        function: (query, fn): ActualExpected => {
+          this.runModelFunction(fn, query)
+          return {actual: fn, expected: fn}
         }
       }
 
@@ -809,7 +874,7 @@ class Query implements PromiseLike<any> {
       const matchingElements = elements.filter(element => {
         try {
           const clone = this.resolve([element])
-          lastSuccess = mapModel(clone, model, actions)
+          lastSuccess = new ExecutedSimpleTransform(mapModel(clone, model, actions))
           return true
         } catch (e) {
           if (e instanceof BrowserMonkeyAssertionError) {
@@ -831,7 +896,7 @@ class Query implements PromiseLike<any> {
     }))
   }
 
-  public css (selector: string): this {
+  public findCss (selector: string): this {
     const findElements = this.transform(elements => {
       expectElements(elements)
       return new ExecutedSimpleTransform(flatten(elements.map(element => {
@@ -863,7 +928,7 @@ class Query implements PromiseLike<any> {
       }
     }
 
-    return this.css(selector)
+    return this.findCss(selector)
   }
 
   public is (selector: string): this {
@@ -877,7 +942,7 @@ class Query implements PromiseLike<any> {
     if (result instanceof Query) {
       return result.execute()
     } else if (result && typeof result.then === 'function') {
-      query.error('model functions must not be asynchronous')
+      throw new Error('model functions must not be asynchronous')
     }
   }
 }
@@ -948,11 +1013,13 @@ function runQueryCreator (queryCreator: (q: Query) => Query, query: Query): Quer
 
 const missing = {}
 
+interface ActualExpected {actual: any, expected: any}
+
 interface Actions {
   arrayLengthError (q: Query, actual: number, expected: number): void
-  function (q: Query, model: any): any
-  value (q: Query, model: any): any
-  expectOne (q: Query): any
+  function (q: Query, model: any): ActualExpected
+  value (q: Query, model: any): ActualExpected
+  expectOne (q: Query): ActualExpected
 }
 
 function spliceModelArrayFromActual (model, query: Query, actions: Actions): any[] {
@@ -977,24 +1044,49 @@ function spliceModelArrayFromActual (model, query: Query, actions: Actions): any
   }
 }
 
+function arrayAssign (a: any[], b: any[]): any[] {
+  return a.map((itemA, index) => {
+    return index < b.length ? b[index] : itemA
+  })
+}
+
 function mapModel (query: Query, model: any, actions: Actions): any {
   function map (query: Query, model: any): any {
     if (model === missing) {
-      return query.result().map(e => e.innerText).join()
+      return {
+        actual: query.result().map(e => e.innerText).join(),
+      }
     } else if (model instanceof Array) {
-      return spliceModelArrayFromActual(model, query, actions).map((item, index) => {
+      const items = spliceModelArrayFromActual(model, query, actions).map((item, index) => {
         return map(query.index(index), item)
       })
+
+      return {
+        actual: items.map(i => i.actual),
+        expected: arrayAssign(model, items.map(i => i.expected)),
+      }
     } else if (model.constructor === Object) {
       const lengthQuery = query.expectOneElement()
 
       const keys = Object.keys(model)
 
       if (keys.length) {
-        return object(keys.map(selector => {
+        const properties = keys.map(selector => {
           const value = model[selector]
-          return [selector, map(lengthQuery.find(selector), value)]
-        }))
+
+          const {actual, expected} = map(lengthQuery.find(selector), value)
+
+          return [
+            selector,
+            actual,
+            expected,
+          ]
+        })
+
+        return {
+          actual: object(properties.map(([key, actual]) => [key, actual])),
+          expected: object(properties.map(([key, , expected]) => [key, expected])),
+        }
       } else {
         return actions.expectOne(query)
       }
@@ -1008,15 +1100,9 @@ function mapModel (query: Query, model: any, actions: Actions): any {
   return map(query, model)
 }
 
-function testEqual (actual: any, expected: any): boolean {
-  return expected instanceof RegExp ? expected.test(actual) : actual === expected
-}
-
 interface Options {
-  visibleOnly: boolean
-  timeout: number
-  interval: number
-  definitions: Definitions
+  visibleOnly?: boolean
+  timeout?: number
+  interval?: number
+  definitions?: Definitions
 }
-
-module.exports = Query

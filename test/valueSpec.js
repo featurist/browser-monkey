@@ -1,6 +1,6 @@
 var expect = require('chai').expect
 var describeAssemblies = require('./describeAssemblies')
-const DomAssembly = require('./assemblies/DomAssembly')
+const {DomAssembly} = require('./assemblies/DomAssembly')
 
 describe('value', function () {
   describeAssemblies([DomAssembly], Assembly => {

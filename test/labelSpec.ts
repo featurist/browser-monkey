@@ -1,18 +1,19 @@
 const describeAssemblies = require('./describeAssemblies')
-const DomAssembly = require('./assemblies/DomAssembly')
+const {DomAssembly} = require('./assemblies/DomAssembly')
 const {expect} = require('chai')
+import {Query} from '../lib/Query'
 
 describe('labels', function () {
   describeAssemblies([DomAssembly], function (Assembly) {
     var assembly
-    var browser
+    var browser: Query
 
     beforeEach(function () {
       assembly = new Assembly()
       browser = assembly.browserMonkey()
     })
 
-    function assertFoundElementByLabel(html, label) {
+    function assertFoundElementByLabel(html, label): void {
       assembly.insertHtml(html)
 
       const expected = assembly.find('.result')
@@ -23,7 +24,7 @@ describe('labels', function () {
       expect(found).to.equal(expected)
     }
 
-    function assertNothingFound(html, label) {
+    function assertNothingFound(html, label): void {
       assembly.insertHtml(html)
 
       browser.find(label).expectNoElements().result()
@@ -63,6 +64,30 @@ describe('labels', function () {
             <input id="my-checkbox" type=checkbox class="result" />
           `,
           'Label("Feature Enabled")'
+        )
+      })
+
+      it('fails if not exact name', async () => {
+        assertNothingFound(
+          `
+            <label for="wrong-id">
+              Feature Enabled
+            </label>
+            <input id="my-checkbox" type=checkbox class="result" />
+          `,
+          'Label("Feature")'
+        )
+      })
+
+      it('can be found by regex', async () => {
+        assertFoundElementByLabel(
+          `
+            <label for="my-checkbox">
+              Feature Enabled
+            </label>
+            <input id="my-checkbox" type=checkbox class="result" />
+          `,
+          'Label(/Feature/)'
         )
       })
     })
@@ -138,9 +163,9 @@ describe('labels', function () {
       expect(found).to.eql(expected)
     })
 
-    describe('defineLabel', () => {
+    describe('label definitions', () => {
       it('can define a new way of finding labels', () => {
-        browser.defineLabel((query, label) => query.css(`[data-label=${JSON.stringify(label)}]`))
+        browser.addLabelDefinition((query, label) => query.findCss(`[data-label=${JSON.stringify(label)}]`))
 
         assertFoundElementByLabel(
           `
@@ -148,6 +173,21 @@ describe('labels', function () {
           `,
           'Label("Search")'
         )
+      })
+
+      it('can add and remove a label definition by name', async () => {
+        browser.addLabelDefinition('data-label', (query, label) => query.findCss(`[data-label=${JSON.stringify(label)}]`))
+
+        assertFoundElementByLabel(
+          `
+            <div class="result" data-label="Search"/>
+          `,
+          'Label("Search")'
+        )
+
+        browser.removeLabelDefinition('data-label')
+
+        await browser.find('Label("Search")').expectNoElements().result()
       })
     })
   })

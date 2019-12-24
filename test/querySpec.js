@@ -1,6 +1,6 @@
 var describeAssemblies = require('./describeAssemblies')
 const {expect} = require('chai')
-const DomAssembly = require('./assemblies/DomAssembly')
+const {DomAssembly} = require('./assemblies/DomAssembly')
 
 describe('query', () => {
   describeAssemblies([DomAssembly], Assembly => {

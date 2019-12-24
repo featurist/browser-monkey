@@ -1,6 +1,6 @@
 var demand = require('must')
 var describeAssemblies = require('./describeAssemblies')
-const DomAssembly = require('./assemblies/DomAssembly')
+const {DomAssembly} = require('./assemblies/DomAssembly')
 
 describe('scope', function () {
   describeAssemblies([DomAssembly], Assembly => {
