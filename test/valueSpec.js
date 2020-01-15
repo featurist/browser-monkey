@@ -9,7 +9,7 @@ describe('value', function () {
 
     beforeEach(function () {
       assembly = new Assembly()
-      browser = assembly.browserMonkey().scope(document.body)
+      browser = assembly.browserMonkey().withScope(document.body)
     })
 
     function assertValue (html, expectedValue) {

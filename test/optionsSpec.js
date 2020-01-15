@@ -14,8 +14,7 @@ describe('options', function () {
 
     it('can overide default timeout', function () {
       var defaultTimeout = browser.options().timeout
-      const timeoutBrowser = browser.clone()
-      timeoutBrowser.options({ timeout: 1 })
+      const timeoutBrowser = browser.withOptions({ timeout: 1 })
       var start = new Date()
 
       return timeoutBrowser.find('.doesnt-exist').shouldExist().catch(function () {

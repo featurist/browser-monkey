@@ -1,11 +1,12 @@
 var describeAssemblies = require('./describeAssemblies')
 const {expect} = require('chai')
-const {DomAssembly} = require('./assemblies/DomAssembly')
+import {DomAssembly} from './assemblies/DomAssembly'
+import {Query} from '../lib/Query'
 
 describe('query', () => {
   describeAssemblies([DomAssembly], Assembly => {
-    let assembly
-    let browserMonkey
+    let assembly: DomAssembly
+    let browserMonkey: Query
 
     beforeEach(() => {
       assembly = new Assembly()
@@ -27,8 +28,7 @@ describe('query', () => {
 
     describe('options', () => {
       it('returns a new Browser Monkey object without modifying the current one', () => {
-        browserMonkey.options({ a: 'a' })
-        expect(browserMonkey._options.a).to.equal('a')
+        expect(browserMonkey.withOptions({a: 'a'}).options().a).to.equal('a')
       })
     })
 
@@ -43,31 +43,26 @@ describe('query', () => {
       })
 
       it('passes through the options', () => {
-        browserMonkey.options({ a: 'a' })
-
         const monkey = browserMonkey
-          .component({
-            aMethod: function () { return 'aMethod' }
-          })
+          .withOptions({ a: 'a' })
+          .find('asdf')
 
-        expect(monkey._options.a).to.equal('a')
+        expect(monkey.options().a).to.equal('a')
       })
 
       it('passes through the input', () => {
-        browserMonkey.input('a')
-
         const monkey = browserMonkey
+          .withInput('a')
           .component({
             aMethod: function () { return 'aMethod' }
           })
 
-        expect(monkey._input).to.equal('a')
+        expect(monkey.input()).to.equal('a')
       })
 
       it('passes through the maps', async () => {
-        browserMonkey.input(1)
-
         const monkey = browserMonkey
+          .withInput(1)
           .transform(x => x + 1)
           .component({
             aMethod: function () { return 'aMethod' }
@@ -268,21 +263,26 @@ describe('query', () => {
 
     describe('input', () => {
       it('input sets the input used in transform', async () => {
-        browserMonkey.input('a')
-
-        const monkey = browserMonkey
+        const query = browserMonkey
+          .withInput('a')
           .transform(x => `input: ${x}`)
 
-        expect(monkey.result()).to.eql('input: a')
+        expect(query.result()).to.eql('input: a')
       })
     })
 
     describe('scope', () => {
       it('when scope is one element, sets the input to an array of one', () => {
-        const monkey = browserMonkey
-          .scope(document.body)
+        const query = browserMonkey
+          .withScope(document.body)
 
-        expect(monkey._input).to.eql([document.body])
+        expect(query.input()).to.eql([document.body])
+      })
+
+      it('scope can be passed in to constructor', () => {
+        const query = new Query(document.body)
+
+        expect(query.input()).to.eql([document.body])
       })
     })
 

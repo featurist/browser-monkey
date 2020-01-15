@@ -51,7 +51,7 @@ export class Query implements PromiseLike<any> {
   private _hasExpectation: boolean
   private _dom: Dom
 
-  public constructor () {
+  public constructor (scope?: HTMLElement) {
     this._hasExpectation = false
     this._transforms = []
     this._options = {
@@ -220,7 +220,12 @@ export class Query implements PromiseLike<any> {
       }
     }
     this._dom = new Dom()
-    this._input = undefined
+
+    if (scope) {
+      return this.withScope(scope)
+    } else {
+      this._input = undefined
+    }
   }
 
   public get [Symbol.toStringTag](): string {
@@ -450,12 +455,12 @@ export class Query implements PromiseLike<any> {
     return transformed
   }
 
-  public options (options: Options): any {
-    if (options) {
-      extend(this._options, options)
-    } else {
-      return this._options
-    }
+  public withOptions (options: Options): any {
+    return this.clone(q => extend(q._options, options))
+  }
+
+  public options (): any {
+    return this._options
   }
 
   private assertHasActionOrExpectation (): void {
@@ -464,7 +469,7 @@ export class Query implements PromiseLike<any> {
     }
   }
 
-  public then (resolve: (r) => any, reject: (e) => any): Promise<any> {
+  public then (resolve?: (r) => any, reject?: (e) => any): Promise<any> {
     this.assertHasActionOrExpectation()
 
     var self = this
@@ -504,8 +509,12 @@ export class Query implements PromiseLike<any> {
     return clone
   }
 
-  public input (value): void {
-    this._input = value
+  public withInput (value): this {
+    return this.clone(q => q._input = value)
+  }
+
+  public input (): this {
+    return this._input
   }
 
   public component (methods): this {
@@ -602,9 +611,8 @@ export class Query implements PromiseLike<any> {
       })
   }
 
-  public scope (element: HTMLElement): this {
-    var query = this.clone()
-    query.input([element])
+  public withScope (element: HTMLElement): this {
+    var query = this.withInput([element])
 
     if (isIframe(element)) {
       return query.iframeContent()

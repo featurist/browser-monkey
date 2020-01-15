@@ -38,7 +38,7 @@ export class DomAssembly {
 
     const browserMonkey = createBrowserMonkey(this._div)
 
-    browserMonkey.options({
+    return browserMonkey.withOptions({
       retry: (fn) => {
         if (this._normalRetry) {
           return trytryagain(fn)
@@ -58,8 +58,6 @@ export class DomAssembly {
         }
       }
     })
-
-    return browserMonkey
   }
 
   public tick (): void {
@@ -123,7 +121,7 @@ export class DomAssembly {
     })
   }
 
-  public async eventuallyInsertHtml (html: string, selector: string): Promise<HTMLElement> {
+  public async eventuallyInsertHtml (html: string, selector?: string): Promise<HTMLElement> {
     return await this.eventually(() => {
       var div = selector
         ? $(this._div).find(selector).get(0)

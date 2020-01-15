@@ -82,7 +82,7 @@ describe('find', function () {
         iframe.width = 700
         iframe.height = 1000
         assembly.insertHtml(iframe)
-        var iframeScope = browser.scope(iframe)
+        var iframeScope = browser.withScope(iframe)
 
         assembly.useNormalRetry()
 
@@ -104,7 +104,7 @@ describe('find', function () {
         assembly.useNormalRetry()
 
         return browser.find('iframe').expectOneElement().then(function ([iframe]) {
-          return browser.scope(iframe).find('h1', { text: 'Page 2' }).shouldExist()
+          return browser.withScope(iframe).find('h1', { text: 'Page 2' }).shouldExist()
         })
       }, { vdom: false })
     }
@@ -119,8 +119,7 @@ describe('find', function () {
       it('should find an element that is visually hidden when visibleOnly = false', function () {
         assembly.insertHtml('<div class="element">hello <span style="display:none;">world</span></div>')
 
-        browser.options({ visibleOnly: false })
-        return browser.find('.element > span').shouldExist()
+        return browser.withOptions({ visibleOnly: false }).find('.element > span').shouldExist()
       })
 
       it('should find elements that are visually hidden because of how html renders them', function () {
