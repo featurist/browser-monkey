@@ -21,7 +21,7 @@ function testMount (appType, app, monkeyBuilder) {
       page = monkeyBuilder(app)
     })
 
-    afterEach(() => page.options().mount.stop())
+    afterEach(() => page.getOptions().mount.stop())
 
     it('loads some data', () => {
       return page.find('.message').shouldContain('default').then(() => {
@@ -37,7 +37,7 @@ function testMount (appType, app, monkeyBuilder) {
     })
 
     it('exposes the app', () => {
-      expect(page.options().app).to.equal(app)
+      expect(page.getOptions().app).to.equal(app)
     })
   })
 }

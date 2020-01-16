@@ -51,7 +51,7 @@ export class Query implements PromiseLike<any> {
   private _hasExpectation: boolean
   private _dom: Dom
 
-  public constructor (scope?: HTMLElement) {
+  public constructor (input: HTMLElement = document.body) {
     this._hasExpectation = false
     this._transforms = []
     this._options = {
@@ -171,7 +171,7 @@ export class Query implements PromiseLike<any> {
         ],
         button: [
           (query, name) => {
-            return query.findCss('button, input[type=button], a').containing(name)
+            return query.findCss('button, input[type=button], input[type=submit], input[type=reset], a').containing(name)
           },
         ],
         label: [
@@ -221,11 +221,7 @@ export class Query implements PromiseLike<any> {
     }
     this._dom = new Dom()
 
-    if (scope) {
-      return this.withScope(scope)
-    } else {
-      this._input = undefined
-    }
+    this._input = [input]
   }
 
   public get [Symbol.toStringTag](): string {
@@ -273,24 +269,28 @@ export class Query implements PromiseLike<any> {
     }))
   }
 
-  public addButtonDefinition (definition: LabelDefinition): void {
-    this._options.definitions.button.push(definition)
+  public defineButtonType (definition: LabelDefinition): this {
+    return this.clone(q => q._options.definitions.button.push(definition))
   }
 
-  public addLabelDefinition (name: string | LabelDefinition, definition?: LabelDefinition): void {
+  public defineLabelType (name: string | LabelDefinition, definition?: LabelDefinition): this {
     if (!definition) {
       definition = name as LabelDefinition
       name = undefined
     }
 
-    this._options.definitions.label.push({name: name as string, definition})
+    return this.clone(q => q._options.definitions.label.push({name: name as string, definition}))
   }
 
-  public removeLabelDefinition (name: string): void {
-    const index = this._options.definitions.label.findIndex(def => def.name === name)
-    if (index >= 0) {
-      this._options.definitions.label.splice(index, 1)
-    }
+  public undefineLabelType (name: string): this {
+    return this.clone(q => {
+      const index = q._options.definitions.label.findIndex(def => def.name === name)
+      if (index >= 0) {
+        q._options.definitions.label.splice(index, 1)
+      } else {
+        throw new Error(`label definition ${JSON.stringify(name)} doesn't exist`)
+      }
+    })
   }
 
   public result (): any {
@@ -455,11 +455,11 @@ export class Query implements PromiseLike<any> {
     return transformed
   }
 
-  public withOptions (options: Options): any {
+  public options (options: Options): any {
     return this.clone(q => extend(q._options, options))
   }
 
-  public options (): any {
+  public getOptions (): any {
     return this._options
   }
 
@@ -509,11 +509,11 @@ export class Query implements PromiseLike<any> {
     return clone
   }
 
-  public withInput (value): this {
+  public input (value): this {
     return this.clone(q => q._input = value)
   }
 
-  public input (): this {
+  public getInput (): this {
     return this._input
   }
 
@@ -587,7 +587,7 @@ export class Query implements PromiseLike<any> {
   }
 
   public click (selector?: string): this {
-    return (selector ? this.find(selector) : this).expectOneElement().action(([element]) => {
+    return this.optionalSelector(selector).expectOneElement().action(([element]) => {
       debug('click', element)
       this._dom.click(element)
     })
@@ -598,7 +598,7 @@ export class Query implements PromiseLike<any> {
   }
 
   public submit (selector?: string): this {
-    return (selector ? this.find(selector) : this)
+    return this.optionalSelector(selector)
       .expectOneElement()
       .expect(([element]) => {
         if (!element.form) {
@@ -611,21 +611,13 @@ export class Query implements PromiseLike<any> {
       })
   }
 
-  public withScope (element: HTMLElement): this {
-    var query = this.withInput([element])
-
-    if (isIframe(element)) {
-      return query.iframeContent()
-    } else if (isHTMLElement(element)) {
-      return query
-    } else {
-      throw new Error('scope() expects HTML element')
-    }
+  public scope (element: HTMLElement): this {
+    return this.input([element])
   }
 
-  public iframeContent (): this {
-    return this.transform(elements => {
-      return elements.map(element => {
+  public iframe (selector?: string): this {
+    return this.optionalSelector(selector).transform(elements => {
+      return new ExecutedSimpleTransform(elements.map(element => {
         if (isIframe(element)) {
           if (element.contentDocument && element.contentDocument.readyState === 'complete') {
             return element.contentDocument.body
@@ -635,7 +627,7 @@ export class Query implements PromiseLike<any> {
         } else {
           throw new BrowserMonkeyAssertionError('not iframe')
         }
-      })
+      }), 'iframe.contentDocument')
     })
   }
 
@@ -952,6 +944,10 @@ export class Query implements PromiseLike<any> {
     } else if (result && typeof result.then === 'function') {
       throw new Error('model functions must not be asynchronous')
     }
+  }
+
+  private optionalSelector (selector?: string): this {
+    return selector ? this.find(selector) : this
   }
 }
 

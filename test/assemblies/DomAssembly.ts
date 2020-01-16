@@ -1,7 +1,6 @@
 /* global location */
 
 const createTestDiv = require('../../lib/createTestDiv')
-const createBrowserMonkey = require('../../create')
 const $ = require('jquery')
 const pathUtils = require('path')
 const trytryagain = require('trytryagain')
@@ -36,9 +35,9 @@ export class DomAssembly {
   public browserMonkey (): Query {
     this.div()
 
-    const browserMonkey = createBrowserMonkey(this._div)
+    const browserMonkey = new Query(this._div)
 
-    return browserMonkey.withOptions({
+    return browserMonkey.options({
       retry: (fn) => {
         if (this._normalRetry) {
           return trytryagain(fn)

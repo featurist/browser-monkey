@@ -57,20 +57,22 @@ describe('buttons', function () {
 
     describe('defining buttons', () => {
       it('can define a new button', () => {
-        const button = assembly.insertHtml('<div class="button" value="Login">Login</div>')
+        const button = assembly.insertHtml('<div class="button">Login</div>')
+        assembly.insertHtml('<div class="button">Another</div>')
 
-        browser.addButtonDefinition((monkey, name) => monkey.find('div.button', { exactText: name }))
+        const query = browser.defineButtonType((query, name) => query.find('div.button').containing(name))
 
-        const elements = browser.findButton('Login').result()
+        const elements = query.findButton('Login').result()
         demand(elements).to.eql([button])
       })
 
       it('can define a new button and still use original button definitions', () => {
         const button = assembly.insertHtml('<button>Login</button>')
+        assembly.insertHtml('<button>Another</button>')
 
-        browser.addButtonDefinition((monkey, name) => monkey.find('div.button', { exactText: name }))
+        const query = browser.defineButtonType((query, name) => query.find('div.button').containing(name))
 
-        const elements = browser.findButton('Login').result()
+        const elements = query.findButton('Login').result()
         demand(elements).to.eql([button])
       })
     })
@@ -99,14 +101,14 @@ describe('buttons', function () {
       })
 
       it('can click a defined button', async () => {
-        browser.addButtonDefinition((monkey, name) => monkey.find('div.button').containing(name))
-        await assertCanClickButton('<div class="target button">Login</div>', () => browser.click('Button("Login")'))
+        const query = browser.defineButtonType((query, name) => query.find('div.button').containing(name))
+        await assertCanClickButton('<div class="target button">Login</div>', () => query.click('Button("Login")'))
       })
 
       it('throws if the button cannot be found to click', async () => {
-        browser.addButtonDefinition((monkey, name) => monkey.find('div.button').containing(name))
+        const query = browser.defineButtonType((query, name) => query.find('div.button').containing(name))
         assembly.insertHtml('<button class="target">Login</button>')
-        await assembly.assertRejection(browser.clickButton('Logout'), "expected just one element, found 0 (found: concat(path(find('button, input[type=button], a') [1], containing(...expected 'Login' to equal 'Logout') [0]), path(find('div.button') [0], containing() [0])) [0])")
+        await assembly.assertRejection(query.clickButton('Logout'), "expected just one element, found 0")
       })
     })
   })

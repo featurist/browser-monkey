@@ -1,1 +1,3 @@
-module.exports = require('./create')()
+import {Query} from './lib/Query'
+
+module.exports = Query

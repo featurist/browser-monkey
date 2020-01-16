@@ -10,10 +10,10 @@ describe('events', function () {
 
     beforeEach(function () {
       assembly = new Assembly()
-      browser = assembly.browserMonkey().v2()
+      browser = assembly.browserMonkey()
     })
 
-    it('typeIn element should fire change', function () {
+    it('setting text input sends change event', function () {
       var firedEvents = []
 
       const input = assembly.insertHtml('<input type="text" class="input">')
@@ -22,14 +22,14 @@ describe('events', function () {
         firedEvents.push('change')
       })
 
-      return browser.find('.input').typeIn('first').then(function () {
+      return browser.find('.input').set('first').then(function () {
         demand(firedEvents).to.eql([
           'change'
         ])
       })
     })
 
-    it('typeIn element should fire input on each character', function () {
+    it('setting text input sends only one input event', function () {
       var firedEvents = []
 
       const input = assembly.insertHtml('<input type="text" class="input">')
@@ -37,11 +37,9 @@ describe('events', function () {
         firedEvents.push('input')
       })
 
-      return browser.find('.input').typeIn('123').then(function () {
+      return browser.find('.input').set('123').then(function () {
         demand(firedEvents).to.eql([
           'input',
-          'input',
-          'input'
         ])
       })
     })
@@ -58,15 +56,15 @@ describe('events', function () {
       const input = assembly.insertHtml('<input type="text" class="input" />')
       assembly.insertHtml('<input type="text" class="change" />')
 
-      input.addEventListener('blur', function (e) {
+      input.addEventListener('blur', function () {
         firedEvents.push('blur')
       })
       input.addEventListener('change', function () {
         firedEvents.push('change')
       })
 
-      await browser.find('.input').typeIn('first')
-      await browser.find('.change').typeIn('second')
+      await browser.find('.input').set('first')
+      await browser.find('.change').set('second')
       await retry(() => {
         demand(firedEvents).to.eql([
           'change',
@@ -83,11 +81,11 @@ describe('events', function () {
       const input = assembly.insertHtml('<input type="text" class="input" />')
       assembly.insertHtml('<button>button</button>')
 
-      input.addEventListener('blur', function (e) {
+      input.addEventListener('blur', function () {
         blurred = true
       })
 
-      await browser.find('.input').typeIn('first')
+      await browser.find('.input').set('first')
       await browser.find('button').click()
       await retry(function () {
         demand(blurred).to.eql(true)
@@ -101,12 +99,12 @@ describe('events', function () {
 
       assembly.insertHtml('<select><option>one</option></select>')
       const input = assembly.insertHtml('<input type="text" class="input"></input>')
-      input.addEventListener('blur', function (e) {
+      input.addEventListener('blur', function () {
         blurred = true
       })
 
-      await browser.find('.input').typeIn('first')
-      await browser.find('select').select({ text: 'one' })
+      await browser.find('.input').set('first')
+      await browser.find('select').set('one')
       await retry(function () {
         demand(blurred).to.eql(true)
       })

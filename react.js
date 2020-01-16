@@ -1,7 +1,7 @@
 var Mount = require('./lib/mount')
 var React = require('react')
 var ReactDOM = require('react-dom')
-var createMonkey = require('./create')
+var {Query} = require('./lib/Query')
 var createTestDiv = require('./lib/createTestDiv')
 
 module.exports = function (App, props) {
@@ -12,7 +12,7 @@ module.exports = function (App, props) {
       var div = createTestDiv()
       ReactDOM.render(React.createElement(App, props), div)
 
-      return createMonkey(document.body)
+      return new Query(document.body)
     }
   }).start()
 }

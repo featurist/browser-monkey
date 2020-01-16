@@ -1,6 +1,6 @@
 var debug = require('debug')('browser-monkey:iframe')
 var Mount = require('./lib/mount')
-var createMonkey = require('./create')
+var {Query} = require('./lib/Query')
 var hobostyle = require('hobostyle')
 var createTestDiv = require('./lib/createTestDiv')
 var { iframeResizer } = require('iframe-resizer')
@@ -55,7 +55,7 @@ module.exports = function (url, {resize = false} = {}) {
 
       hobostyle.link(__dirname + '/iframe.css')
 
-      return createMonkey(iframe)
+      return new Query(iframe).iframe()
     }
   }).start()
 }

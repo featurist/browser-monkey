@@ -23,6 +23,16 @@ describe('submit', function () {
       expect(events).to.eql(['submit'])
     }
 
+    async function assertCanResetAForm (html, action) {
+      const events = []
+      assembly.insertHtml(html)
+      const button = assembly.find('.target')
+      button.addEventListener('reset', () => events.push('reset'))
+
+      await action()
+      expect(events).to.eql(['reset'])
+    }
+
     async function assertSubmitFailure (html, action, rejection) {
       assembly.insertHtml(html)
       await assembly.assertRejection(action(), rejection)
@@ -50,14 +60,38 @@ describe('submit', function () {
       )
     })
 
+    it('can submit a form by clicking the submit button', async () => {
+      await assertCanSubmitAForm(
+        `
+          <form class="target">
+            <input type="submit" value="ok"></input>
+          </form>
+        `,
+        () => browser.clickButton('ok')
+      )
+    })
+
     it('fails if the element is not in a form', async () => {
       await assertSubmitFailure(
         `
-            <input type="text" />
+          <input type="text" />
         `,
         () => browser.submit('input'),
         'expected element to be inside a form for submit'
       )
+    })
+
+    describe('reset buttons', () => {
+      it('can reset a form', async () => {
+        await assertCanResetAForm(
+          `
+            <form class="target">
+              <input type="reset" value="ok"></input>
+            </form>
+          `,
+          () => browser.clickButton('ok')
+        )
+      })
     })
   })
 })

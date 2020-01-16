@@ -1,6 +1,6 @@
 var Mount = require('./lib/mount')
 var hyperdom = require('hyperdom')
-var createMonkey = require('./create')
+var {Query} = require('./lib/Query')
 var window = require('global')
 var createTestDiv = require('./lib/createTestDiv')
 var extend = require('lowscore/extend')
@@ -23,7 +23,7 @@ module.exports = function (app, options) {
         }
         var vdom = hyperdom.html('body')
 
-        var monkey = createMonkey(vdom)
+        var monkey = new Query(vdom)
         monkey.set({ $: vquery, visibleOnly: false, document: {} })
 
         hyperdom.appendVDom(vdom, app, extend({ requestRender: setTimeout, window: window }, options))
@@ -34,7 +34,7 @@ module.exports = function (app, options) {
           options.router.push(options.url || options.hash)
         }
         hyperdom.append(testDiv, app, extend({ requestRender: setTimeout }, options))
-        return createMonkey(testDiv)
+        return new Query(testDiv)
       }
     }
   }).start()

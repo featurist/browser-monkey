@@ -28,7 +28,7 @@ describe('query', () => {
 
     describe('options', () => {
       it('returns a new Browser Monkey object without modifying the current one', () => {
-        expect(browserMonkey.withOptions({a: 'a'}).options().a).to.equal('a')
+        expect(browserMonkey.options({a: 'a'}).getOptions().a).to.equal('a')
       })
     })
 
@@ -44,25 +44,25 @@ describe('query', () => {
 
       it('passes through the options', () => {
         const monkey = browserMonkey
-          .withOptions({ a: 'a' })
+          .options({ a: 'a' })
           .find('asdf')
 
-        expect(monkey.options().a).to.equal('a')
+        expect(monkey.getOptions().a).to.equal('a')
       })
 
       it('passes through the input', () => {
         const monkey = browserMonkey
-          .withInput('a')
+          .input('a')
           .component({
             aMethod: function () { return 'aMethod' }
           })
 
-        expect(monkey.input()).to.equal('a')
+        expect(monkey.getInput()).to.equal('a')
       })
 
       it('passes through the maps', async () => {
         const monkey = browserMonkey
-          .withInput(1)
+          .input(1)
           .transform(x => x + 1)
           .component({
             aMethod: function () { return 'aMethod' }
@@ -264,7 +264,7 @@ describe('query', () => {
     describe('input', () => {
       it('input sets the input used in transform', async () => {
         const query = browserMonkey
-          .withInput('a')
+          .input('a')
           .transform(x => `input: ${x}`)
 
         expect(query.result()).to.eql('input: a')
@@ -274,15 +274,15 @@ describe('query', () => {
     describe('scope', () => {
       it('when scope is one element, sets the input to an array of one', () => {
         const query = browserMonkey
-          .withScope(document.body)
+          .scope(document.body)
 
-        expect(query.input()).to.eql([document.body])
+        expect(query.getInput()).to.eql([document.body])
       })
 
       it('scope can be passed in to constructor', () => {
         const query = new Query(document.body)
 
-        expect(query.input()).to.eql([document.body])
+        expect(query.getInput()).to.eql([document.body])
       })
     })
 

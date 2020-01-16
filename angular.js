@@ -1,6 +1,6 @@
 var debug = require('debug')('browser-monkey:angular')
 var Mount = require('./lib/mount')
-var createMonkey = require('./create')
+var {Query} = require('./lib/Query')
 var createTestDiv = require('./lib/createTestDiv')
 var angular = require('angular')
 
@@ -13,7 +13,7 @@ module.exports = function (app) {
       div.setAttribute(app.directiveName, '')
       angular.bootstrap(div, [app.moduleName])
 
-      return createMonkey(document.body)
+      return new Query(document.body)
     }
   }).start()
 }

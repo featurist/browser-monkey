@@ -13,14 +13,14 @@ describe('options', function () {
     })
 
     it('can overide default timeout', function () {
-      var defaultTimeout = browser.options().timeout
-      const timeoutBrowser = browser.withOptions({ timeout: 1 })
+      var defaultTimeout = browser.getOptions().timeout
+      const timeoutBrowser = browser.options({ timeout: 1 })
       var start = new Date()
 
       return timeoutBrowser.find('.doesnt-exist').shouldExist().catch(function () {
         var end = new Date()
         var duration = end - start
-        demand(duration >= timeoutBrowser.options().timeout).to.equal(true)
+        demand(duration >= timeoutBrowser.getOptions().timeout).to.equal(true)
         demand(duration < defaultTimeout).to.equal(true)
       })
     })

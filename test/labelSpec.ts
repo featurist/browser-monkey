@@ -13,26 +13,27 @@ describe('labels', function () {
       browser = assembly.browserMonkey()
     })
 
-    function assertFoundElementByLabel(html, label): void {
+    function assertFoundElementByLabel(query, html, label): void {
       assembly.insertHtml(html)
 
       const expected = assembly.find('.result')
       expect(expected, 'expected to HTML to have element with class="result"').to.not.eql(null)
 
-      const [found] = browser.find(label).result()
+      const [found] = query.find(label).result()
 
       expect(found).to.equal(expected)
     }
 
-    function assertNothingFound(html, label): void {
+    function assertNothingFound(query, html, label): void {
       assembly.insertHtml(html)
 
-      browser.find(label).expectNoElements().result()
+      query.find(label).expectNoElements().result()
     }
 
     describe('finding elements by their label', () => {
-      it('checkbox with label as parent', async () => {
+      it('checkbox with label as parent', () => {
         assertFoundElementByLabel(
+          browser,
           `
             <label>
               <input type=checkbox class="result" />
@@ -43,8 +44,9 @@ describe('labels', function () {
         )
       })
 
-      it('checkbox pointed to by label with for attribute', async () => {
+      it('checkbox pointed to by label with for attribute', () => {
         assertFoundElementByLabel(
+          browser,
           `
             <label for="my-checkbox">
               Feature Enabled
@@ -55,8 +57,9 @@ describe('labels', function () {
         )
       })
 
-      it('nothing found if the id is wrong', async () => {
+      it('nothing found if the id is wrong', () => {
         assertNothingFound(
+          browser,
           `
             <label for="wrong-id">
               Feature Enabled
@@ -67,8 +70,9 @@ describe('labels', function () {
         )
       })
 
-      it('fails if not exact name', async () => {
+      it('fails if not exact name', () => {
         assertNothingFound(
+          browser,
           `
             <label for="wrong-id">
               Feature Enabled
@@ -79,8 +83,9 @@ describe('labels', function () {
         )
       })
 
-      it('can be found by regex', async () => {
+      it('can be found by regex', () => {
         assertFoundElementByLabel(
+          browser,
           `
             <label for="my-checkbox">
               Feature Enabled
@@ -95,6 +100,7 @@ describe('labels', function () {
     describe('finding things by their aria labeling', () => {
       it('can find an element by its aria-label', () => {
         assertFoundElementByLabel(
+          browser,
           `
             <input aria-label="Search" type=text class="result" />
           `,
@@ -104,6 +110,7 @@ describe('labels', function () {
 
       it('finds nothing if the label does not match', () => {
         assertNothingFound(
+          browser,
           `
             <input aria-label="Search Box" type=text class="result" />
           `,
@@ -113,6 +120,7 @@ describe('labels', function () {
 
       it('can find an element by its aria-labelledby', () => {
         assertFoundElementByLabel(
+          browser,
           `
             <label id="search-label">Search</label>
             <input aria-labelledby="search-label" type=text class="result" />
@@ -123,6 +131,7 @@ describe('labels', function () {
 
       it('nothing found if aria-labelledby does not resolve', () => {
         assertNothingFound(
+          browser,
           `
             <label id="search-label">Search</label>
             <input aria-labelledby="wrong-search-label" type=text class="result" />
@@ -133,6 +142,7 @@ describe('labels', function () {
 
       it('nothing found if label pointed to by aria-labelledby does not match', () => {
         assertNothingFound(
+          browser,
           `
             <label id="search-label">Search Box</label>
             <input aria-labelledby="wrong-search-label" type=text class="result" />
@@ -165,9 +175,10 @@ describe('labels', function () {
 
     describe('label definitions', () => {
       it('can define a new way of finding labels', () => {
-        browser.addLabelDefinition((query, label) => query.findCss(`[data-label=${JSON.stringify(label)}]`))
+        const query = browser.defineLabelType((query, label) => query.findCss(`[data-label=${JSON.stringify(label)}]`))
 
         assertFoundElementByLabel(
+          query,
           `
             <div class="result" data-label="Search"/>
           `,
@@ -176,18 +187,23 @@ describe('labels', function () {
       })
 
       it('can add and remove a label definition by name', async () => {
-        browser.addLabelDefinition('data-label', (query, label) => query.findCss(`[data-label=${JSON.stringify(label)}]`))
+        const query = browser.defineLabelType('data-label', (query, label) => query.findCss(`[data-label=${JSON.stringify(label)}]`))
 
         assertFoundElementByLabel(
+          query,
           `
             <div class="result" data-label="Search"/>
           `,
           'Label("Search")'
         )
 
-        browser.removeLabelDefinition('data-label')
+        const without = query.undefineLabelType('data-label')
 
-        await browser.find('Label("Search")').expectNoElements().result()
+        await without.find('Label("Search")').expectNoElements().result()
+      })
+
+      it("throws if we try to undefine a label that doesn't exist", async () => {
+        expect(() => browser.undefineLabelType('data-label')).to.throw("doesn't exist")
       })
     })
   })
