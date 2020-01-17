@@ -44,7 +44,7 @@ describe('events', function () {
       })
     })
 
-    function assertBrowserHasFocus () {
+    function assertBrowserHasFocus (): void {
       demand(document.hasFocus(), 'the browser must be in focus for this test!').to.equal(true)
     }
 

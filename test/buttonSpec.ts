@@ -78,7 +78,7 @@ describe('buttons', function () {
     })
 
     describe('clicking a button', () => {
-      async function assertCanClickButton(html, action) {
+      async function assertCanClickButton(html, action): void {
         const events = []
         assembly.insertHtml(html)
         const button = assembly.find('.target')

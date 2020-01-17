@@ -12,7 +12,7 @@ describe('submit', function () {
       browser = assembly.browserMonkey()
     })
 
-    async function assertCanSubmitAForm (html, action) {
+    async function assertCanSubmitAForm (html, action): void {
       const events = []
       assembly.insertHtml(html)
       const button = assembly.find('.target')
@@ -25,7 +25,7 @@ describe('submit', function () {
       expect(events).to.eql(['submit'])
     }
 
-    async function assertCanResetAForm (html, action) {
+    async function assertCanResetAForm (html, action): void {
       const events = []
       assembly.insertHtml(html)
       const button = assembly.find('.target')
@@ -35,7 +35,7 @@ describe('submit', function () {
       expect(events).to.eql(['reset'])
     }
 
-    async function assertSubmitFailure (html, action, rejection) {
+    async function assertSubmitFailure (html, action, rejection): void {
       assembly.insertHtml(html)
       await assembly.assertRejection(action(), rejection)
     }

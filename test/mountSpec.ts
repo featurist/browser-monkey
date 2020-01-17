@@ -13,7 +13,7 @@ describeAssemblies([DomAssembly], (Assembly) => {
   }
 })
 
-function testMount (appType, app, monkeyBuilder) {
+function testMount (appType, app, monkeyBuilder): void {
   describe(`mount ${appType}`, () => {
     var page
 

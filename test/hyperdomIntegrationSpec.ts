@@ -24,13 +24,13 @@ describe('hyperdom integration', function () {
       }
 
       class App {
-        constructor (model) {
+        public constructor (model) {
           this.model = model
         }
 
-        render () {
+        public render (): any {
           var model = this.model
-          function renderMessage () {
+          function renderMessage (): any {
             if (model.show) {
               return h('span', 'hello')
             }

@@ -30,6 +30,10 @@ describe('query', () => {
       it('returns a new Browser Monkey object without modifying the current one', () => {
         expect(browserMonkey.options({a: 'a'}).getOptions().a).to.equal('a')
       })
+
+      it('overrides previously set option', () => {
+        expect(browserMonkey.options({a: 'a'}).options({a: 'b'}).getOptions().a).to.equal('b')
+      })
     })
 
     describe('components', () => {

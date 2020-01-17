@@ -12,7 +12,7 @@ describe('value', function () {
       browser = assembly.browserMonkey().scope(document.body)
     })
 
-    function assertValue (html, expectedValue) {
+    function assertValue (html, expectedValue): void {
       assembly.insertHtml(html)
 
       const value = browser.find('.element').expectOneElement().value().result()

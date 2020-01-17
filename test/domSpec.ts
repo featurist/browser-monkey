@@ -11,7 +11,7 @@ describe('dom', () => {
       assembly.div()
     })
 
-    function preventDefaultSubmit (handler) {
+    function preventDefaultSubmit <X>(handler: (e: Event) => X): X {
       return e => {
         if (e.type === 'submit') {
           e.preventDefault()
@@ -31,7 +31,7 @@ describe('dom', () => {
         var button = assembly.find('button')
 
         ;['submit', 'keydown', 'keypress', 'click', 'keyup'].forEach(type => {
-          form.addEventListener(type, preventDefaultSubmit(e => formEvents.push(type)))
+          form.addEventListener(type, preventDefaultSubmit(() => formEvents.push(type)))
           input.addEventListener(type, () => inputEvents.push(type))
           button.addEventListener(type, () => buttonEvents.push(type))
         })
@@ -67,7 +67,7 @@ describe('dom', () => {
         var input = assembly.find('input')
 
         ;['submit', 'keydown', 'keypress', 'click', 'keyup'].forEach(type => {
-          form.addEventListener(type, preventDefaultSubmit(e => formEvents.push(type)))
+          form.addEventListener(type, preventDefaultSubmit(() => formEvents.push(type)))
           input.addEventListener(type, () => inputEvents.push(type))
         })
 
@@ -352,7 +352,7 @@ describe('dom', () => {
         expect(() => assembly.dom.triggerEvent(element, 'asdf')).to.throw('event type "asdf" not recognised')
       })
 
-      function watchEvents (element) {
+      function watchEvents (element): void {
         const eventTypes = 'input change keydown keyup keypress mousedown mouseup click submit'.split(' ')
 
         eventTypes.forEach(eventType => {
