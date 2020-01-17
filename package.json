@@ -35,7 +35,7 @@
     "httpism": "^3.11.0",
     "hyperdom": "^0.13.0",
     "iframe-resizer": "^4.1.1",
-    "karma": "3.1.4",
+    "karma": "4.4.1",
     "karma-browserify": "^6.0.0",
     "karma-browserstack-launcher": "https://github.com/karma-runner/karma-browserstack-launcher",
     "karma-chrome-launcher": "2.2.0",
@@ -54,7 +54,7 @@
     "typescript": "^3.5.2",
     "vdom-query": "https://github.com/featurist/vdom-query",
     "virtual-dom": "^2.1.1",
-    "watchify": "^3.11.0"
+    "watchify": "^3.11.1"
   },
   "dependencies": {
     "@babel/preset-typescript": "^7.3.3",
