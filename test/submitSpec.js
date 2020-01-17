@@ -1,6 +1,5 @@
 var describeAssemblies = require('./describeAssemblies')
 const {DomAssembly} = require('./assemblies/DomAssembly')
-var demand = require('must')
 const {expect} = require('chai')
 
 describe('submit', function () {
@@ -17,7 +16,10 @@ describe('submit', function () {
       const events = []
       assembly.insertHtml(html)
       const button = assembly.find('.target')
-      button.addEventListener('submit', () => events.push('submit'))
+      button.addEventListener('submit', event => {
+        events.push('submit')
+        event.preventDefault();
+      })
 
       await action()
       expect(events).to.eql(['submit'])
