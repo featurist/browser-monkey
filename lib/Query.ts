@@ -10,15 +10,15 @@ import Dom from './Dom'
 import BrowserMonkeyAssertionError from './BrowserMonkeyAssertionError'
 import toExecutedTransform from './toExecutedTransform'
 const pluralize = require('pluralize')
-var extend = require('lowscore/extend')
-var retry = require('trytryagain')
-var inspect = require('object-inspect')
-var uniq = require('lowscore/uniq')
-var debug = require('debug')('browser-monkey')
-var inputSelectors = require('./inputSelectors')
+const extend = require('lowscore/extend')
+const retry = require('trytryagain')
+const inspect = require('object-inspect')
+const uniq = require('lowscore/uniq')
+const debug = require('debug')('browser-monkey')
+const inputSelectors = require('./inputSelectors')
 const object = require('lowscore/object')
 const range = require('lowscore/range')
-var flatten = require('lowscore/flatten')
+const flatten = require('lowscore/flatten')
 import {match} from './match'
 
 type Transform = (elements: any, executedTransforms: ExecutedTransform[]) => any
@@ -320,9 +320,9 @@ export class Query implements PromiseLike<any> {
     return this.transform((elements) => {
       const resolved = this.resolve(elements)
 
-      var transforms = queryCreators.map(queryCreator => runQueryCreator(queryCreator, resolved).execute())
+      const transforms = queryCreators.map(queryCreator => runQueryCreator(queryCreator, resolved).execute())
 
-      var value = uniq(Array.prototype.concat.apply([], transforms.map(t => t.value)))
+      const value = uniq(Array.prototype.concat.apply([], transforms.map(t => t.value)))
       return new ExecutedConcatTransform(value, transforms)
     })
   }
@@ -359,7 +359,7 @@ export class Query implements PromiseLike<any> {
     const transformed = this.transform((elements) => {
       const resolved = this.resolve(elements)
 
-      var values = queryCreators.map(query => {
+      const values = queryCreators.map(query => {
         try {
           const q = runQueryCreator(query, resolved)
           q.assertHasActionOrExpectation()
@@ -377,7 +377,7 @@ export class Query implements PromiseLike<any> {
         }
       })
 
-      var firstSuccessIndex = values.findIndex(v => {
+      const firstSuccessIndex = values.findIndex(v => {
         return !v.error
       })
 
@@ -388,7 +388,7 @@ export class Query implements PromiseLike<any> {
       if (firstSuccess) {
         return transform
       } else {
-        var error = new BrowserMonkeyAssertionError('all queries failed in firstOf')
+        const error = new BrowserMonkeyAssertionError('all queries failed in firstOf')
         error.addExecutedTransform(transform)
         throw error
       }
@@ -403,7 +403,7 @@ export class Query implements PromiseLike<any> {
     const transformed = this.transform((elements) => {
       const resolved = this.resolve(elements)
 
-      var entries = Object.keys(queryCreators).map(key => {
+      const entries = Object.keys(queryCreators).map(key => {
         const queryCreator = queryCreators[key]
 
         try {
@@ -425,7 +425,7 @@ export class Query implements PromiseLike<any> {
         }
       })
 
-      var firstSuccessIndex = entries.findIndex(v => {
+      const firstSuccessIndex = entries.findIndex(v => {
         return !v.error
       })
 
@@ -444,7 +444,7 @@ export class Query implements PromiseLike<any> {
       if (firstSuccess) {
         return transform
       } else {
-        var error = new BrowserMonkeyAssertionError('all queries failed in detect')
+        const error = new BrowserMonkeyAssertionError('all queries failed in detect')
         error.addExecutedTransform(transform)
         throw error
       }
@@ -472,16 +472,12 @@ export class Query implements PromiseLike<any> {
   public then (resolve?: (r) => any, reject?: (e) => any): Promise<any> {
     this.assertHasActionOrExpectation()
 
-    var self = this
-    var retry = retryFromOptions(this._options)
-    var originalStack = new Error().stack
+    const retry = retryFromOptions(this._options)
 
-    var promise = Promise.resolve(retry(() => {
-      return self.execute().value
+    const promise = Promise.resolve(retry(() => {
+      return this.execute().value
     })).catch(error => {
       if (error instanceof BrowserMonkeyAssertionError) {
-        error.stack = originalStack
-
         if (debug.enabled) {
           debug('assertion error', error.message)
           error.executedTransforms.transforms.forEach(transform => {
@@ -501,7 +497,7 @@ export class Query implements PromiseLike<any> {
   }
 
   public clone (modifier?: (clone: this) => void): this {
-    var clone = new (this.constructor as any)()
+    const clone = new (this.constructor as any)()
     clone.copyQueryFields(this)
     if (modifier) {
       modifier(clone)
@@ -515,27 +511,6 @@ export class Query implements PromiseLike<any> {
 
   public getInput (): this {
     return this._input
-  }
-
-  public component (methods): this {
-    var self = this
-
-    function Component (): void {
-      this.copyQueryFields(self)
-    }
-
-    Component.prototype = new (this.constructor as any)()
-    Object.keys(methods).forEach(method => {
-      var descriptor = Object.getOwnPropertyDescriptor(methods, method)
-      if (descriptor) {
-        Object.defineProperty(Component.prototype, method, descriptor)
-      } else {
-        Component.prototype[method] = methods[method]
-      }
-    })
-    Component.prototype.constructor = Component
-
-    return new Component()
   }
 
   private copyQueryFields (from: Query): void {
@@ -633,7 +608,7 @@ export class Query implements PromiseLike<any> {
 
   public enabled (): this {
     return this.filter(element => {
-      var tagName = element.tagName
+      const tagName = element.tagName
       return !((tagName === 'BUTTON' || tagName === 'INPUT') && element.disabled)
     }, 'enabled')
   }
@@ -648,7 +623,7 @@ export class Query implements PromiseLike<any> {
         },
 
         value: (query, model): ActualExpected => {
-          var setter = query.setter(model).result()
+          const setter = query.setter(model).result()
           setters.push(() => setter())
           return {
             actual: undefined,
@@ -975,7 +950,7 @@ function isIframe (element): boolean {
   return isHTMLElement(element, 'HTMLIFrameElement')
 }
 
-function isHTMLElement (element, subclass: string = 'HTMLElement'): boolean {
+function isHTMLElement (element, subclass = 'HTMLElement'): boolean {
   if (element.ownerDocument && element.ownerDocument.defaultView) {
     // an element inside an iframe
     return element instanceof element.ownerDocument.defaultView[subclass]
