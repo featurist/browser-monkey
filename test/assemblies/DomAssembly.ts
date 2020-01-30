@@ -3,7 +3,7 @@
 const createTestDiv = require('../../lib/createTestDiv')
 const $ = require('jquery')
 const pathUtils = require('path')
-const trytryagain = require('trytryagain')
+import retry from '../../lib/retry'
 const { expect } = require('chai')
 const inspect = require('object-inspect')
 import Dom from '../../lib/Dom'
@@ -40,7 +40,7 @@ export class DomAssembly {
     return browserMonkey.options({
       retry: (fn) => {
         if (this._normalRetry) {
-          return trytryagain(fn)
+          return retry(fn)
         } else {
           return new Promise((resolve, reject) => {
             this.retries.push(() => {
@@ -72,10 +72,10 @@ export class DomAssembly {
     }
   }
 
-  public localUrl (path): string {
+  public static localUrl (path): string {
     return location.protocol === 'file:'
-      ? 'file://' + path
-      : '/base/' + pathUtils.relative(pathUtils.join(__dirname, '../..'), path)
+      ? 'file://' + pathUtils.join(pathUtils.join(__dirname, '..'), path)
+      : '/base/test/' + path
   }
 
   public useNormalRetry (): void {
@@ -95,7 +95,7 @@ export class DomAssembly {
   }
 
   public eventuallyDoNothing (): void {
-    this.eventually(() => {})
+    this.eventually(() => { /* do nothing */ })
   }
 
   public eventually <T>(fn: () => T): Promise<T> {
@@ -122,7 +122,7 @@ export class DomAssembly {
 
   public async eventuallyInsertHtml (html: string, selector?: string): Promise<HTMLElement> {
     return await this.eventually(() => {
-      var div = selector
+      const div = selector
         ? $(this._div).find(selector).get(0)
         : this._div
 
@@ -169,6 +169,12 @@ export class DomAssembly {
 
   public static hasDom (): boolean {
     return true
+  }
+
+  public stop (): void {
+    if (this._div) {
+      this._div.parentNode.removeChild(this._div)
+    }
   }
 }
 

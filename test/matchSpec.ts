@@ -120,7 +120,7 @@ describe('match', () => {
     it("matches when the function doesn't throw an exception", () => {
       expect(match(
         'a',
-        () => {}
+        () => { /* nothing */ }
       )).to.eql({
         isMatch: true,
         actual: 'a',

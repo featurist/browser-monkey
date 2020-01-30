@@ -4,11 +4,12 @@
     "noImplicitAny": false,
     "esModuleInterop": true,
     "module": "commonjs",
-    "target": "ES5",
+    "target": "ES3",
     "outDir": "dist",
     "rootDir": ".",
-    "allowJs": true,
-    "jsx": "react"
+    "allowJs": false,
+    "jsx": "react",
+    "sourceMap": true
   },
   "exclude": [
     "node_modules",

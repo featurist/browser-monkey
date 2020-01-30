@@ -1,8 +1,8 @@
-var MouseEvent = require('./polyfills').MouseEvent
-var KeyboardEvent = require('./polyfills').KeyboardEvent
-const normaliseText = require('./normaliseText')
+import {MouseEvent} from './polyfills'
+import {KeyboardEvent} from './polyfills'
+import normaliseText from './normaliseText'
 
-var eventCreatorsByType = {
+const eventCreatorsByType = {
   mousedown: function () {
     return createMouseEvent('mousedown')
   },

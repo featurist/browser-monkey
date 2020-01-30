@@ -1,43 +1,39 @@
-const { expect } = require('chai')
-const pathUtils = require('path')
-const describeAssemblies = require('./describeAssemblies')
-const {DomAssembly} = require('./assemblies/DomAssembly')
+import {Query} from '../lib/Query'
+import {DomAssembly} from './assemblies/DomAssembly'
+import ReactMount from '../lib/ReactMount'
+import IFrameMount from '../lib/IFrameMount'
+import Mount from '../lib/Mount'
+import ReactApp from './app/react'
+import React from 'react'
+import HyperdomMount from '../lib/HyperdomMount'
 
-describeAssemblies([DomAssembly], (Assembly) => {
-  const assembly = new Assembly()
-  if (Assembly.hasDom()) {
-    testMount('angular', require('./app/angular'), require('../angular'))
-    testMount('hyperdom', new (require('./app/hyperdom'))(), require('../hyperdom'))
-    testMount('react', require('./app/react'), require('../react'))
-    testMount('iframe', assembly.localUrl(pathUtils.join(__dirname, 'iframe-mount-test.html')), require('../iframe'))
-  }
+describe('mount', () => {
+  testMount('hyperdom', () => new HyperdomMount(new (require('./app/hyperdom'))()))
+  testMount('react', () => new ReactMount(React.createElement(ReactApp, {}, null)))
+  testMount('iframe', () => new IFrameMount(DomAssembly.localUrl('iframe-mount-test.html')))
 })
 
-function testMount (appType, app, monkeyBuilder): void {
+function testMount (appType, createMount: () => Mount): void {
   describe(`mount ${appType}`, () => {
-    var page
+    let page
+    let mount
 
     beforeEach(() => {
-      page = monkeyBuilder(app)
+      mount = createMount()
+      page = new Query().mount(mount)
     })
 
-    afterEach(() => page.getOptions().mount.stop())
+    afterEach(() => mount.unmount())
 
-    it('loads some data', () => {
-      return page.find('.message').shouldContain('default').then(() => {
-        return page.find('button').click()
-      }).then(() => {
-        return page.find('.message').shouldContain('hello browser-monkey')
-      })
+    it('loads some data', async () => {
+      await page.find('.message').shouldContain('default')
+      await page.find('button').click()
+      await page.find('.message').shouldContain('hello browser-monkey')
     })
 
     it('can enter form fields', async () => {
       await page.set({'input': 'hi'})
       await page.shouldContain({'.message': 'hi'})
-    })
-
-    it('exposes the app', () => {
-      expect(page.getOptions().app).to.equal(app)
     })
   })
 }

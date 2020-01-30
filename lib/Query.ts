@@ -11,7 +11,7 @@ import BrowserMonkeyAssertionError from './BrowserMonkeyAssertionError'
 import toExecutedTransform from './toExecutedTransform'
 const pluralize = require('pluralize')
 const extend = require('lowscore/extend')
-const retry = require('trytryagain')
+import retry from './retry'
 const inspect = require('object-inspect')
 const uniq = require('lowscore/uniq')
 const debug = require('debug')('browser-monkey')
@@ -20,6 +20,7 @@ const object = require('lowscore/object')
 const range = require('lowscore/range')
 const flatten = require('lowscore/flatten')
 import {match} from './match'
+import Mount from './Mount'
 
 type Transform = (elements: any, executedTransforms: ExecutedTransform[]) => any
 type Action = (elements: any, executedTransforms: ExecutedTransform[]) => void
@@ -42,7 +43,9 @@ interface Definitions {
   }
 }
 
-export class Query implements PromiseLike<any> {
+const missing = {}
+
+export class Query implements Promise<any> {
   private _transforms: Transform[]
   private _options: Options
   private _input: any
@@ -496,6 +499,18 @@ export class Query implements PromiseLike<any> {
     return this.then(undefined, fn)
   }
 
+  public finally (fn): Promise<any> {
+    return this.then(
+      async r => {
+        await fn()
+        return r
+      },
+      async e => {
+        await fn()
+        throw e
+      })
+  }
+
   public clone (modifier?: (clone: this) => void): this {
     const clone = new (this.constructor as any)()
     clone.copyQueryFields(this)
@@ -590,6 +605,10 @@ export class Query implements PromiseLike<any> {
     return this.input([element])
   }
 
+  public mount (mount: {mount: (query: Query) => Query}): Query {
+    return mount.mount(this)
+  }
+
   public iframe (selector?: string): this {
     return this.optionalSelector(selector).transform(elements => {
       return new ExecutedSimpleTransform(elements.map(element => {
@@ -649,7 +668,7 @@ export class Query implements PromiseLike<any> {
       }
 
       const clone = this.resolve(elements)
-      mapModel(clone, model, actions)
+      clone.mapModel(model, actions)
 
       setters.forEach(set => {
         set()
@@ -762,7 +781,7 @@ export class Query implements PromiseLike<any> {
       }
 
       const clone = this.resolve(elements)
-      const result = mapModel(clone, model, actions)
+      const result = clone.mapModel(model, actions)
 
       if (isError) {
         this.error('could not match', {expected: result.expected, actual: result.actual})
@@ -849,7 +868,7 @@ export class Query implements PromiseLike<any> {
       const matchingElements = elements.filter(element => {
         try {
           const clone = this.resolve([element])
-          lastSuccess = new ExecutedSimpleTransform(mapModel(clone, model, actions))
+          lastSuccess = new ExecutedSimpleTransform(clone.mapModel(model, actions))
           return true
         } catch (e) {
           if (e instanceof BrowserMonkeyAssertionError) {
@@ -924,6 +943,56 @@ export class Query implements PromiseLike<any> {
   private optionalSelector (selector?: string): this {
     return selector ? this.find(selector) : this
   }
+
+  private mapModel (model: any, actions: Actions): any {
+    const map = (query: Query, model: any): any => {
+      if (model === missing) {
+        return {
+          actual: query.result().map(e => this._dom.elementInnerText(e)).join(),
+        }
+      } else if (model instanceof Array) {
+        const items = spliceModelArrayFromActual(model, query, actions).map((item, index) => {
+          return map(query.index(index), item)
+        })
+
+        return {
+          actual: items.map(i => i.actual),
+          expected: arrayAssign(model, items.map(i => i.expected)),
+        }
+      } else if (model.constructor === Object) {
+        const lengthQuery = query.expectOneElement()
+
+        const keys = Object.keys(model)
+
+        if (keys.length) {
+          const properties = keys.map(selector => {
+            const value = model[selector]
+
+            const {actual, expected} = map(lengthQuery.find(selector), value)
+
+            return [
+              selector,
+              actual,
+              expected,
+            ]
+          })
+
+          return {
+            actual: object(properties.map(([key, actual]) => [key, actual])),
+            expected: object(properties.map(([key, , expected]) => [key, expected])),
+          }
+        } else {
+          return actions.expectOne(query)
+        }
+      } else if (typeof model === 'function') {
+        return actions.function(query, model)
+      } else {
+        return actions.value(query.expectOneElement(), model)
+      }
+    }
+
+    return map(this, model)
+  }
 }
 
 function expectElements (elements): void {
@@ -966,7 +1035,7 @@ function isArrayOfHTMLElements (elements): boolean {
     })
 }
 
-type Retry = (fn: () => any) => Promise<any>
+type Retry = <T>(fn: () => T, options?: {timeout?: number, interval?: number}) => Promise<T>
 
 function retryFromOptions (options: {retry?: Retry, timeout?: number, interval?: number}): Retry {
   if (options && options.retry) {
@@ -989,8 +1058,6 @@ function runQueryCreator (queryCreator: (q: Query) => Query, query: Query): Quer
 
   return q
 }
-
-const missing = {}
 
 interface ActualExpected {actual: any, expected: any}
 
@@ -1029,59 +1096,10 @@ function arrayAssign (a: any[], b: any[]): any[] {
   })
 }
 
-function mapModel (query: Query, model: any, actions: Actions): any {
-  function map (query: Query, model: any): any {
-    if (model === missing) {
-      return {
-        actual: query.result().map(e => e.innerText).join(),
-      }
-    } else if (model instanceof Array) {
-      const items = spliceModelArrayFromActual(model, query, actions).map((item, index) => {
-        return map(query.index(index), item)
-      })
-
-      return {
-        actual: items.map(i => i.actual),
-        expected: arrayAssign(model, items.map(i => i.expected)),
-      }
-    } else if (model.constructor === Object) {
-      const lengthQuery = query.expectOneElement()
-
-      const keys = Object.keys(model)
-
-      if (keys.length) {
-        const properties = keys.map(selector => {
-          const value = model[selector]
-
-          const {actual, expected} = map(lengthQuery.find(selector), value)
-
-          return [
-            selector,
-            actual,
-            expected,
-          ]
-        })
-
-        return {
-          actual: object(properties.map(([key, actual]) => [key, actual])),
-          expected: object(properties.map(([key, , expected]) => [key, expected])),
-        }
-      } else {
-        return actions.expectOne(query)
-      }
-    } else if (typeof model === 'function') {
-      return actions.function(query, model)
-    } else {
-      return actions.value(query.expectOneElement(), model)
-    }
-  }
-
-  return map(query, model)
-}
-
 interface Options {
   visibleOnly?: boolean
   timeout?: number
   interval?: number
   definitions?: Definitions
+  retry?: Retry
 }

@@ -1,5 +1,5 @@
 /** @jsx hyperdom.jsx */
-var hyperdom = require('hyperdom')
+const hyperdom = require('hyperdom')
 
 module.exports = class WebApp {
   constructor () {

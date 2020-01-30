@@ -1,72 +1,11 @@
-module.exports = function (config) {
-  config.set({
-    concurrency: 5,
-    basePath: '',
-    frameworks: ['browserify', 'mocha'],
-    files: [
-      'test/global.js',
-      'test/**/*Spec.js',
-      'test/page1.html',
-      'test/page2.html',
-      'test/iframe-mount-test.html'
-    ],
-    exclude: [
-      '**/*.sw?'
-    ],
-    preprocessors: {
-      'test/global.js': ['browserify', 'env'],
-      'test/**/*Spec.js': ['browserify']
-    },
+const webpackConfig = require("./webpack.config");
 
-    envPreprocessor: [
-      'BM_TIMEOUT'
-    ],
+const files = [
+  {pattern: "test/*.html", included: false},
+  "test/**/*Spec.ts",
+]
 
-    browserify: {
-      debug: true,
-      extensions: ['.jsx'],
-      transform: [
-        ['babelify', {
-          presets: [
-            ['@babel/preset-env', {
-              targets: {
-                ie: '11'
-              },
-              useBuiltIns: 'entry'
-            }],
-            '@babel/preset-react'
-          ]
-        }]
-      ]
-    },
-
-    client: {
-      mocha: {
-        timeout: 0
-      }
-    },
-    reporters: process.env.BROWSERS ? ['dots'] : ['mocha'],
-    port: 9876,
-    colors: true,
-    logLevel: config.LOG_INFO,
-    autoWatch: true,
-    browsers: process.env.BROWSERS === 'all' ? Object.keys(browsers) : [
-      config.singleRun ? 'ChromeHeadless' : 'Chrome'
-    ],
-
-    browserStack: {
-      username: process.env.BROWSERSTACK_USER,
-      accessKey: process.env.BROWSERSTACK_PASSWORD
-    },
-    singleRun: false,
-    customLaunchers: browsers,
-    browserNoActivityTimeout: 120000,
-    browserDisconnectTimeout: 120000,
-    browserDisconnectTolerance: 3
-  })
-}
-
-var browsers = {
+const browsers = {
   'browserstack-windows-firefox': {
     base: 'BrowserStack',
     browser: 'Firefox',
@@ -117,3 +56,37 @@ var browsers = {
     resolution: '1280x1024'
   }
 }
+
+module.exports = function(config) {
+  config.set({
+    basePath: "",
+    frameworks: ["mocha"],
+    files,
+    exclude: [],
+    preprocessors: {
+      "test/**/*.{ts,js,jsx,tsx}": ["webpack", "sourcemap"]
+    },
+    webpack: webpackConfig,
+    reporters: ["progress"],
+    port: 9876,
+    colors: true,
+    logLevel: config.LOG_INFO,
+    autoWatch: true,
+    singleRun: false,
+    concurrency: Infinity,
+
+    browsers: process.env.BROWSERS === 'all' ? Object.keys(browsers) : [
+      config.singleRun ? 'ChromeHeadless' : 'Chrome'
+    ],
+
+    browserStack: {
+      username: process.env.BROWSERSTACK_USER,
+      accessKey: process.env.BROWSERSTACK_PASSWORD
+    },
+
+    customLaunchers: browsers,
+    browserNoActivityTimeout: 120000,
+    browserDisconnectTimeout: 120000,
+    browserDisconnectTolerance: 3,
+  });
+};

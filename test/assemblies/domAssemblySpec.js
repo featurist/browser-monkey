@@ -10,6 +10,10 @@ describe('DomAssembly', () => {
     browser = assembly.browserMonkey()
   })
 
+  afterEach(() => {
+    assembly.stop()
+  })
+
   it('can insert html', async () => {
     const element = assembly.insertHtml('<div class="a"/>')
     const [found] = await browser.find('.a').expectOneElement()

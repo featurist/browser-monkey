@@ -1,113 +1,114 @@
-var describeAssemblies = require('./describeAssemblies')
-const {DomAssembly} = require('./assemblies/DomAssembly')
-var demand = require('must')
-var retry = require('trytryagain')
+import {DomAssembly} from './assemblies/DomAssembly'
+import retry from '../lib/retry'
+import {expect} from 'chai'
 
 describe('events', function () {
-  describeAssemblies([DomAssembly], function (Assembly) {
-    var assembly
-    var browser
+  let assembly
+  let browser
 
-    beforeEach(function () {
-      assembly = new Assembly()
-      browser = assembly.browserMonkey()
+  beforeEach(function () {
+    assembly = new DomAssembly()
+    browser = assembly.browserMonkey()
+  })
+
+  afterEach(() => {
+    assembly.stop()
+  })
+
+  it('setting text input sends change event', function () {
+    const firedEvents = []
+
+    const input = assembly.insertHtml('<input type="text" class="input">')
+
+    input.addEventListener('change', function () {
+      firedEvents.push('change')
     })
 
-    it('setting text input sends change event', function () {
-      var firedEvents = []
+    return browser.find('.input').set('first').then(function () {
+      expect(firedEvents).to.eql([
+        'change'
+      ])
+    })
+  })
 
-      const input = assembly.insertHtml('<input type="text" class="input">')
+  it('setting text input sends only one input event', function () {
+    const firedEvents = []
 
-      input.addEventListener('change', function () {
-        firedEvents.push('change')
-      })
-
-      return browser.find('.input').set('first').then(function () {
-        demand(firedEvents).to.eql([
-          'change'
-        ])
-      })
+    const input = assembly.insertHtml('<input type="text" class="input">')
+    input.addEventListener('input', function () {
+      firedEvents.push('input')
     })
 
-    it('setting text input sends only one input event', function () {
-      var firedEvents = []
+    return browser.find('.input').set('123').then(function () {
+      expect(firedEvents).to.eql([
+        'input',
+      ])
+    })
+  })
 
-      const input = assembly.insertHtml('<input type="text" class="input">')
-      input.addEventListener('input', function () {
-        firedEvents.push('input')
-      })
+  function assertBrowserHasFocus (): void {
+    expect(document.hasFocus(), 'the browser must be in focus for this test!').to.equal(true)
+  }
 
-      return browser.find('.input').set('123').then(function () {
-        demand(firedEvents).to.eql([
-          'input',
-        ])
-      })
+  it('typeIn element should fire change and then blur event on input', async function () {
+    const firedEvents = []
+
+    assertBrowserHasFocus()
+
+    const input = assembly.insertHtml('<input type="text" class="input" />')
+    assembly.insertHtml('<input type="text" class="change" />')
+
+    input.addEventListener('blur', function () {
+      firedEvents.push('blur')
+    })
+    input.addEventListener('change', function () {
+      firedEvents.push('change')
     })
 
-    function assertBrowserHasFocus (): void {
-      demand(document.hasFocus(), 'the browser must be in focus for this test!').to.equal(true)
-    }
+    await browser.find('.input').set('first')
+    await browser.find('.change').set('second')
+    await retry(() => {
+      expect(firedEvents).to.eql([
+        'change',
+        'blur'
+      ])
+    })
+  })
 
-    it('typeIn element should fire change and then blur event on input', async function () {
-      var firedEvents = []
+  it('click element should fire blur event on input', async function () {
+    let blurred = false
 
-      assertBrowserHasFocus()
+    assertBrowserHasFocus()
 
-      const input = assembly.insertHtml('<input type="text" class="input" />')
-      assembly.insertHtml('<input type="text" class="change" />')
+    const input = assembly.insertHtml('<input type="text" class="input" />')
+    assembly.insertHtml('<button>button</button>')
 
-      input.addEventListener('blur', function () {
-        firedEvents.push('blur')
-      })
-      input.addEventListener('change', function () {
-        firedEvents.push('change')
-      })
-
-      await browser.find('.input').set('first')
-      await browser.find('.change').set('second')
-      await retry(() => {
-        demand(firedEvents).to.eql([
-          'change',
-          'blur'
-        ])
-      })
+    input.addEventListener('blur', function () {
+      blurred = true
     })
 
-    it('click element should fire blur event on input', async function () {
-      var blurred = false
+    await browser.find('.input').set('first')
+    await browser.find('button').click()
+    await retry(function () {
+      expect(blurred).to.eql(true)
+    })
+  })
 
-      assertBrowserHasFocus()
+  it('select element should fire blur event on input', async function () {
+    let blurred = false
 
-      const input = assembly.insertHtml('<input type="text" class="input" />')
-      assembly.insertHtml('<button>button</button>')
+    assertBrowserHasFocus()
 
-      input.addEventListener('blur', function () {
-        blurred = true
-      })
-
-      await browser.find('.input').set('first')
-      await browser.find('button').click()
-      await retry(function () {
-        demand(blurred).to.eql(true)
-      })
+    assembly.insertHtml('<select><option>one</option></select>')
+    const input = assembly.insertHtml('<input type="text" class="input"></input>')
+    input.addEventListener('blur', function () {
+      blurred = true
     })
 
-    it('select element should fire blur event on input', async function () {
-      var blurred = false
-
-      assertBrowserHasFocus()
-
-      assembly.insertHtml('<select><option>one</option></select>')
-      const input = assembly.insertHtml('<input type="text" class="input"></input>')
-      input.addEventListener('blur', function () {
-        blurred = true
-      })
-
-      await browser.find('.input').set('first')
-      await browser.find('select').set('one')
-      await retry(function () {
-        demand(blurred).to.eql(true)
-      })
+    await browser.find('.input').set('first')
+    await browser.find('select').set('one')
+    await retry(function () {
+      expect(blurred).to.eql(true)
     })
   })
 })
