@@ -20,6 +20,7 @@ const object = require('lowscore/object')
 const range = require('lowscore/range')
 const flatten = require('lowscore/flatten')
 import {match} from './match'
+import * as matchers from './matchers'
 
 type Transform = (elements: any, executedTransforms: ExecutedTransform[]) => any
 type Action = (elements: any, executedTransforms: ExecutedTransform[]) => void
@@ -95,7 +96,7 @@ export class Query implements Promise<any> {
                 .expectOneElement('expected to be select element')
                 .findCss('option')
                 .filter(o => {
-                  return o.value === value || query._dom.elementInnerText(o) === value
+                  return match(o.value, value).isMatch || match(query._dom.elementInnerText(o), value).isMatch
                 }, `option with text or value ${JSON.stringify(value)}`)
                 .expectOneElement(`expected one option element with text or value ${JSON.stringify(value)}`)
                 .transform(([option]) => {
@@ -197,7 +198,7 @@ export class Query implements Promise<any> {
             definition: (query, name) => {
               return query.find('[aria-label]').filter(element => {
                 const label = element.getAttribute('aria-label')
-                return label === name
+                return match(label, name).isMatch
               }, 'aria-label')
             },
           },
@@ -208,7 +209,7 @@ export class Query implements Promise<any> {
                 const id = element.getAttribute('aria-labelledby')
                 const labelElement = element.ownerDocument.getElementById(id)
                 if (labelElement) {
-                  return query._dom.elementInnerText(labelElement) === name
+                  return match(query._dom.elementInnerText(labelElement), name).isMatch
                 }
               }, 'aria-label')
             },

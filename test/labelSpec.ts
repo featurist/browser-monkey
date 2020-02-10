@@ -110,6 +110,16 @@ describe('labels', function () {
       )
     })
 
+    it('can find an element by its aria-label with regex', () => {
+      assertFoundElementByLabel(
+        browser,
+        `
+          <input aria-label="Search" type=text class="result" />
+        `,
+        'Label(/sea/i)'
+      )
+    })
+
     it('finds nothing if the label does not match', () => {
       assertNothingFound(
         browser,
@@ -128,6 +138,17 @@ describe('labels', function () {
           <input aria-labelledby="search-label" type=text class="result" />
         `,
         'Label("Search")'
+      )
+    })
+
+    it('can find an element by its area-labelledby with regex', () => {
+      assertFoundElementByLabel(
+        browser,
+        `
+          <label id="search-label">Search Box</label>
+          <input aria-labelledby="search-label" type=text class="result" />
+        `,
+        'Label(/sea/i)'
       )
     })
 

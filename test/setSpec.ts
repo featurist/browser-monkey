@@ -43,6 +43,22 @@ describe('set', function () {
       expect(selectedItem).to.equal('Two')
     })
 
+    it('can set select fields with regex', async () => {
+      assembly.insertHtml(`
+        <select>
+          <option>One</option>
+          <option>Two</option>
+        </select>
+      `)
+
+      await browser.set({
+        select: /tw/i,
+      })
+
+      const selectedItem = assembly.jQuery(assembly.find('select')).find(':selected').text()
+      expect(selectedItem).to.equal('Two')
+    })
+
     it('can set checkbox fields', async () => {
       const checkbox = assembly.insertHtml(`
         <input type=checkbox class="check"/>
