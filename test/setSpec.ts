@@ -118,12 +118,15 @@ describe('set', function () {
         </form>
       `)
 
-      await assembly.assertRejection(browser.set({
+      await browser.set({
         '.address': {
           '.street': '7 Lola St',
           '.city': 'Frisby City',
         },
-      }), "expected just one element, found 2 (found: path(find('.address') [2]))")
+      })
+
+      expect(assembly.find('.address .street').value).to.equal('7 Lola St')
+      expect(assembly.find('.address .city').value).to.equal('Frisby City')
     })
 
     it('a value does assert that there is only one matching element', async () => {

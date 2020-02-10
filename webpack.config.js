@@ -5,21 +5,20 @@ const exclude = p =>
   && !p.includes(path.resolve(__dirname, 'node_modules/debug'))
 
 module.exports = {
-  entry: './test/assertionsSpec.ts',
+  entry: './index.ts',
   optimization: {
     minimize: false,
   },
   module: {
     rules: [
       {
-        test: /\.tsx?$/,
-        use: 'ts-loader',
+        test: /\.[jt]sx?$/,
+        use: 'babel-loader',
         exclude,
       },
       {
-        test: /\.jsx?$/,
-        use: 'babel-loader',
-        exclude,
+        test: /\.css$/i,
+        use: ['to-string-loader', 'css-loader'],
       },
     ],
   },
@@ -28,7 +27,8 @@ module.exports = {
     extensions: [ '.tsx', '.ts', '.js', '.jsx' ],
   },
   output: {
-    filename: 'bundle.js',
+    filename: 'index.js',
     path: path.resolve(__dirname, 'dist'),
+    libraryTarget: 'commonjs2',
   },
 };

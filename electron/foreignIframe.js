@@ -1,4 +1,4 @@
-const { session, app, BrowserWindow } = require('electron')
+const { session, app } = require('electron')
 
 const omitHeaders = new Set([
   'x-frame-options',
@@ -20,6 +20,4 @@ app.on('ready', function () {
       statusLine: details.statusLine
     })
   })
-
-  BrowserWindow.addDevToolsExtension('react')
 })

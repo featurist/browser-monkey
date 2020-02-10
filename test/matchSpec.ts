@@ -81,11 +81,19 @@ describe('match', () => {
       })
     })
 
-    it("doesn't match non-objects", () => {
-      expect(match('asdf', {a: {aa: 'a'}})).to.eql({
+    it("can match non-objects", () => {
+      expect(match('asdf', {length: 4})).to.eql({
+        isMatch: true,
+        actual: {length: 4},
+        expected: {length: 4},
+      })
+    })
+
+    it("shows why non-objects are not matched", () => {
+      expect(match('asdf', {length: 5})).to.eql({
         isMatch: false,
-        actual: 'asdf',
-        expected: {a: {aa: 'a'}},
+        actual: {length: 4},
+        expected: {length: 5},
       })
     })
   })

@@ -4,6 +4,34 @@ import hobostyle from 'hobostyle'
 import { iframeResizer } from 'iframe-resizer'
 import {Query} from '../lib/Query'
 
+const styles = `
+.browser-monkey-browser {
+  padding: 13px;
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.browser-monkey-address-bar-text {
+  border-radius: 10px;
+  background-color: white;
+}
+
+.browser-monkey-address-bar {
+  padding: 5px;
+  background-color: grey;
+}
+
+.browser-monkey-iframe {
+  width: 100%;
+  height: 100%;
+}
+`
+
 const debug = _debug('browser-monkey:iframe')
 
 export default class IFrameMount extends Mount {
@@ -60,7 +88,7 @@ export default class IFrameMount extends Mount {
       iframeResizer({ log: true, checkOrigin: false }, iframe)
     }
 
-    hobostyle.link(__dirname + '/iframe.css')
+    hobostyle.style(styles.toString())
 
     this.iframe = iframe
   }

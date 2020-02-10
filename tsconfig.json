@@ -4,7 +4,7 @@
     "noImplicitAny": false,
     "esModuleInterop": true,
     "module": "commonjs",
-    "target": "ES3",
+    "target": "ES5",
     "outDir": "dist",
     "rootDir": ".",
     "allowJs": false,

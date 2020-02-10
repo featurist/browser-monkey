@@ -51,7 +51,7 @@ export function match (actual: any, expected: any): {isMatch: boolean, actual: a
   } else if (expected.constructor === Object) {
     let isMatch = true
 
-    if (!(actual instanceof Object)) {
+    if (actual == undefined) {
       return {
         isMatch: false,
         actual,

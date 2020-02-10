@@ -1,25 +1,37 @@
 module.exports = {
-  parser: '@typescript-eslint/parser',
-  extends: ['plugin:@typescript-eslint/recommended'],
-  plugins: ['@typescript-eslint', 'mocha'],
-  rules: {
-    "@typescript-eslint/no-var-requires": "off",
-    "indent": "off",
-    "@typescript-eslint/indent": ["error", 2],
-    "@typescript-eslint/member-delimiter-style": ['error', {
-      "multiline": {
-        "delimiter": "none",
-      },
-      "singleline": {
-        "delimiter": "comma",
-      }
-    }],
-    '@typescript-eslint/no-explicit-any': 'off',
-    '@typescript-eslint/no-use-before-define': ['error', { 'functions': false, 'classes': true }],
-    '@typescript-eslint/explicit-function-return-type': ['error', { allowExpressions: true }],
+  "env": {
+    "browser": true,
+    "es6": true,
+    "node": true,
   },
-  env: {
-    mocha: true,
-    node: true
-  }
-}
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:@typescript-eslint/eslint-recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "ecmaVersion": 2018,
+    "sourceType": "module"
+  },
+  "plugins": [
+    "react",
+    "@typescript-eslint",
+    "mocha",
+  ],
+  ignorePatterns: [
+    "dist/",
+  ],
+  overrides: [
+    {
+      files: ['*.ts', '*.tsx'],
+      rules: {
+        "no-unused-vars": "off",
+        "@typescript-eslint/no-unused-vars": "error",
+      },
+    }
+  ]
+};

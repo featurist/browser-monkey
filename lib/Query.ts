@@ -20,7 +20,6 @@ const object = require('lowscore/object')
 const range = require('lowscore/range')
 const flatten = require('lowscore/flatten')
 import {match} from './match'
-import Mount from './Mount'
 
 type Transform = (elements: any, executedTransforms: ExecutedTransform[]) => any
 type Action = (elements: any, executedTransforms: ExecutedTransform[]) => void
@@ -960,15 +959,13 @@ export class Query implements Promise<any> {
           expected: arrayAssign(model, items.map(i => i.expected)),
         }
       } else if (model.constructor === Object) {
-        const lengthQuery = query.expectOneElement()
-
         const keys = Object.keys(model)
 
         if (keys.length) {
           const properties = keys.map(selector => {
             const value = model[selector]
 
-            const {actual, expected} = map(lengthQuery.find(selector), value)
+            const {actual, expected} = map(query.find(selector), value)
 
             return [
               selector,

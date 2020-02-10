@@ -6,7 +6,8 @@ module.exports = {
       "@babel/preset-env",
       {
         "targets": {
-          "ie": "10"
+          // "ie": "10"
+          "node": true
         }
       }
     ]

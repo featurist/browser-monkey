@@ -1,6 +1,6 @@
 import {DomAssembly} from './assemblies/DomAssembly'
 import BrowserMonkeyAssertionError from '../lib/BrowserMonkeyAssertionError'
-import {elementAttributes} from '../matchers'
+import {elementAttributes} from '../lib/matchers'
 
 describe('shouldContain', function () {
   let assembly
@@ -55,7 +55,7 @@ describe('shouldContain', function () {
       await assembly.assertExpectedActual(browser, {
         '.address': '12 Hapless Boulevard',
       }, {
-        '.address': "Error: expected just one element, found 0 (found: path(find('.address') [0]))",
+        '.address': "Error: expected just one element, found 0 (found: find('.address') [0])",
       })
     })
 
@@ -187,7 +187,7 @@ describe('shouldContain', function () {
         '.content': 'The Content'
       }, {
         'h1': 'Title',
-        '.content': "Error: expected just one element, found 0 (found: path(find('.content') [0]))"
+        '.content': "Error: expected just one element, found 0 (found: find('.content') [0])"
       })
     })
 
@@ -244,8 +244,27 @@ describe('shouldContain', function () {
           '.content': {}
         }, {
           'h1': 'Title',
-          '.content': "Error: expected just one element, found 0 (found: path(find('.content') [0]))"
+          '.content': "Error: expected just one element, found 0 (found: find('.content') [0])"
         })
+      })
+    })
+
+    it('fields can be spread over many containers', async () => {
+      assembly.insertHtml(`
+        <div class="container"></div>
+        <div class="container">
+          <h1>title</h1>
+        </div>
+        <div class="container">
+          <div class="body">
+            body
+          </div>
+        </div>
+      `)
+
+      await browser.find('.container').shouldContain({
+        h1: 'title',
+        '.body': 'body',
       })
     })
   })
