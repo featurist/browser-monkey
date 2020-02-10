@@ -154,6 +154,28 @@ describe('labels', function () {
     })
   })
 
+  describe('finding things by their placeholder', () => {
+    it('can find an element by its placeholder', () => {
+      assertFoundElementByLabel(
+        browser,
+        `
+          <input type=text class="result" placeholder="Search" />
+        `,
+        'Label("Search")'
+      )
+    })
+
+    it('can find an element by its placeholder with regex', () => {
+      assertFoundElementByLabel(
+        browser,
+        `
+          <input type=text class="result" placeholder="Search" />
+        `,
+        'Label(/sea/i)'
+      )
+    })
+  })
+
   it('finds multiple elements', () => {
     assembly.insertHtml(
       `

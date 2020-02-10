@@ -213,6 +213,14 @@ export class Query implements Promise<any> {
               }, 'aria-label')
             },
           },
+          {
+            name: 'placeholder',
+            definition: (query, name) => {
+              return query.find(inputSelectors.gettable).containing(matchers.elementAttributes({
+                placeholder: name,
+              }))
+            },
+          },
         ],
         fields: {
           Label: (q, value) => q.findLabel(value),
