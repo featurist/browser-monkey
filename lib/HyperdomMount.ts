@@ -9,7 +9,7 @@ export default class HyperdomMount extends Mount {
       options.router.reset()
     }
 
-    const testDiv = this.mountDiv()
+    const testDiv = this.containerElement()
     if (options && (options.hash || options.url) && options.router) {
       options.router.push(options.url || options.hash)
     }

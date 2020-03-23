@@ -584,6 +584,16 @@ export class Query implements Promise<any> {
     })
   }
 
+  public expectLength (length: number): this {
+    return this.expect(elements => {
+      expectElements(elements)
+
+      if (elements.length !== length) {
+        this.error(`expected ${length} elements, found ` + elements.length)
+      }
+    })
+  }
+
   public click (selector?: string): this {
     return this.optionalSelector(selector).expectOneElement().action(([element]) => {
       debug('click', element)
@@ -606,6 +616,21 @@ export class Query implements Promise<any> {
       .action(([element]) => {
         debug('submit', element)
         this._dom.submit(element)
+      })
+  }
+
+  public enterText (selector: string, text?: string): this {
+    if (text === undefined) {
+      text = selector
+      selector = undefined
+    }
+
+    return this.optionalSelector(selector)
+      .expectOneElement()
+      .is(inputSelectors.settable)
+      .action(([element]) => {
+        debug('enterText', element, text)
+        this._dom.enterText(element, text)
       })
   }
 

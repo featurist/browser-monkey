@@ -37,7 +37,7 @@ const debug = _debug('browser-monkey:iframe')
 export default class IFrameMount extends Mount {
   url: string
   resize: boolean
-  iframe: HTMLIFrameElement
+  _iframe: HTMLIFrameElement
 
   constructor (url: string, {resize = false} = {}) {
     super()
@@ -47,7 +47,7 @@ export default class IFrameMount extends Mount {
 
     debug('Mounting iframe: ' + this.url)
 
-    const div = this.mountDiv()
+    const div = this.containerElement()
     div.className = 'browser-monkey-browser'
 
     div.innerHTML = `
@@ -90,10 +90,14 @@ export default class IFrameMount extends Mount {
 
     hobostyle.style(styles.toString())
 
-    this.iframe = iframe
+    this._iframe = iframe
+  }
+
+  iframe () {
+    return this._iframe
   }
 
   mount (query: Query): Query {
-    return query.scope(this.iframe).iframe()
+    return query.scope(this._iframe).iframe()
   }
 }

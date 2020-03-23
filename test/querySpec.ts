@@ -80,7 +80,7 @@ describe('query', () => {
   })
 
   describe('expectOneElement', () => {
-    it('when there is one element, selects it', async () => {
+    it('when there is one element, returns it', async () => {
       const contacts = browserMonkey
         .find('.contact')
         .expectOneElement()
@@ -128,6 +128,40 @@ describe('query', () => {
       `)
 
       await assembly.assertRejection(contacts, 'expected just one element, found 0')
+    })
+  })
+
+  describe('expectLength', () => {
+    it('asserts list of one element has one element', async () => {
+      const items = browserMonkey
+        .find('li ul')
+        .expectLength(2)
+        .then()
+
+      assembly.eventuallyInsertHtml(`
+        <li>
+          <ul>one</ul>
+          <ul>two</ul>
+        </li>
+      `)
+
+      expect(await items).to.eql(assembly.findAll('li ul'))
+    })
+
+    it('asserts list of one element has one element', async () => {
+      const items = browserMonkey
+        .find('li ul')
+        .expectLength(3)
+        .then()
+
+      assembly.eventuallyInsertHtml(`
+        <li>
+          <ul>one</ul>
+          <ul>two</ul>
+        </li>
+      `)
+
+      await assembly.assertRejection(items, 'expected 3 elements, found 2')
     })
   })
 
