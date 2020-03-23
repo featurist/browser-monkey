@@ -1,9 +1,11 @@
 {
   "name": "browser-monkey",
-  "version": "2.7.2",
+  "version": "3.0.0-beta.1",
   "description": "reliable dom testing",
   "main": "dist/index.js",
-  "files": ["dist/*"],
+  "files": [
+    "dist/*"
+  ],
   "scripts": {
     "test": "yarn test-electron-mocha && eslint .",
     "test-karma": "karma start --single-run",
