@@ -3,6 +3,7 @@
   "version": "2.7.2",
   "description": "reliable dom testing",
   "main": "dist/index.js",
+  "files": ["dist/*"],
   "scripts": {
     "test": "yarn test-electron-mocha && eslint .",
     "test-karma": "karma start --single-run",
