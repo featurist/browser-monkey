@@ -1,6 +1,7 @@
 import {MouseEvent} from './polyfills'
 import {KeyboardEvent} from './polyfills'
 import normaliseText from './normaliseText'
+import keycode from 'keycode'
 
 const eventCreatorsByType = {
   mousedown: function () {
@@ -30,20 +31,32 @@ const eventCreatorsByType = {
 }
 
 export default class Dom {
-  public enterText (element: HTMLInputElement, text: string, {incremental = true} = {}): void {
+  public enterText (element: HTMLInputElement, text: string | string[], {incremental = true} = {}): void {
     element.focus()
 
-    if (incremental) {
-      if (element.value !== '') {
-        this.typeKey(element, '', undefined)
-      }
+    const enterText = (text: string) => {
+      if (matchKeyCode(text)) {
+        this.triggerEvent(element, 'keydown', text)
+        this.triggerEvent(element, 'keypress', text)
+        this.triggerEvent(element, 'keyup', text)
+      } else if (incremental) {
+        if (element.value !== '') {
+          this.typeKey(element, '', undefined)
+        }
 
-      text.split('').forEach((key, index) => {
-        const value = text.slice(0, index + 1)
-        this.typeKey(element, value, key)
-      })
+        text.split('').forEach((key, index) => {
+          const value = text.slice(0, index + 1)
+          this.typeKey(element, value, key)
+        })
+      } else {
+        this.setInputValue(element, text)
+      }
+    }
+
+    if (typeof text === 'string') {
+      enterText(text)
     } else {
-      this.setInputValue(element, text)
+      text.forEach(t => enterText(t))
     }
 
     this.triggerEvent(element, 'change')
@@ -159,6 +172,35 @@ function createEvent (type, params = {bubbles: true, cancelable: false}): Event 
   return event
 }
 
+function matchKeyCode (text) {
+  return /^{(.*)}$/.exec(text)
+}
+
 function createKeyboardEvent (type, key): KeyboardEvent {
-  return new KeyboardEvent(type, { bubbles: true, cancelable: true, key: key })
+  const event = new KeyboardEvent(type, { bubbles: true, cancelable: true })
+
+  const match = matchKeyCode(key)
+
+  if (match) {
+    const code = match[1]
+    Object.defineProperty(event, 'code', {
+      get: () => code,
+    })
+    const which = keycode(code)
+    Object.defineProperty(event, 'keyCode', {
+      get: () => which,
+    })
+    Object.defineProperty(event, 'which', {
+      get: () => which,
+    })
+    Object.defineProperty(event, 'key', {
+      get: () => code,
+    })
+  } else {
+    Object.defineProperty(event, 'key', {
+      get: () => key,
+    })
+  }
+
+  return event
 }

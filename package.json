@@ -68,6 +68,7 @@
   "dependencies": {
     "debug": "^4.1.1",
     "hobostyle": "1.0.0",
+    "keycode": "^2.2.0",
     "lowscore": "^1.12.1",
     "object-inspect": "1.6.0",
     "pluralize": "^8.0.0"
