@@ -1,5 +1,6 @@
 export default async function retry<T>(fn: () => T, {interval = 10, timeout = 1000} = {}): Promise<T> {
   const startTime = Date.now()
+  let firstTry = true
 
   while (true) {
     try {
@@ -8,7 +9,8 @@ export default async function retry<T>(fn: () => T, {interval = 10, timeout = 10
       if (Date.now() > startTime + timeout) {
         throw e
       } else {
-        await new Promise(resolve => setTimeout(resolve, interval))
+        await new Promise(resolve => setTimeout(resolve, firstTry ? 0 : interval))
+        firstTry = false
       }
     }
   }
