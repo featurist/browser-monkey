@@ -6,6 +6,7 @@
   "files": [
     "dist/*",
     "lib/*",
+    "test/*",
     "index.ts"
   ],
   "scripts": {
