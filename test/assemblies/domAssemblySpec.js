@@ -16,27 +16,27 @@ describe('DomAssembly', () => {
 
   it('can insert html', async () => {
     const element = assembly.insertHtml('<div class="a"/>')
-    const [found] = await browser.find('.a').expectOneElement()
+    const [found] = await browser.find('.a').shouldHaveElements(1)
     expect(found).to.equal(element)
   })
 
   it('can eventually insert html before searching', async () => {
-    const promise = browser.find('.a').expectOneElement().then()
+    const promise = browser.find('.a').shouldHaveElements(1).then()
     const element = assembly.eventuallyInsertHtml('<div class="a"/>')
     const [found] = await promise
     expect(found).to.equal(await element)
   })
 
   it('can eventually insert html after searching', async () => {
-    const found = browser.find('.a').expectOneElement().then()
+    const found = browser.find('.a').shouldHaveElements(1).then()
     const element = assembly.eventuallyInsertHtml('<div class="a"/>')
     expect((await found)[0]).to.equal(await element)
   })
 
   it('can eventually insert html before searching twice', async () => {
     const promise = Promise.all([
-      browser.find('.a').expectOneElement().then(),
-      browser.find('.a').expectOneElement().then()
+      browser.find('.a').shouldHaveElements(1).then(),
+      browser.find('.a').shouldHaveElements(1).then()
     ])
     const element = assembly.eventuallyInsertHtml('<div class="a"/>')
     const [[found1], [found2]] = await promise

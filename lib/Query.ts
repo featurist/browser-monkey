@@ -67,7 +67,7 @@ export class Query implements Promise<any> {
             setter: (query, value) => {
               return query
                 .is('input[type=checkbox]')
-                .expectOneElement()
+                .shouldHaveElements(1)
                 .transform(([checkbox]) => {
                   if (typeof value !== 'boolean') {
                     throw new Error('expected boolean as argument to set checkbox')
@@ -83,7 +83,7 @@ export class Query implements Promise<any> {
             value: (query) => {
               return query
                 .is('input[type=checkbox]')
-                .expectOneElement()
+                .shouldHaveElements(1)
                 .transform(([checkbox]) => {
                   return query._dom.checked(checkbox)
                 })
@@ -93,12 +93,12 @@ export class Query implements Promise<any> {
             setter: (query, value) => {
               return query
                 .is('select')
-                .expectOneElement('expected to be select element')
+                .shouldHaveElements(1, 'expected to be select element')
                 .findCss('option')
                 .filter(o => {
                   return match(o.value, value).isMatch || match(query._dom.elementInnerText(o), value).isMatch
                 }, `option with text or value ${JSON.stringify(value)}`)
-                .expectOneElement(`expected one option element with text or value ${JSON.stringify(value)}`)
+                .shouldHaveElements(1, `expected one option element with text or value ${JSON.stringify(value)}`)
                 .transform(([option]) => {
                   return () => {
                     const selectElement = option.parentNode
@@ -110,7 +110,7 @@ export class Query implements Promise<any> {
             valueAsserter: (query, expected) => {
               return query
                 .is('select')
-                .expectOneElement('expected to be select element')
+                .shouldHaveElements(1, 'expected to be select element')
                 .transform(([select]) => {
                   return () => {
                     const value = select.value
@@ -136,7 +136,7 @@ export class Query implements Promise<any> {
             value: (query) => {
               return query
                 .is('select')
-                .expectOneElement('expected to be select element')
+                .shouldHaveElements(1, 'expected to be select element')
                 .transform(([select]) => {
                   const selectedOption = select.options[select.selectedIndex]
                   return selectedOption && query._dom.elementInnerText(selectedOption)
@@ -147,7 +147,7 @@ export class Query implements Promise<any> {
             setter: (query, value) => {
               return query
                 .is(inputSelectors.settable)
-                .expectOneElement()
+                .shouldHaveElements(1)
                 .transform(([element]) => {
                   if (typeof value !== 'string') {
                     throw new Error('expected string as argument to set input')
@@ -159,14 +159,14 @@ export class Query implements Promise<any> {
                 })
             },
             value: (query) => {
-              return query.is(inputSelectors.gettable).expectOneElement().transform(([input]) => {
+              return query.is(inputSelectors.gettable).shouldHaveElements(1).transform(([input]) => {
                 return input.value
               })
             }
           },
           {
             value: (query) => {
-              return query.expectOneElement().transform(([element]) => {
+              return query.shouldHaveElements(1).transform(([element]) => {
                 return query._dom.elementInnerText(element)
               })
             }
@@ -546,56 +546,40 @@ export class Query implements Promise<any> {
     this._options.definitions = cloneDefinitions(from._options.definitions)
   }
 
-  public expectNoElements (message?: string): this {
+  public shouldHaveElements (count: number, message?: string): this {
     return this.expect(elements => {
-      expectElements(elements)
-
-      if (elements.length !== 0) {
-        this.error(message || 'expected no elements, found ' + elements.length)
+      if (elements.length !== count) {
+        this.error(message || `expected ${count} ${pluralize('elements', count)}, found ` + elements.length)
       }
     })
   }
 
-  public expectOneElement (message?: string): this {
+  public shouldExist (message?: string): this {
     return this.expect(elements => {
-      expectElements(elements)
-
-      if (elements.length !== 1) {
-        this.error(message || 'expected just one element, found ' + elements.length)
-      }
-    })
-  }
-
-  public elementResult (): HTMLElement {
-    return this.expectOneElement().result()[0]
-  }
-
-  public elementsResult (): HTMLElement {
-    return this.expectSomeElements().result()
-  }
-
-  public expectSomeElements (message?: string): this {
-    return this.expect(elements => {
-      expectElements(elements)
-
       if (elements.length < 1) {
         this.error(message || 'expected one or more elements, found ' + elements.length)
       }
     })
   }
 
-  public expectLength (length: number): this {
+  public shouldNotExist (message?: string): this {
     return this.expect(elements => {
-      expectElements(elements)
-
-      if (elements.length !== length) {
-        this.error(`expected ${length} elements, found ` + elements.length)
+      if (elements.length !== 0) {
+        this.error(message || 'expected no elements, found ' + elements.length)
       }
     })
   }
 
+  public elementResult (): HTMLElement {
+    return this.shouldHaveElements(1).result()[0]
+  }
+
+  public elementsResult (): HTMLElement {
+    return this.shouldExist().result()
+  }
+
   public click (selector?: string): this {
-    return this.optionalSelector(selector).expectOneElement().action(([element]) => {
+    return this.optionalSelector(selector).shouldHaveElements(1).action(([element]) => {
       debug('click', element)
       this._dom.click(element)
     })
@@ -607,7 +591,7 @@ export class Query implements Promise<any> {
 
   public submit (selector?: string): this {
     return this.optionalSelector(selector)
-      .expectOneElement()
+      .shouldHaveElements(1)
       .expect(([element]) => {
         if (!element.form) {
           throw new BrowserMonkeyAssertionError('expected element to be inside a form for submit')
@@ -626,7 +610,7 @@ export class Query implements Promise<any> {
     }
 
     return this.optionalSelector(selector)
-      .expectOneElement()
+      .shouldHaveElements(1)
       .is(inputSelectors.settable)
       .action(([element]) => {
         debug('enterText', element, text)
@@ -684,7 +668,7 @@ export class Query implements Promise<any> {
         },
 
         expectOne: (query): ActualExpected => {
-          query.expectOneElement().result()
+          query.shouldHaveElements(1).result()
           return {
             actual: {},
             expected: {},
@@ -707,14 +691,6 @@ export class Query implements Promise<any> {
         set()
       })
     })
-  }
-
-  public shouldExist (): this {
-    return this.expectSomeElements()
-  }
-
-  public shouldNotExist (): this {
-    return this.expectNoElements()
   }
 
   public async shouldAppearAfter (action: () => void): Promise<void> {
@@ -740,7 +716,7 @@ export class Query implements Promise<any> {
 
         expectOne: (query): ActualExpected => {
           try {
-            query.expectOneElement().result()
+            query.shouldHaveElements(1).result()
             return {actual: {}, expected: {}}
           } catch (e) {
             if (e instanceof BrowserMonkeyAssertionError) {
@@ -925,7 +901,6 @@ export class Query implements Promise<any> {
 
   public findCss (selector: string): this {
     const findElements = this.transform(elements => {
-      expectElements(elements)
       return new ExecutedSimpleTransform(flatten(elements.map(element => {
         return this._dom.querySelectorAll(element, selector, this._options)
       })), 'find(' + inspect(selector) + ')')
@@ -1018,17 +993,11 @@ export class Query implements Promise<any> {
       } else if (typeof model === 'function') {
         return actions.function(query, model)
       } else {
-        return actions.value(query.expectOneElement(), model)
+        return actions.value(query.shouldHaveElements(1), model)
       }
     }
 
     return map(this, model)
-  }
-}
-
-function expectElements (elements): void {
-  if (!isArrayOfHTMLElements(elements)) {
-    throw new BrowserMonkeyAssertionError('expected an array of HTML elements')
   }
 }
 
@@ -1057,13 +1026,6 @@ function isHTMLElement (element, subclass = 'HTMLElement'): boolean {
   } else {
     return false
   }
-}
-
-function isArrayOfHTMLElements (elements): boolean {
-  return elements instanceof Array &&
-    elements.every(element => {
-      return isHTMLElement(element)
-    })
 }
 
 type Retry = <T>(fn: () => T, options?: {timeout?: number, interval?: number}) => Promise<T>

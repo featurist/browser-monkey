@@ -16,7 +16,7 @@ describe('query', () => {
   })
 
   it('can find an element by DOM selector', async () => {
-    const selectedElementPromise = browserMonkey.find('.test').expectOneElement().then()
+    const selectedElementPromise = browserMonkey.find('.test').shouldHaveElements(1).then()
 
     const insertedElementPromise = assembly.eventuallyInsertHtml(
       `<div class="test"></div>`
@@ -38,7 +38,7 @@ describe('query', () => {
     })
   })
 
-  describe('expectNoElements', () => {
+  describe('shouldNotExist', () => {
     it('passes when there are no elements found', async () => {
       assembly.insertHtml(`
         <div class="contact">
@@ -49,7 +49,7 @@ describe('query', () => {
 
       const contacts = browserMonkey
         .find('.contact')
-        .expectNoElements()
+        .shouldNotExist()
         .then()
 
       assembly.eventuallyDeleteHtml('.contact')
@@ -71,7 +71,7 @@ describe('query', () => {
 
       const contacts = browserMonkey
         .find('.contact')
-        .expectNoElements()
+        .shouldNotExist()
         .then()
 
       assembly.eventuallyDeleteHtml('.message')
@@ -79,63 +79,63 @@ describe('query', () => {
     })
   })
 
-  describe('expectOneElement', () => {
-    it('when there is one element, returns it', async () => {
-      const contacts = browserMonkey
-        .find('.contact')
-        .expectOneElement()
-        .then()
+  describe('shouldHaveElements', () => {
+    describe('when 1', () => {
+      it('when there is one element, returns it', async () => {
+        const contacts = browserMonkey
+          .find('.contact')
+          .shouldHaveElements(1)
+          .then()
 
-      assembly.eventuallyInsertHtml(`
-        <div class="contact">
-          <div class="name">Sally</div>
-          <div class="address">32 Yellow Drive</div>
-        </div>
-      `)
+        assembly.eventuallyInsertHtml(`
+          <div class="contact">
+            <div class="name">Sally</div>
+            <div class="address">32 Yellow Drive</div>
+          </div>
+        `)
 
-      expect(await contacts).to.eql([assembly.find('.contact:nth-child(1)')])
+        expect(await contacts).to.eql([assembly.find('.contact:nth-child(1)')])
+      })
+
+      it('when there is more than one element, throws an error', async () => {
+        const contacts = browserMonkey
+          .find('.contact')
+          .shouldHaveElements(1)
+          .then()
+
+        assembly.eventuallyInsertHtml(`
+          <div class="contact">
+            <div class="name">Sally</div>
+            <div class="address">32 Yellow Drive</div>
+          </div>
+          <div class="contact">
+            <div class="name">Bob</div>
+            <div class="address">32 Red Drive</div>
+          </div>
+        `)
+
+        await assembly.assertRejection(contacts, 'expected 1 element, found 2')
+      })
+
+      it('when there no elements, throws an error', async () => {
+        const contacts = browserMonkey
+          .find('.contact')
+          .shouldHaveElements(1)
+          .then()
+
+        assembly.eventuallyInsertHtml(`
+          <div class="title"></div>
+          <div class="title"></div>
+        `)
+
+        await assembly.assertRejection(contacts, 'expected 1 element, found 0')
+      })
     })
 
-    it('when there is more than one element, throws an error', async () => {
-      const contacts = browserMonkey
-        .find('.contact')
-        .expectOneElement()
-        .then()
-
-      assembly.eventuallyInsertHtml(`
-        <div class="contact">
-          <div class="name">Sally</div>
-          <div class="address">32 Yellow Drive</div>
-        </div>
-        <div class="contact">
-          <div class="name">Bob</div>
-          <div class="address">32 Red Drive</div>
-        </div>
-      `)
-
-      await assembly.assertRejection(contacts, 'expected just one element, found 2')
-    })
-
-    it('when there no elements, throws an error', async () => {
-      const contacts = browserMonkey
-        .find('.contact')
-        .expectOneElement()
-        .then()
-
-      assembly.eventuallyInsertHtml(`
-        <div class="title"></div>
-        <div class="title"></div>
-      `)
-
-      await assembly.assertRejection(contacts, 'expected just one element, found 0')
-    })
-  })
-
-  describe('expectLength', () => {
-    it('asserts list of one element has one element', async () => {
+    it('asserts list of two elements has two elements', async () => {
       const items = browserMonkey
         .find('li ul')
-        .expectLength(2)
+        .shouldHaveElements(2)
         .then()
 
       assembly.eventuallyInsertHtml(`
@@ -148,10 +148,10 @@ describe('query', () => {
       expect(await items).to.eql(assembly.findAll('li ul'))
     })
 
-    it('asserts list of one element has one element', async () => {
+    it('fails when a list of two element is asserted to have three elements', async () => {
       const items = browserMonkey
         .find('li ul')
-        .expectLength(3)
+        .shouldHaveElements(3)
         .then()
 
       assembly.eventuallyInsertHtml(`
@@ -186,7 +186,7 @@ describe('query', () => {
 
       expect(() => browserMonkey
         .find('.title')
-        .elementResult()).to.throw('expected just one element, found 2')
+        .elementResult()).to.throw('expected 1 element, found 2')
     })
 
     it('fails if there are no elements', () => {
@@ -195,7 +195,7 @@ describe('query', () => {
 
       expect(() => browserMonkey
         .find('.title')
-        .elementResult()).to.throw('expected just one element, found 0')
+        .elementResult()).to.throw('expected 1 element, found 0')
     })
   })
 
@@ -225,11 +225,11 @@ describe('query', () => {
     })
   })
 
-  describe('expectSomeElements', () => {
+  describe('shouldExist', () => {
     it('when there are one or more elements, selects them', async () => {
       const contacts = browserMonkey
         .find('.contact')
-        .expectSomeElements()
+        .shouldExist()
         .then()
 
       assembly.eventuallyInsertHtml(`
@@ -249,7 +249,7 @@ describe('query', () => {
     it('when there no elements, throws an error', async () => {
       const contacts = browserMonkey
         .find('.contact')
-        .expectSomeElements()
+        .shouldExist()
         .then()
 
       assembly.eventuallyInsertHtml(`
@@ -342,7 +342,7 @@ describe('query', () => {
         .filter(contact => {
           return contact.querySelector('.name').innerText === 'Sally'
         })
-        .expectOneElement()
+        .shouldHaveElements(1)
         .then()
 
       assembly.eventuallyInsertHtml(`
@@ -367,7 +367,7 @@ describe('query', () => {
         .map(contact => {
           return contact.querySelector('.name')
         })
-        .expectSomeElements()
+        .shouldExist()
         .then()
 
       assembly.eventuallyInsertHtml(`
@@ -428,7 +428,7 @@ describe('query', () => {
         .find('.container')
         .find('.contact')
         .find('.name')
-        .expectOneElement()
+        .shouldHaveElements(1)
         .then()
 
       assembly.eventuallyInsertHtml(`
@@ -441,7 +441,7 @@ describe('query', () => {
         </div>
       `)
 
-      await assembly.assertRejection(name, "expected just one element, found 0 (found: path(find('.container') [1], find('.contact') [2], find('.name') [0]))")
+      await assembly.assertRejection(name, "expected 1 element, found 0 (found: path(find('.container') [1], find('.contact') [2], find('.name') [0]))")
     })
   })
 
@@ -479,7 +479,7 @@ describe('query', () => {
       const promise = browserMonkey.concat([
         b => b.find('.a'),
         b => b.find('.b')
-      ]).find('.child').expectSomeElements()
+      ]).find('.child').shouldExist()
 
       return assembly.assertRejection(promise, "expected one or more elements, found 0 (found: path(concat(find('.a') [1], find('.b') [1]) [2], find('.child') [0])")
     })
@@ -488,8 +488,8 @@ describe('query', () => {
   describe('firstOf', () => {
     it('finds the first of two or more queries', async () => {
       const promise = browserMonkey.firstOf([
-        b => b.find('.a').expectSomeElements(),
-        b => b.find('.b').expectSomeElements()
+        b => b.find('.a').shouldExist(),
+        b => b.find('.b').shouldExist()
       ]).then()
 
       const bPromise = assembly.eventuallyInsertHtml('<div class="b">B</div>')
@@ -504,8 +504,8 @@ describe('query', () => {
       assembly.insertHtml('<div class="content">content<div class="c"/>C</div>')
 
       const promise = browserMonkey.find('.content').firstOf([
-        b => b.find('.a').expectSomeElements(),
-        b => b.find('.b').expectSomeElements()
+        b => b.find('.a').shouldExist(),
+        b => b.find('.b').shouldExist()
       ])
 
       await assembly.assertRejection(promise, "all queries failed in firstOf (found: path(find('.content') [1], firstOf(expected one or more elements, found 0 (found: find('.a') [0]), expected one or more elements, found 0 (found: find('.b') [0])) [0]))")
@@ -516,7 +516,7 @@ describe('query', () => {
 
       const promise = browserMonkey.find('.content').firstOf([
         b => b.find('.a'),
-        b => b.find('.b').expectSomeElements()
+        b => b.find('.b').shouldExist()
       ])
 
       await assembly.assertRejection(promise, 'no expectations or actions in query')
@@ -526,8 +526,8 @@ describe('query', () => {
   describe('detect', () => {
     it('finds the first of two or more queries', async () => {
       const promise = browserMonkey.detect({
-        a: q => q.find('.a').expectSomeElements(),
-        b: q => q.find('.b').expectSomeElements()
+        a: q => q.find('.a').shouldExist(),
+        b: q => q.find('.b').shouldExist()
       }).then()
 
       const bPromise = assembly.eventuallyInsertHtml('<div class="b">B</div>')
@@ -544,8 +544,8 @@ describe('query', () => {
       assembly.insertHtml('<div class="content">content<div class="c"/>C</div>')
 
       const promise = browserMonkey.find('.content').detect({
-        a: b => b.find('.a').expectSomeElements(),
-        b: b => b.find('.b').expectSomeElements()
+        a: b => b.find('.a').shouldExist(),
+        b: b => b.find('.b').shouldExist()
       })
 
       await assembly.assertRejection(promise, "all queries failed in detect (found: path(find('.content') [1], detect(a: expected one or more elements, found 0 (found: find('.a') [0]), b: expected one or more elements, found 0 (found: find('.b') [0])) [0]))")
@@ -556,7 +556,7 @@ describe('query', () => {
 
       const promise = browserMonkey.find('.content').detect({
         a: b => b.find('.a'),
-        b: b => b.find('.b').expectSomeElements()
+        b: b => b.find('.b').shouldExist()
       })
 
       await assembly.assertRejection(promise, 'no expectations or actions in query')

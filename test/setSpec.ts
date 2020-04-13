@@ -161,7 +161,7 @@ describe('set', function () {
           '.street': '7 Lola St',
           '.city': 'Frisby City',
         },
-      }), "expected just one element, found 2 (found: path(find('.address') [1], find('.street') [2]))")
+      }), "expected 1 element, found 2 (found: path(find('.address') [1], find('.street') [2]))")
     })
 
     it('deep fields disambiguate', async () => {
@@ -274,7 +274,7 @@ describe('set', function () {
 
       await browser.set({
         '.street': streetQuery => {
-          streetQuery.expectOneElement().result()[0].innerText = 'hi'
+          streetQuery.shouldHaveElements(1).result()[0].innerText = 'hi'
         }
       })
 
@@ -296,7 +296,7 @@ describe('set', function () {
         '.phone': '123123123',
         '.first-name': 'Barry'
       })
-      await assembly.assertRejection(promise, "expected just one element, found 0 (found: path(find('form') [1], find('.street') [0]))")
+      await assembly.assertRejection(promise, "expected 1 element, found 0 (found: path(find('form') [1], find('.street') [0]))")
 
       expect(assembly.find('.phone').value).to.equal('')
       expect(assembly.find('.first-name').value).to.equal('')

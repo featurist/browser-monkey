@@ -109,7 +109,7 @@ describe('buttons', function () {
     it('throws if the button cannot be found to click', async () => {
       const query = browser.defineButtonType((query, name) => query.find('div.button').containing(name))
       assembly.insertHtml('<button class="target">Login</button>')
-      await assembly.assertRejection(query.clickButton('Logout'), "expected just one element, found 0")
+      await assembly.assertRejection(query.clickButton('Logout'), "expected 1 element, found 0")
     })
   })
 })

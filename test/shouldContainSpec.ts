@@ -55,7 +55,7 @@ describe('shouldContain', function () {
       await assembly.assertExpectedActual(browser, {
         '.address': '12 Hapless Boulevard',
       }, {
-        '.address': "Error: expected just one element, found 0 (found: find('.address') [0])",
+        '.address': "Error: expected 1 element, found 0 (found: find('.address') [0])",
       })
     })
 
@@ -187,7 +187,7 @@ describe('shouldContain', function () {
         '.content': 'The Content'
       }, {
         'h1': 'Title',
-        '.content': "Error: expected just one element, found 0 (found: find('.content') [0])"
+        '.content': "Error: expected 1 element, found 0 (found: find('.content') [0])"
       })
     })
 
@@ -210,7 +210,7 @@ describe('shouldContain', function () {
         '.result': [
           {
             'h1': 'Title',
-            '.content': "Error: expected just one element, found 0 (found: path(find('.result') [2], index 0 [1], find('.content') [0]))"
+            '.content': "Error: expected 1 element, found 0 (found: path(find('.result') [2], index 0 [1], find('.content') [0]))"
           },
           'The Content'
         ]
@@ -244,7 +244,7 @@ describe('shouldContain', function () {
           '.content': {}
         }, {
           'h1': 'Title',
-          '.content': "Error: expected just one element, found 0 (found: find('.content') [0])"
+          '.content': "Error: expected 1 element, found 0 (found: find('.content') [0])"
         })
       })
     })

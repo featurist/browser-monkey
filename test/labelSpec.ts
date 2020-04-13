@@ -29,7 +29,7 @@ describe('labels', function () {
   function assertNothingFound(query, html, label): void {
     assembly.insertHtml(html)
 
-    query.find(label).expectNoElements().result()
+    query.find(label).shouldNotExist().result()
   }
 
   describe('finding elements by their label', () => {
@@ -244,7 +244,7 @@ describe('labels', function () {
 
       const without = query.undefineLabelType('data-label')
 
-      await without.find('Label("Search")').expectNoElements().result()
+      await without.find('Label("Search")').shouldNotExist().result()
     })
 
     it("throws if we try to undefine a label that doesn't exist", async () => {

@@ -91,8 +91,8 @@ describe('containing', function () {
       `)
 
       expect(() =>
-        browser.find('.result').containing({'.title': 'Title', '.body': 'None'}).expectOneElement().result()
-      ).to.throw(`expected just one element, found 0 (found: path(find('.result') [3], containing(...expected just one element, found 0 (found: find('.title') [0])) [0]))`)
+        browser.find('.result').containing({'.title': 'Title', '.body': 'None'}).shouldHaveElements(1).result()
+      ).to.throw(`expected 1 element, found 0 (found: path(find('.result') [3], containing(...expected 1 element, found 0 (found: find('.title') [0])) [0]))`)
     })
   })
 
@@ -142,10 +142,10 @@ describe('containing', function () {
         </div>
       `)
 
-      browser.find('.result').containing(result => result.find('.body').shouldExist()).find('.title').expectOneElement().result()
+      browser.find('.result').containing(result => result.find('.body').shouldExist()).find('.title').shouldHaveElements(1).result()
       expect(() =>
-        browser.find('.result').containing(result => result.find('.body').shouldExist()).find('.title').expectOneElement().result()
-      ).to.throw(`expected just one element, found 0 (found: path(find('.result') [3], containing(...path(find('.body') [1])) [2], find('.title') [0]))`)
+        browser.find('.result').containing(result => result.find('.body').shouldExist()).find('.title').shouldHaveElements(1).result()
+      ).to.throw(`expected 1 element, found 0 (found: path(find('.result') [3], containing(...path(find('.body') [1])) [2], find('.title') [0]))`)
     })
 
     xit("shows why it couldn't find the element", () => {
@@ -162,8 +162,8 @@ describe('containing', function () {
       `)
 
       expect(() =>
-        browser.find('.result').containing(result => result.find('.body').shouldExist()).find('.title').expectOneElement().result()
-      ).to.throw(`expected just one element, found 0 (found: path(find('.result') [3], containing(...expected one or more elements, found 0 (found: find('.body') [0])) [0], find('.title') [0])`)
+        browser.find('.result').containing(result => result.find('.body').shouldExist()).find('.title').shouldHaveElements(1).result()
+      ).to.throw(`expected 1 element, found 0 (found: path(find('.result') [3], containing(...expected one or more elements, found 0 (found: find('.body') [0])) [0], find('.title') [0])`)
     })
   })
 })

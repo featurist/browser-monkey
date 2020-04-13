@@ -17,7 +17,7 @@ describe('value', function () {
   function assertValue (html, expectedValue): void {
     assembly.insertHtml(html)
 
-    const value = browser.find('.element').expectOneElement().value().result()
+    const value = browser.find('.element').shouldHaveElements(1).value().result()
     expect(value).to.equal(expectedValue)
   }
 
@@ -46,7 +46,7 @@ describe('value', function () {
       const checkbox = assembly.insertHtml('<input class="element" type="checkbox" />')
       checkbox.indeterminate = true
 
-      const value = browser.find('.element').expectOneElement().value().result()
+      const value = browser.find('.element').shouldHaveElements(1).value().result()
       expect(value).to.equal('indeterminate')
     })
   })
