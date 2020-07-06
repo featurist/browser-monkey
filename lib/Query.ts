@@ -25,9 +25,15 @@ import * as matchers from './matchers'
 type Transform = (elements: any, executedTransforms: ExecutedTransform[]) => any
 type Action = (elements: any, executedTransforms: ExecutedTransform[]) => void
 interface InputDefinition {
-  value?: (query: Query) => Query
+  values?: (query: Query) => Query
   setter?: (query: Query, value: any) => Query
-  valueAsserter?: (query: Query, expected: any) => Query
+  valueAsserters?: (query: Query, expected: any) => Query
+}
+
+type Match = {
+  isMatch: boolean,
+  actual: any,
+  expected: any,
 }
 
 type FieldName = string | RegExp
@@ -80,11 +86,10 @@ export class Query implements Promise<any> {
                   }
                 })
             },
-            value: (query) => {
+            values: (query) => {
               return query
                 .is('input[type=checkbox]')
-                .shouldHaveElements(1)
-                .transform(([checkbox]) => {
+                .map((checkbox) => {
                   return query._dom.checked(checkbox)
                 })
             }
@@ -107,37 +112,47 @@ export class Query implements Promise<any> {
                   }
                 })
             },
-            valueAsserter: (query, expected) => {
+            valueAsserters: (query, expected) => {
               return query
                 .is('select')
-                .shouldHaveElements(1, 'expected to be select element')
-                .transform(([select]) => {
+                .map((select) => {
                   return () => {
                     const value = select.value
 
-                    if (match(expected, value).isMatch) {
-                      return
+                    const matchValue = match(expected, value)
+
+                    if (matchValue.isMatch) {
+                      return matchValue
                     }
 
                     const selectedOption = select.options[select.selectedIndex]
                     if (selectedOption) {
                       const actual = query._dom.elementInnerText(selectedOption)
-                      if (match(expected, actual).isMatch) {
-                        return
+                      const matchText = match(expected, actual)
+
+                      if (matchText.isMatch) {
+                        return matchText
                       } else {
-                        this.error('expected ' + inspect(actual) + ' or ' + inspect(value) + ' to equal ' + inspect(expected), { actual, expected })
+                        return {
+                          isMatch: false,
+                          actual,
+                          expected,
+                        }
                       }
                     }
 
-                    this.error('expected ' + inspect(value) + ' to equal ' + inspect(expected), { actual: value, expected })
+                    return {
+                      isMatch: false,
+                      actual: value,
+                      expected,
+                    }
                   }
                 })
             },
-            value: (query) => {
+            values: (query) => {
               return query
                 .is('select')
-                .shouldHaveElements(1, 'expected to be select element')
-                .transform(([select]) => {
+                .map((select) => {
                   const selectedOption = select.options[select.selectedIndex]
                   return selectedOption && query._dom.elementInnerText(selectedOption)
                 })
@@ -154,19 +169,19 @@ export class Query implements Promise<any> {
                   }
                   return () => {
                     debug('set', element, value)
-                    query._dom.enterText(element, [value])
+                    query._dom.enterText(element, value, {incremental: false})
                   }
                 })
             },
-            value: (query) => {
-              return query.is(inputSelectors.gettable).shouldHaveElements(1).transform(([input]) => {
+            values: (query) => {
+              return query.is(inputSelectors.gettable).map((input) => {
                 return input.value
               })
             }
           },
           {
-            value: (query) => {
-              return query.shouldHaveElements(1).transform(([element]) => {
+            values: (query) => {
+              return query.map((element) => {
                 return query._dom.elementInnerText(element)
               })
             }
@@ -675,7 +690,7 @@ export class Query implements Promise<any> {
         },
 
         value: (query, model): ActualExpected => {
-          const setter = query.setter(model).result()
+          const setter = query.shouldHaveElements(1).setter(model).result()
           setters.push(() => setter())
           return {
             actual: undefined,
@@ -748,40 +763,13 @@ export class Query implements Promise<any> {
         },
 
         value: (query, model): ActualExpected => {
-          let valueAsserter
+          const match = query.matchValue(model)
 
-          try {
-            valueAsserter = query.valueAsserter(model).result()
-          } catch (e) {
-            if (e instanceof BrowserMonkeyAssertionError) {
-              isError = true
-              return {
-                actual: e,
-                expected: model,
-              }
-            } else {
-              throw e
-            }
+          if (!match.isMatch) {
+            isError = true
           }
 
-          try {
-            valueAsserter()
-          } catch (e) {
-            if (e instanceof BrowserMonkeyAssertionError) {
-              isError = true
-              return {
-                actual: e.actual,
-                expected: e.expected,
-              }
-            } else {
-              throw e
-            }
-          }
-
-          return {
-            actual: model,
-            expected: model,
-          }
+          return match
         },
 
         function: (query, model): ActualExpected => {
@@ -838,18 +826,30 @@ export class Query implements Promise<any> {
     }))
   }
 
-  private valueAsserter (expected: any): this {
-    return this.firstOf(this._options.definitions.inputs.filter(def => def.value).map(def => {
-      return query => def.valueAsserter
-        ? def.valueAsserter(query, expected)
-        : def.value(query).transform(actual => {
-          return () => {
-            if (!match(actual, expected).isMatch) {
-              this.error('expected ' + inspect(actual) + ' to equal ' + inspect(expected), { actual, expected })
-            }
-          }
+  private valueAsserters (expected: any): this {
+    return this.transform(elements => {
+      const definitions = this._options.definitions.inputs.filter(def => def.values || def.valueAsserters)
+
+      const asserters = elements.map(element => {
+        const queryOfOneElement = this.resolve([element])
+
+        const firstAsserterForElement = definitions.map(def => {
+          const definitionAsserters = def.valueAsserters
+            ? def.valueAsserters(queryOfOneElement, expected)
+            : def.values(queryOfOneElement).transform(actuals => {
+              return actuals.map(actual => () => {
+                return match(actual, expected)
+              })
+            })
+
+          return definitionAsserters.result()[0]
         })
-    }))
+
+        return firstAsserterForElement.find(Boolean)
+      }).filter(Boolean)
+
+      return asserters
+    })
   }
 
   public defineInput (inputDefinition: InputDefinition): void {
@@ -863,14 +863,14 @@ export class Query implements Promise<any> {
           query.error('expected ' + expectedLength + ' ' + pluralize('elements', expectedLength) + ', found ' + actualLength)
         },
 
-        value: (query, value): ActualExpected => {
-          const valueAsserter = query.valueAsserter(value).result()
-          valueAsserter()
+        value: (query, model): ActualExpected => {
+          const match = query.matchValue(model)
 
-          return {
-            actual: value,
-            expected: value
+          if (!match.isMatch) {
+            isError = true
           }
+
+          return match
         },
 
         expectOne: (query): ActualExpected => {
@@ -887,32 +887,60 @@ export class Query implements Promise<any> {
         }
       }
 
-      let lastError
-      let lastSuccess
+      let isError
+      const failingActuals = []
+      const matchingElements = []
 
-      const matchingElements = elements.filter(element => {
+      elements.forEach(element => {
         try {
           const clone = this.resolve([element])
-          lastSuccess = new ExecutedSimpleTransform(clone.mapModel(model, actions))
-          return true
+
+          isError = false
+
+          const match = clone.mapModel(model, actions)
+
+          if (isError) {
+            failingActuals.push(match.actual)
+          } else {
+            matchingElements.push(element)
+          }
         } catch (e) {
           if (e instanceof BrowserMonkeyAssertionError) {
-            lastError = new ExecutedTransformError(e)
-            return false
+            failingActuals.push({
+              isMatch: false,
+              actual: e.actual,
+              expected: e.expected,
+            })
           } else {
             throw e
           }
         }
       })
 
-      return new ExecutedContainingTransform(matchingElements, lastSuccess ? lastSuccess : lastError)
+      return new ExecutedContainingTransform(matchingElements, model, failingActuals.length ? failingActuals : undefined)
     })
   }
 
-  public value (): this {
-    return this.firstOf(this._options.definitions.inputs.filter(def => def.value).map(def => {
-      return query => def.value(query)
-    }))
+  public values (): this {
+    return this.transform(elements => {
+      const definitions = this._options.definitions.inputs.filter(def => def.values)
+
+      const values = elements.map(element => {
+        const queryOfOneElement = this.resolve([element])
+
+        const value = definitions.map(def => {
+          const values = def.values(queryOfOneElement).transform(actuals => {
+            return actuals
+          }).result()
+
+          return values
+        }).filter(vs => vs.length).map(vs => vs[0])[0]
+
+        return value
+      })
+
+      return values
+    })
   }
 
   public findCss (selector: string): this {
@@ -968,6 +996,28 @@ export class Query implements Promise<any> {
     return selector ? this.find(selector) : this
   }
 
+  private matchValue(model: any): Match {
+    const valueAsserters = this.valueAsserters(model).result()
+    const results = valueAsserters.map(valueAsserter => valueAsserter())
+    const success = results.find(r => r.isMatch)
+
+    if (success) {
+      return success
+    } else {
+      const actual = results.length === 1
+        ? results[0].actual
+        : results.length === 0
+          ? undefined
+          : results.map(r => r.actual)
+
+      return {
+        isMatch: false,
+        actual,
+        expected: model,
+      }
+    }
+  }
+
   private mapModel (model: any, actions: Actions): any {
     const map = (query: Query, model: any): any => {
       if (model === missing) {
@@ -1009,7 +1059,7 @@ export class Query implements Promise<any> {
       } else if (typeof model === 'function') {
         return actions.function(query, model)
       } else {
-        return actions.value(query.shouldHaveElements(1), model)
+        return actions.value(query, model)
       }
     }
 

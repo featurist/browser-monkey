@@ -26,6 +26,33 @@ describe('shouldContain', function () {
       })
     })
 
+    it('can assert html element when there are more than one', async () => {
+      assembly.insertHtml(`
+        <span class="address">12 Hapless Boulevard</span>
+        <span class="address">54 Harvard St</span>
+      `)
+
+      await browser.shouldContain({
+        '.address': '12 Hapless Boulevard',
+      })
+    })
+
+    it('fails to assert html element when there are more than one', async () => {
+      assembly.insertHtml(`
+        <span class="address">12 Boulevard Ave</span>
+        <span class="address">54 Harvard St</span>
+      `)
+
+      await assembly.assertExpectedActual(browser, {
+        '.address': '12 Hapless Boulevard',
+      }, {
+        '.address': [
+          '12 Boulevard Ave',
+          '54 Harvard St',
+        ],
+      })
+    })
+
     it('can assert text inputs', async () => {
       assembly.insertHtml(`
         <input type=text class="address" value="12 Hapless Boulevard"/>
@@ -55,7 +82,7 @@ describe('shouldContain', function () {
       await assembly.assertExpectedActual(browser, {
         '.address': '12 Hapless Boulevard',
       }, {
-        '.address': "Error: expected 1 element, found 0 (found: find('.address') [0])",
+        '.address': undefined,
       })
     })
 
@@ -187,7 +214,7 @@ describe('shouldContain', function () {
         '.content': 'The Content'
       }, {
         'h1': 'Title',
-        '.content': "Error: expected 1 element, found 0 (found: find('.content') [0])"
+        '.content': undefined,
       })
     })
 
@@ -210,7 +237,7 @@ describe('shouldContain', function () {
         '.result': [
           {
             'h1': 'Title',
-            '.content': "Error: expected 1 element, found 0 (found: path(find('.result') [2], index 0 [1], find('.content') [0]))"
+            '.content': undefined,
           },
           'The Content'
         ]

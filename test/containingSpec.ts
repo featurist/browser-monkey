@@ -64,6 +64,7 @@ describe('containing', function () {
         </div>
         <div class="result correct">
           <div class="title">Title</div>
+          <div class="title">ax</div>
           <div class="body">Body</div>
         </div>
         <div class="result">
@@ -72,6 +73,20 @@ describe('containing', function () {
       `)
 
       const results = browser.find('.result').containing({'.title': 'Title', '.body': 'Body'}).result()
+      const expected = assembly.findAll('.correct')
+      expect(results).to.eql(expected)
+    })
+
+    it('matches when it matches one of several child elements', () => {
+      assembly.insertHtml(`
+        <div class="result correct">
+          <div class="title">Title</div>
+          <div class="title">Other</div>
+          <div class="body">Body</div>
+        </div>
+      `)
+
+      const results = browser.find('.result').containing({'.title': 'Title'}).result()
       const expected = assembly.findAll('.correct')
       expect(results).to.eql(expected)
     })
@@ -92,7 +107,7 @@ describe('containing', function () {
 
       expect(() =>
         browser.find('.result').containing({'.title': 'Title', '.body': 'None'}).shouldHaveElements(1).result()
-      ).to.throw(`expected 1 element, found 0 (found: path(find('.result') [3], containing(...expected 1 element, found 0 (found: find('.title') [0])) [0]))`)
+      ).to.throw(`expected 1 element, found 0 (found: path(find('.result') [3], containing({"expected":{".title":"Title",".body":"None"},"actual":[{".title":"Title"},{".title":"Title",".body":"Body"},{".body":"Body"}]}) [0]))`)
     })
   })
 
