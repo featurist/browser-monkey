@@ -1,4 +1,5 @@
 import { ExecutedTransform } from './ExecutedTransform'
+import inspect from 'object-inspect'
 
 export class ExecutedContainingTransform extends ExecutedTransform {
   public model: any
@@ -11,6 +12,6 @@ export class ExecutedContainingTransform extends ExecutedTransform {
   }
 
   public renderError (): string {
-    return `containing(${this.failingActuals ? JSON.stringify({expected: this.model, actual: this.failingActuals}) : ''}) [${this.value.length}]`
+    return `containing(${this.failingActuals ? inspect({expected: this.model, actual: this.failingActuals}) : inspect(this.model)}) [${this.value.length}]`
   }
 }

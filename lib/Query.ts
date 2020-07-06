@@ -804,6 +804,9 @@ export class Query implements Promise<any> {
 
   public index (index: number): this {
     return this.transform(elements => {
+      if (elements.length <= index) {
+        this.error(`index(${index}) where there are only ${elements.length} elements`)
+      }
       return new ExecutedSimpleTransform([elements[index]], 'index ' + index)
     })
   }
@@ -820,9 +823,9 @@ export class Query implements Promise<any> {
     return this
   }
 
-  private setter (model): this {
+  private setter (value): this {
     return this.firstOf(this._options.definitions.inputs.filter(def => def.setter).map(def => {
-      return query => def.setter(query, model)
+      return query => def.setter(query, value)
     }))
   }
 
@@ -917,7 +920,7 @@ export class Query implements Promise<any> {
         }
       })
 
-      return new ExecutedContainingTransform(matchingElements, model, failingActuals.length ? failingActuals : undefined)
+      return new ExecutedContainingTransform(matchingElements, model, matchingElements.length ? undefined : failingActuals)
     })
   }
 
