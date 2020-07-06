@@ -9,37 +9,37 @@ import { ExecutedTransformError } from './ExecutedTransformError'
 import Dom from './Dom'
 import BrowserMonkeyAssertionError from './BrowserMonkeyAssertionError'
 import toExecutedTransform from './toExecutedTransform'
-const pluralize = require('pluralize')
-const extend = require('lowscore/extend')
+import pluralize from 'pluralize'
+import extend from 'lowscore/extend'
 import retry from './retry'
-const inspect = require('object-inspect')
-const uniq = require('lowscore/uniq')
+import inspect from 'object-inspect'
+import uniq from 'lowscore/uniq'
 const debug = require('debug')('browser-monkey')
-const inputSelectors = require('./inputSelectors')
-const object = require('lowscore/object')
-const range = require('lowscore/range')
-const flatten = require('lowscore/flatten')
+import inputSelectors from './inputSelectors'
+import object from 'lowscore/object'
+import range from 'lowscore/range'
+import flatten from 'lowscore/flatten'
 import {match} from './match'
 import * as matchers from './matchers'
 
 type Transform = (elements: any, executedTransforms: ExecutedTransform[]) => any
 type Action = (elements: any, executedTransforms: ExecutedTransform[]) => void
-interface FieldType {
+interface InputDefinition {
   value?: (query: Query) => Query
   setter?: (query: Query, value: any) => Query
   valueAsserter?: (query: Query, expected: any) => Query
 }
 
-type LabelName = string | RegExp
-type LabelDefinition = <Q extends Query>(query: Q, name: LabelName) => Q
-type FieldDefinition = <Q extends Query>(query: Q, ...any) => Q
+type FieldName = string | RegExp
+type FieldFinderDefinition = <Q extends Query>(query: Q, name: FieldName) => Q
+type FinderDefinition = <Q extends Query>(query: Q, ...any) => Q
 
 interface Definitions {
-  fieldTypes: FieldType[]
-  button: LabelDefinition[]
-  label: ({name: string, definition: LabelDefinition})[]
-  fields: {
-    [key: string]: FieldDefinition
+  inputs: InputDefinition[]
+  buttons: FieldFinderDefinition[]
+  fields: ({name: string, definition: FieldFinderDefinition})[]
+  finders: {
+    [key: string]: FinderDefinition
   }
 }
 
@@ -62,7 +62,7 @@ export class Query implements Promise<any> {
       timeout: 1000,
       interval: 10,
       definitions: {
-        fieldTypes: [
+        inputs: [
           {
             setter: (query, value) => {
               return query
@@ -154,7 +154,7 @@ export class Query implements Promise<any> {
                   }
                   return () => {
                     debug('set', element, value)
-                    query._dom.enterText(element, value, {incremental: false})
+                    query._dom.enterText(element, [value])
                   }
                 })
             },
@@ -172,12 +172,12 @@ export class Query implements Promise<any> {
             }
           },
         ],
-        button: [
+        buttons: [
           (query, name) => {
             return query.findCss('button, input[type=button], input[type=submit], input[type=reset], a').containing(name)
           },
         ],
-        label: [
+        fields: [
           {
             name: 'label',
             definition: (query, name) => {
@@ -223,8 +223,8 @@ export class Query implements Promise<any> {
             },
           },
         ],
-        fields: {
-          Label: (q, value) => q.findLabel(value),
+        finders: {
+          Field: (q, value) => q.findLabel(value),
           Button: (q, value) => q.findButton(value),
           Css: (q, value) => q.findCss(value),
         },
@@ -264,8 +264,8 @@ export class Query implements Promise<any> {
     })
   }
 
-  public findButton (name: LabelName): this {
-    return this.concat(this._options.definitions.button.map(definition => {
+  public findButton (name: FieldName): this {
+    return this.concat(this._options.definitions.buttons.map(definition => {
       return (q: Query): Query => {
         return definition(q, name)
       }
@@ -273,33 +273,49 @@ export class Query implements Promise<any> {
   }
 
   public findLabel (name: string): this {
-    return this.concat(this._options.definitions.label.map(({definition}) => {
+    return this.concat(this._options.definitions.fields.map(({definition}) => {
       return (q: Query): Query => {
         return definition(q, name)
       }
     }))
   }
 
-  public defineButtonType (definition: LabelDefinition): this {
-    return this.clone(q => q._options.definitions.button.push(definition))
-  }
-
-  public defineLabelType (name: string | LabelDefinition, definition?: LabelDefinition): this {
+  public defineButtonFinder (name: string | FieldFinderDefinition, definition: FieldFinderDefinition): this {
     if (!definition) {
-      definition = name as LabelDefinition
+      definition = name as FieldFinderDefinition
       name = undefined
     }
 
-    return this.clone(q => q._options.definitions.label.push({name: name as string, definition}))
+    return this.clone(q => q._options.definitions.buttons.push(definition))
   }
 
-  public undefineLabelType (name: string): this {
+  public undefineButtonFinder (name: string): this {
     return this.clone(q => {
-      const index = q._options.definitions.label.findIndex(def => def.name === name)
+      const index = q._options.definitions.buttons.findIndex(def => def.name === name)
       if (index >= 0) {
-        q._options.definitions.label.splice(index, 1)
+        q._options.definitions.buttons.splice(index, 1)
       } else {
-        throw new Error(`label definition ${JSON.stringify(name)} doesn't exist`)
+        throw new Error(`field definition ${JSON.stringify(name)} doesn't exist`)
+      }
+    })
+  }
+
+  public defineFieldFinder (name: string | FieldFinderDefinition, definition?: FieldFinderDefinition): this {
+    if (!definition) {
+      definition = name as FieldFinderDefinition
+      name = undefined
+    }
+
+    return this.clone(q => q._options.definitions.fields.push({name: name as string, definition}))
+  }
+
+  public undefineFieldFinder (name: string): this {
+    return this.clone(q => {
+      const index = q._options.definitions.fields.findIndex(def => def.name === name)
+      if (index >= 0) {
+        q._options.definitions.fields.splice(index, 1)
+      } else {
+        throw new Error(`field definition ${JSON.stringify(name)} doesn't exist`)
       }
     })
   }
@@ -585,7 +601,7 @@ export class Query implements Promise<any> {
     })
   }
 
-  public clickButton (name: LabelName): this {
+  public clickButton (name: FieldName): this {
     return this.findButton(name).click()
   }
 
@@ -804,12 +820,12 @@ export class Query implements Promise<any> {
     })
   }
 
-  public define (name: string, fieldDefinition): this {
-    if (typeof fieldDefinition === 'function') {
-      this._options.definitions.fields[name] = fieldDefinition
-    } else if (typeof fieldDefinition === 'string') {
-      this._options.definitions.fields[name] = q => q.find(fieldDefinition)
-    } else if (name.constructor === Object && fieldDefinition === undefined) {
+  public define (name: string, finderDefinition): this {
+    if (typeof finderDefinition === 'function') {
+      this._options.definitions.finders[name] = finderDefinition
+    } else if (typeof finderDefinition === 'string') {
+      this._options.definitions.finders[name] = q => q.find(finderDefinition)
+    } else if (name.constructor === Object && finderDefinition === undefined) {
       Object.keys(name).forEach(key => this.define(key, name[key]))
     }
 
@@ -817,13 +833,13 @@ export class Query implements Promise<any> {
   }
 
   private setter (model): this {
-    return this.firstOf(this._options.definitions.fieldTypes.filter(def => def.setter).map(def => {
+    return this.firstOf(this._options.definitions.inputs.filter(def => def.setter).map(def => {
       return query => def.setter(query, model)
     }))
   }
 
   private valueAsserter (expected: any): this {
-    return this.firstOf(this._options.definitions.fieldTypes.filter(def => def.value).map(def => {
+    return this.firstOf(this._options.definitions.inputs.filter(def => def.value).map(def => {
       return query => def.valueAsserter
         ? def.valueAsserter(query, expected)
         : def.value(query).transform(actual => {
@@ -836,8 +852,8 @@ export class Query implements Promise<any> {
     }))
   }
 
-  public defineFieldType (fieldTypeDefinition: FieldType): void {
-    this._options.definitions.fieldTypes.unshift(fieldTypeDefinition)
+  public defineInput (inputDefinition: InputDefinition): void {
+    this._options.definitions.inputs.unshift(inputDefinition)
   }
 
   public containing (model: any): this {
@@ -894,7 +910,7 @@ export class Query implements Promise<any> {
   }
 
   public value (): this {
-    return this.firstOf(this._options.definitions.fieldTypes.filter(def => def.value).map(def => {
+    return this.firstOf(this._options.definitions.inputs.filter(def => def.value).map(def => {
       return query => def.value(query)
     }))
   }
@@ -915,7 +931,7 @@ export class Query implements Promise<any> {
 
     if (match) {
       const [, name,, value] = match
-      const finder = this._options.definitions.fields[name]
+      const finder = this._options.definitions.finders[name]
 
       if (value !== undefined) {
         if (finder) {

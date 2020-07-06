@@ -42,7 +42,7 @@ describe('labels', function () {
             Feature Enabled
           </label>
         `,
-        'Label("Feature Enabled")'
+        'Field("Feature Enabled")'
       )
     })
 
@@ -55,7 +55,7 @@ describe('labels', function () {
           </label>
           <input id="my-checkbox" type=checkbox class="result" />
         `,
-        'Label("Feature Enabled")'
+        'Field("Feature Enabled")'
       )
     })
 
@@ -68,7 +68,7 @@ describe('labels', function () {
           </label>
           <input id="my-checkbox" type=checkbox class="result" />
         `,
-        'Label("Feature Enabled")'
+        'Field("Feature Enabled")'
       )
     })
 
@@ -81,7 +81,7 @@ describe('labels', function () {
           </label>
           <input id="my-checkbox" type=checkbox class="result" />
         `,
-        'Label("Feature")'
+        'Field("Feature")'
       )
     })
 
@@ -94,7 +94,7 @@ describe('labels', function () {
           </label>
           <input id="my-checkbox" type=checkbox class="result" />
         `,
-        'Label(/Feature/)'
+        'Field(/Feature/)'
       )
     })
   })
@@ -106,7 +106,7 @@ describe('labels', function () {
         `
           <input aria-label="Search" type=text class="result" />
         `,
-        'Label("Search")'
+        'Field("Search")'
       )
     })
 
@@ -116,7 +116,7 @@ describe('labels', function () {
         `
           <input aria-label="Search" type=text class="result" />
         `,
-        'Label(/sea/i)'
+        'Field(/sea/i)'
       )
     })
 
@@ -126,7 +126,7 @@ describe('labels', function () {
         `
           <input aria-label="Search Box" type=text class="result" />
         `,
-        'Label("Search")'
+        'Field("Search")'
       )
     })
 
@@ -137,7 +137,7 @@ describe('labels', function () {
           <label id="search-label">Search</label>
           <input aria-labelledby="search-label" type=text class="result" />
         `,
-        'Label("Search")'
+        'Field("Search")'
       )
     })
 
@@ -148,7 +148,7 @@ describe('labels', function () {
           <label id="search-label">Search Box</label>
           <input aria-labelledby="search-label" type=text class="result" />
         `,
-        'Label(/sea/i)'
+        'Field(/sea/i)'
       )
     })
 
@@ -159,7 +159,7 @@ describe('labels', function () {
           <label id="search-label">Search</label>
           <input aria-labelledby="wrong-search-label" type=text class="result" />
         `,
-        'Label("Search")'
+        'Field("Search")'
       )
     })
 
@@ -170,7 +170,7 @@ describe('labels', function () {
           <label id="search-label">Search Box</label>
           <input aria-labelledby="wrong-search-label" type=text class="result" />
         `,
-        'Label("Search")'
+        'Field("Search")'
       )
     })
   })
@@ -182,7 +182,7 @@ describe('labels', function () {
         `
           <input type=text class="result" placeholder="Search" />
         `,
-        'Label("Search")'
+        'Field("Search")'
       )
     })
 
@@ -192,7 +192,7 @@ describe('labels', function () {
         `
           <input type=text class="result" placeholder="Search" />
         `,
-        'Label(/sea/i)'
+        'Field(/sea/i)'
       )
     })
   })
@@ -213,7 +213,7 @@ describe('labels', function () {
 
     const expected = assembly.findAll('.result')
 
-    const found = browser.find('Label("Feature Enabled")').result()
+    const found = browser.find('Field("Feature Enabled")').result()
 
     expect(found).to.eql(expected)
   })
@@ -227,7 +227,7 @@ describe('labels', function () {
         `
           <div class="result" data-label="Search"/>
         `,
-        'Label("Search")'
+        'Field("Search")'
       )
     })
 
@@ -239,12 +239,12 @@ describe('labels', function () {
         `
           <div class="result" data-label="Search"/>
         `,
-        'Label("Search")'
+        'Field("Search")'
       )
 
       const without = query.undefineLabelType('data-label')
 
-      await without.find('Label("Search")').shouldNotExist().result()
+      await without.find('Field("Search")').shouldNotExist().result()
     })
 
     it("throws if we try to undefine a label that doesn't exist", async () => {
