@@ -5,10 +5,10 @@ const $ = require('jquery')
 const pathUtils = require('path')
 import retry from '../../lib/retry'
 const { expect } = require('chai')
-const inspect = require('object-inspect')
 import Dom from '../../lib/Dom'
 import {Query} from '../../lib/Query'
 const object = require('lowscore/object')
+import inspect from 'object-inspect'
 
 export class DomAssembly {
   private delayedOperations: number
@@ -140,12 +140,16 @@ export class DomAssembly {
     expect(document.activeElement).to.equal(element)
   }
 
-  public assertRejection (promise: Promise<any>, expectedMessage): Promise<void> {
+  public assertRejection (promise: Promise<any>, expectedMessage, {assertMetrics = false} = {}): Promise<void> {
     return promise.then(() => {
-      throw new Error('expected rejection ' + JSON.stringify(expectedMessage))
+      throw new Error('expected rejection ' + inspect(expectedMessage))
     }, e => {
-      if (e.message.indexOf(expectedMessage) === -1) {
-        throw new Error('expected error message ' + inspect(e.message) + ' to include ' + inspect(expectedMessage))
+      const message = assertMetrics
+        ? e.message
+        : e.message.replace(/ \[waited \d+ms, retried \d+ times\]/, '')
+
+      if (expectedMessage instanceof RegExp ? !expectedMessage.test(message) : message.indexOf(expectedMessage) === -1) {
+        throw new Error('expected error message ' + inspect(message) + ' to include ' + inspect(expectedMessage))
       }
     })
   }

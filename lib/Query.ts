@@ -516,10 +516,18 @@ export class Query implements Promise<any> {
 
     const retry = retryFromOptions(this._options)
 
+    let retries = 0
+    const startTime = new Date()
+
     const promise = Promise.resolve(retry(() => {
+      retries++
       return this.execute().value
     })).catch(error => {
       if (error instanceof BrowserMonkeyAssertionError) {
+        error.retries = retries
+        error.duration = new Date() - startTime
+        error.rewriteMessage()
+
         if (debug.enabled) {
           debug('assertion error', error.message)
           error.executedTransforms.transforms.forEach(transform => {

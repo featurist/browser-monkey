@@ -7,6 +7,8 @@ class BrowserMonkeyAssertionError extends Error {
   public expected: any
   public actual: any
   public executedTransforms: ExecutedTransformPath
+  public duration: number
+  public retries: number
 
   public constructor (message, {
     expected = undefined,
@@ -39,7 +41,11 @@ class BrowserMonkeyAssertionError extends Error {
   }
 
   public renderError (): string {
-    return `${this.description}${this.executedTransforms.transforms.length ? ` (found: ${this.executedTransforms.renderError()})`: ''}`
+    const stats = this.duration !== undefined && this.retries !== undefined
+      ? ` [waited ${this.duration}ms, retried ${this.retries} times]`
+      : ''
+      
+    return `${this.description}${stats}${this.executedTransforms.transforms.length ? ` (found: ${this.executedTransforms.renderError()})`: ''}`
   }
 }
 

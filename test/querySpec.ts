@@ -485,6 +485,18 @@ describe('query', () => {
     })
   })
 
+  describe('errors', () => {
+    it('throws error with wait duration and retry count', async () => {
+      assembly.insertHtml(`
+        <div class="a">A</div>
+      `)
+
+      const promise = browserMonkey.find('.b').shouldExist()
+
+      return assembly.assertRejection(promise, /expected one or more elements, found 0 \[waited \d+ms, retried 1 times\]/, {assertMetrics: true})
+    })
+  })
+
   describe('firstOf', () => {
     it('finds the first of two or more queries', async () => {
       const promise = browserMonkey.firstOf([

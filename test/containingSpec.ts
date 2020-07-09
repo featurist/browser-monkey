@@ -107,7 +107,7 @@ describe('containing', function () {
 
       expect(() =>
         browser.find('.result').containing({'.title': 'Title', '.body': 'None'}).shouldHaveElements(1).result()
-      ).to.throw(`expected 1 element, found 0 (found: path(find('.result') [3], containing({"expected":{".title":"Title",".body":"None"},"actual":[{".title":"Title"},{".title":"Title",".body":"Body"},{".body":"Body"}]}) [0]))`)
+      ).to.throw(`expected 1 element, found 0 (found: path(find('.result') [3], containing({ expected: { '.title': 'Title', '.body': 'None' }, actual: [ { '.title': 'Title', '.body': undefined }, { '.title': 'Title', '.body': 'Body' }, { '.title': undefined, '.body': 'Body' } ] }) [0]))`)
     })
   })
 
