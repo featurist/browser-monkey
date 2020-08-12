@@ -28,7 +28,7 @@ export default class Mount {
   }
 
   public unmount (): void {
-    if (this._mountDiv) {
+    if (this._mountDiv?.parentNode) {
       this._mountDiv.parentNode.removeChild(this._mountDiv)
     }
   }

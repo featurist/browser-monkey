@@ -11,6 +11,12 @@ describe('mount', () => {
   testMount('hyperdom', () => new HyperdomMount(new (require('./app/hyperdom'))()))
   testMount('react', () => new ReactMount(React.createElement(ReactApp, {}, null)))
   testMount('iframe', () => new IFrameMount(DomAssembly.localUrl('iframe-mount-test.html')))
+
+  it('unmounts idempotently', function() {
+    const mount  = new IFrameMount(DomAssembly.localUrl('iframe-mount-test.html'))
+    mount.unmount()
+    mount.unmount()
+  })
 })
 
 function testMount (appType, createMount: () => Mount): void {
