@@ -525,7 +525,7 @@ export class Query implements Promise<any> {
     })).catch(error => {
       if (error instanceof BrowserMonkeyAssertionError) {
         error.retries = retries
-        error.duration = new Date() - startTime
+        error.duration = Number(new Date()) - Number(startTime)
         error.rewriteMessage()
 
         if (debug.enabled) {

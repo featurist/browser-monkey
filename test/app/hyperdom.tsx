@@ -1,10 +1,7 @@
-/** @jsx hyperdom.jsx */
-const hyperdom = require('hyperdom')
+import * as hyperdom from 'hyperdom'
 
-module.exports = class WebApp {
-  constructor () {
-    this.message = 'default'
-  }
+export default class WebApp extends hyperdom.RenderComponent {
+  private message = 'default'
 
   hello () {
     this.message = 'hello browser-monkey'

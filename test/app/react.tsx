@@ -1,3 +1,5 @@
+/* @jsx React.createElement */
+// @ts-nocheck
 import React from 'react'
 
 export default class WebApp extends React.Component<{}, {message: string}> {

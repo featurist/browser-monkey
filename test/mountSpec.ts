@@ -6,9 +6,10 @@ import Mount from '../lib/Mount'
 import ReactApp from './app/react'
 import React from 'react'
 import HyperdomMount from '../lib/HyperdomMount'
+import HyperdomApp from './app/hyperdom'
 
 describe('mount', () => {
-  testMount('hyperdom', () => new HyperdomMount(new (require('./app/hyperdom'))()))
+  testMount('hyperdom', () => new HyperdomMount(new HyperdomApp()))
   testMount('react', () => new ReactMount(React.createElement(ReactApp, {}, null)))
   testMount('iframe', () => new IFrameMount(DomAssembly.localUrl('iframe-mount-test.html')))
 

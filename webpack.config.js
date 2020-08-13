@@ -5,6 +5,7 @@ const exclude = p =>
   && !p.includes(path.resolve(__dirname, 'node_modules/debug'))
 
 module.exports = {
+  mode: 'none',
   entry: './index.ts',
   optimization: {
     minimize: false,
@@ -12,14 +13,22 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.[jt]sx?$/,
+        test: /\.jsx$/,
         use: 'babel-loader',
         exclude,
       },
       {
-        test: /\.css$/i,
-        use: ['to-string-loader', 'css-loader'],
-      },
+        test: /\.tsx?$/,
+        use: [
+          {
+            loader: 'ts-loader',
+            // options: {
+            //   transpileOnly: true
+            // }
+          }
+        ],
+        exclude,
+      }
     ],
   },
   devtool: 'inline-source-map',

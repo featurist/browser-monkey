@@ -1,3 +1,4 @@
+/* @jsx React.createElement */
 import {Query} from '../lib/Query'
 import ReactMount from '../lib/ReactMount'
 

@@ -162,6 +162,7 @@ export default class Dom {
 }
 
 function createMouseEvent (type): MouseEvent {
+  // @ts-ignore
   return new MouseEvent(type, { bubbles: true, cancelable: true })
 }
 
@@ -177,6 +178,7 @@ function matchKeyCode (text) {
 }
 
 function createKeyboardEvent (type, key): KeyboardEvent {
+  // @ts-ignore
   const event = new KeyboardEvent(type, { bubbles: true, cancelable: true })
 
   const match = matchKeyCode(key)

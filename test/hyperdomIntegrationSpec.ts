@@ -30,10 +30,11 @@ describe('hyperdom integration', function () {
       gender?: string
     }
 
-    class App {
+    class App extends hyperdom.RenderComponent {
       private model: Model
 
       public constructor (model) {
+        super()
         this.model = model
       }
 

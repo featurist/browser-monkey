@@ -1,18 +1,20 @@
 {
   "compilerOptions": {
-    "lib": ["es2015", "dom"],
+    "lib": ["dom"],
     "noImplicitAny": false,
     "esModuleInterop": true,
-    "module": "commonjs",
-    "target": "ES5",
-    "outDir": "dist",
     "rootDir": ".",
-    "allowJs": false,
+    "outDir": "./dist",
+    "allowJs": true,
+    "target": "ES6",
+    "module": "CommonJS",
     "jsx": "react",
+    "jsxFactory": "hyperdom.jsx",
     "sourceMap": true
   },
   "exclude": [
     "node_modules",
+    "docs",
     "dist"
   ]
 }
