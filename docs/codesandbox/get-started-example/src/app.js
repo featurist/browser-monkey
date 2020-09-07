@@ -3,14 +3,21 @@ import { html as h } from "hyperdom";
 export default class App {
   async getBeerInfo() {
     delete this.beer;
-    const response = await fetch("https://api.punkapi.com/v2/beers/192");
+    const response = await fetch(
+      `https://api.punkapi.com/v2/beers?beer_name=${this.query || "sunk"}`
+    );
     this.beer = await response.json();
   }
 
   render() {
     return h("main", [
-      h("h1", "Hello Lubbers"),
-      h("button", { onclick: () => this.getBeerInfo() }, "Beer"),
+      h("h1", "Hello, Lubbers!"),
+      h("label", [
+        "Name a beer",
+        h("br"),
+        h("input", { binding: [this, "query"] })
+      ]),
+      h("button", { onclick: () => this.getBeerInfo() }, "Get It"),
       this.beer
         ? h("div", [
             h("div", this.beer[0].name),

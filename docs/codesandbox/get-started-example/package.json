@@ -1,5 +1,5 @@
 {
-  "name": "browser-monkey-example",
+  "name": "bm3-example",
   "version": "1.0.0",
   "description": "Browser Monkey basic usage example",
   "main": "index.html",
@@ -8,10 +8,11 @@
     "build": "parcel build index.html"
   },
   "dependencies": {
-    "browser-monkey": "latest",
+    "browser-monkey": "3.0.0-beta.4",
     "hyperdom": "latest"
   },
   "devDependencies": {
     "parcel-bundler": "latest"
-  }
+  },
+  "keywords": []
 }

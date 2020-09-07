@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Parcel Sandbox</title>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="https://unpkg.com/mocha/mocha.css" />
+    <style>
+      .test-mount {
+        border: 1px solid lightgrey;
+        border-radius: 5px;
+        padding: 20px;
+        margin: 20px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="mocha"></div>
+
+    <script src="https://unpkg.com/mocha/mocha.js"></script>
+
+    <script class="mocha-init">
+      mocha.setup("bdd");
+      mocha.checkLeaks();
+    </script>
+
+    <script src="test/app.spec.js"></script>
+  </body>
+</html>

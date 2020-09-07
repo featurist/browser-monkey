@@ -4,7 +4,7 @@
   "description": "reliable dom testing",
   "main": "dist/index.js",
   "files": [
-    "dist/index.js",
+    "dist/*",
     "lib/*",
     "test/*",
     "index.ts"
@@ -15,9 +15,10 @@
     "test-electron-mocha": "yarn electron-mocha test/**/*Spec.{js,ts}",
     "electron-mocha": "electron-mocha --disable-site-isolation-trials --full-trace --color --main electron/foreignIframe.js -r ts-node/register --renderer",
     "mocha": "mocha -r test/register.js",
-    "update-readme-example-links": "node ./docs/update-readme-example-links.js",
-    "prepare": "webpack",
-    "postinstall": "node postinstall.js"
+    "prepare": "node postinstall.js",
+    "docs": "npm run build-docs && docsify serve ./docs-dist",
+    "build-docs": "rm -rf ./docs-dist && cp -r ./docs ./docs-dist && codesandbox-example-links --output-dir=./docs-dist ./docs/*.md",
+    "publish-docs": "npm run build-docs && gh-pages -t -d docs-dist"
   },
   "author": "Tim Macfarlane <timmacfarlane@gmail.com>",
   "license": "MIT",
@@ -33,6 +34,7 @@
     "babel-loader": "^8.0.6",
     "chai": "4.2.0",
     "codesandbox": "^1.3.8",
+    "codesandbox-example-links": "^1.1.0",
     "electron": "^7.1.9",
     "electron-mocha": "^8.2.0",
     "eslint": "^6.8.0",
@@ -44,6 +46,7 @@
     "eslint-plugin-react": "^7.18.0",
     "eslint-plugin-standard": "^4.0.1",
     "express": "^4.16.4",
+    "gh-pages": "^3.1.0",
     "hyperdom": "^2.1.0",
     "jquery": "^3.3.1",
     "karma": "4.4.1",
