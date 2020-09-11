@@ -6,21 +6,23 @@ Install Browser Monkey as a dev dependency:
 yarn add browser-monkey --dev
 ```
 
-You will need a browser environment to run your tests in. For general feature development we recommend using electron. For testing across different browser environments you can use something like [karma](#karma)
+You will need a browser environment to run your tests in. For general feature development we recommend using electron - it does not require any javascript bundling and so your tests will run faster. For testing across different browser environments you can use something like [karma](#karma)
 
 ## Electron
-For this example we will create a small react application
+For this example we will create a small react application.
 
 ```bash
 yarn add electron electron-mocha --dev
 yarn add react react-dom
 ```
-Now create a test file: `test/greetingSpec.js`
+Now create a test file: `test/appSpec.js`
 For simplicity we will create our react application in the test file.
 
 ```js
-const reactMonkey = require('browser-monkey/react')
-class HelloWorld extends React.Component {
+const {ReactMount, Query} = require('browser-monkey')
+const React = require('react')
+
+class App extends React.Component {
   render () {
     return React.createElement('div', {className: 'greeting'}, 'Hello World')
   }
@@ -28,8 +30,10 @@ class HelloWorld extends React.Component {
 
 describe('greeting', () => {
   it('renders a greeting', async () => {
-    const monkey = reactMonkey(new HelloWorld())
-    await monkey.find('.greeting').shouldHave({text: 'Hello World'})
+    const mount = new ReactMount(React.createElement(App, {}, null))
+    const page = new Query().mount(mount)
+
+    await page.find('.greeting').containing('Hello World').shouldExist()
   })
 })
 ```
@@ -37,10 +41,10 @@ describe('greeting', () => {
 Now you can run the test using `electron-mocha`, the `--renderer` flag tells electron to run the test in it's built in browser, the `--interactive` flag makes the browser visible so that you can debug or inspect the test
 
 ```bash
-electron-mocha test/**/*Spec.js --renderer --interactive 
+yarn electron-mocha test/**/*Spec.js --renderer --interactive
 ```
 
-[Clone this example](https://github.com/featurist/browser-monkey-electron-mocha/)
+[Clone this example](https://github.com/featurist/browser-monkey3-electron-mocha/)
 
 ## Karma
 For this example we will create a small react application
@@ -49,12 +53,14 @@ For this example we will create a small react application
 yarn add karma karma-mocha karma-chrome-launcher karma-mocha mocha karma-webpack webpack --dev
 yarn add react react-dom
 ```
-Now create a test file: `test/greetingSpec.js`
+Now create a test file: `test/appSpec.js`
 For simplicity we will create our react application in the test file.
 
 ```js
-const reactMonkey = require('browser-monkey/react')
-class HelloWorld extends React.Component {
+const {ReactMount, Query} = require('browser-monkey')
+const React = require('react')
+
+class App extends React.Component {
   render () {
     return React.createElement('div', {className: 'greeting'}, 'Hello World')
   }
@@ -62,8 +68,10 @@ class HelloWorld extends React.Component {
 
 describe('greeting', () => {
   it('renders a greeting', async () => {
-    const monkey = reactMonkey(new HelloWorld())
-    await monkey.find('.greeting').shouldHave({text: 'Hello World'})
+    const mount = new ReactMount(React.createElement(App, {}, null))
+    const page = new Query().mount(mount)
+
+    await page.find('.greeting').containing('Hello World').shouldExist()
   })
 })
 ```
@@ -78,8 +86,9 @@ module.exports = function(config) {
       'test/**/*Spec.js',
     ],
     preprocessors: {
-      'test/**/*Spec.js': [ 'webpack' ]
+      'test/**/*Spec.js': ['webpack']
     },
+    webpack: {},
     reporters: ['progress'],
     port: 9876,
     colors: true,
@@ -88,6 +97,6 @@ module.exports = function(config) {
 }
 ```
 
-Now you can run the testing using `karma start`
+Now you can run the testing using `yarn karma start`
 
-[Clone this example](https://github.com/featurist/browser-monkey-karma/)
+[Clone this example](https://github.com/featurist/browser-monkey3-karma/)
