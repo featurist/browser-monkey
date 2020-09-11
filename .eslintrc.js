@@ -24,6 +24,8 @@ module.exports = {
   ],
   ignorePatterns: [
     "dist/",
+    "docs/",
+    "docs-dist/",
   ],
   overrides: [
     {
