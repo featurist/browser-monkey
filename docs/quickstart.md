@@ -6,15 +6,14 @@ Install Browser Monkey as a dev dependency:
 yarn add browser-monkey --dev
 ```
 
-You will need a browser environment to run your tests in. For general feature development we recommend using electron - it does not require any javascript bundling and so your tests will run faster. For testing across different browser environments you can use something like [karma](#karma)
+You will need a browser environment to run your tests in. For general feature development we recommend using [electron](#electron) - it does not require any javascript bundling and so your tests will run faster. For testing across different browser environments you can use something like [karma](#karma).
 
-## Electron
 For this example we will create a small react application.
 
 ```bash
-yarn add electron electron-mocha --dev
 yarn add react react-dom
 ```
+
 Now create a test file: `test/appSpec.js`
 For simplicity we will create our react application in the test file.
 
@@ -36,6 +35,12 @@ describe('greeting', () => {
     await page.find('.greeting').containing('Hello World').shouldExist()
   })
 })
+```
+
+## Electron
+
+```bash
+yarn add electron electron-mocha --dev
 ```
 
 Now you can run the test using `electron-mocha`, the `--renderer` flag tells electron to run the test in it's built in browser, the `--interactive` flag makes the browser visible so that you can debug or inspect the test
@@ -47,33 +52,9 @@ yarn electron-mocha test/**/*Spec.js --renderer --interactive
 [Clone this example](https://github.com/featurist/browser-monkey3-electron-mocha/)
 
 ## Karma
-For this example we will create a small react application
 
 ```bash
-yarn add karma karma-mocha karma-chrome-launcher karma-mocha mocha karma-webpack webpack --dev
-yarn add react react-dom
-```
-Now create a test file: `test/appSpec.js`
-For simplicity we will create our react application in the test file.
-
-```js
-const {ReactMount, Query} = require('browser-monkey')
-const React = require('react')
-
-class App extends React.Component {
-  render () {
-    return React.createElement('div', {className: 'greeting'}, 'Hello World')
-  }
-}
-
-describe('greeting', () => {
-  it('renders a greeting', async () => {
-    const mount = new ReactMount(React.createElement(App, {}, null))
-    const page = new Query().mount(mount)
-
-    await page.find('.greeting').containing('Hello World').shouldExist()
-  })
-})
+yarn add karma karma-mocha karma-chrome-launcher karma-webpack webpack --dev
 ```
 
 Create a karma config file `karma.conf.js`
