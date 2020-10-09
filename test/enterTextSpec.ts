@@ -1,12 +1,5 @@
 import {expect} from 'chai'
 import {DomAssembly} from './assemblies/DomAssembly'
-import retry from '../lib/retry'
-
-async function wait(ms): Promise<void> {
-  return new Promise((resolve, reject) => {
-    setTimeout(resolve, ms)
-  })
-}
 
 describe('enterText', function () {
   let assembly
@@ -36,9 +29,7 @@ describe('enterText', function () {
     })
 
     await browser.enterText('.element', ['the text', '{Enter}'])
-    await retry(() => {
-      expect(formSubmitted).to.eq(true)
-    })
+    expect(formSubmitted).to.eq(true)
   })
 
   it('does not submit form on {Enter} if input catches and cancells the "keypress" event', async function() {
@@ -58,8 +49,9 @@ describe('enterText', function () {
     })
 
     await browser.enterText('.element', ['the text', '{Enter}'])
-    await wait(100)
 
     expect(formSubmitted).to.eq(false)
   })
+
+  // TODO what if they really want to type {Enter}?
 })
