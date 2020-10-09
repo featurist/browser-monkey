@@ -15,10 +15,11 @@
     "test-electron-mocha": "yarn electron-mocha test/**/*Spec.{js,ts}",
     "electron-mocha": "electron-mocha --disable-site-isolation-trials --full-trace --color --main electron/foreignIframe.js -r ts-node/register --renderer",
     "mocha": "mocha -r test/register.js",
-    "prepare": "node postinstall.js",
-    "docs": "npm run build-docs && docsify serve ./docs-dist",
+    "prepare": "tsc -p tsconfig.build.json",
+    "docs": "yarn build-docs && docsify serve --no-open --port 3003 ./docs-dist",
+    "watch-docs": "ls docs/*.md | entr yarn build-docs",
     "build-docs": "rm -rf ./docs-dist && cp -r ./docs ./docs-dist && codesandbox-example-links --output-dir=./docs-dist ./docs/*.md",
-    "publish-docs": "npm run build-docs && gh-pages -t -d docs-dist"
+    "publish-docs": "yarn build-docs && gh-pages -t -d docs-dist"
   },
   "author": "Tim Macfarlane <timmacfarlane@gmail.com>",
   "license": "MIT",
