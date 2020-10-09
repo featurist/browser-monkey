@@ -1,5 +1,4 @@
-import {MouseEvent} from './polyfills'
-import {KeyboardEvent} from './polyfills'
+import {MouseEvent, KeyboardEvent} from './polyfills'
 import normaliseText from './normaliseText'
 import keycode from 'keycode'
 
@@ -37,8 +36,21 @@ export default class Dom {
     const enterText = (text: string) => {
       if (matchKeyCode(text)) {
         this.triggerEvent(element, 'keydown', text)
-        this.triggerEvent(element, 'keypress', text)
         this.triggerEvent(element, 'keyup', text)
+
+        if (text == '{Enter}') {
+          const event = createKeyboardEvent('keypress', text)
+          const submitForm = (e) => {
+            if (e == event) {
+              element.form.removeEventListener('keypress', submitForm)
+              element.form.dispatchEvent(createEvent('submit'))
+            }
+          }
+          element.form.addEventListener('keypress', submitForm)
+          element.dispatchEvent(event)
+        } else {
+          this.triggerEvent(element, 'keypress', text)
+        }
       } else if (incremental) {
         if (element.value !== '') {
           this.typeKey(element, '', undefined)
