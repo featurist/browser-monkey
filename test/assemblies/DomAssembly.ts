@@ -1,7 +1,6 @@
 /* global location */
 
 const createTestDiv = require('../../lib/createTestDiv')
-const $ = require('jquery')
 const pathUtils = require('path')
 import retry from '../../lib/retry'
 const { expect } = require('chai')
@@ -12,7 +11,6 @@ import inspect from 'object-inspect'
 
 export class DomAssembly {
   private delayedOperations: number
-  private jQuery: JQuery
   private retries: (() => void)[]
   private queuedRetries: number
   private dom: Dom
@@ -21,7 +19,6 @@ export class DomAssembly {
 
   public constructor () {
     this.delayedOperations = 0
-    this.jQuery = $
     this.retries = []
     this.queuedRetries = 0
     this.dom = new Dom()
@@ -90,8 +87,11 @@ export class DomAssembly {
     return this._div.querySelector(css)
   }
 
-  public insertHtml (html): void {
-    return $(html).appendTo(this._div).get(0)
+  public insertHtml (html, selector?: string): HTMLElement {
+    const el = selector ? this._div.querySelector(selector) : this._div
+    el.insertAdjacentHTML('beforeend', html)
+
+    return el.lastElementChild as HTMLElement
   }
 
   public eventuallyDoNothing (): void {
@@ -116,23 +116,13 @@ export class DomAssembly {
 
   public async eventuallyDeleteHtml (selector: string): Promise<void> {
     await this.eventually(() => {
-      $(selector).remove()
+      this._div.querySelector(selector).remove()
     })
   }
 
   public async eventuallyInsertHtml (html: string, selector?: string): Promise<HTMLElement> {
     return await this.eventually(() => {
-      const div = selector
-        ? $(this._div).find(selector).get(0)
-        : this._div
-
-      return $(html).appendTo(div).get(0)
-    })
-  }
-
-  public async eventuallyAppendHtml (element, html): Promise<HTMLElement> {
-    return await this.eventually(() => {
-      return $(html).appendTo(element).get(0)
+      return this.insertHtml(html, selector)
     })
   }
 

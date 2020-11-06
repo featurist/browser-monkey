@@ -39,8 +39,8 @@ describe('set', function () {
         select: 'Two',
       })
 
-      const selectedItem = assembly.jQuery(assembly.find('select')).find(':selected').text()
-      expect(selectedItem).to.equal('Two')
+      const selectedItem = assembly.find('select').selectedOptions[0]
+      expect(selectedItem.innerText).to.equal('Two')
     })
 
     it('can set select fields with regex', async () => {
@@ -55,8 +55,8 @@ describe('set', function () {
         select: /tw/i,
       })
 
-      const selectedItem = assembly.jQuery(assembly.find('select')).find(':selected').text()
-      expect(selectedItem).to.equal('Two')
+      const selectedItem = assembly.find('select').selectedOptions[0]
+      expect(selectedItem.innerText).to.equal('Two')
     })
 
     it('can set checkbox fields', async () => {
@@ -315,13 +315,13 @@ describe('set', function () {
       }).then()
 
       assembly.eventually(() => {
-        assembly.jQuery(select).append('<option>Three</option>')
+        assembly.insertHtml('<option>Three</option>', 'select')
       })
 
       await promise
 
-      const selectedItem = assembly.jQuery(select).find(':selected').text()
-      expect(selectedItem).to.equal('Three')
+      const selectedItem = assembly.find('select').selectedOptions[0]
+      expect(selectedItem.innerText).to.equal('Three')
     })
   })
 

@@ -41,13 +41,6 @@ const browsers = {
     os_version: 'Mojave',
     resolution: '1280x1024'
   },
-  'browserstack-ie11': {
-    base: 'BrowserStack',
-    browser: 'IE',
-    os: 'Windows',
-    os_version: '10',
-    resolution: '1280x1024'
-  },
   'browserstack-edge': {
     base: 'BrowserStack',
     browser: 'Edge',
