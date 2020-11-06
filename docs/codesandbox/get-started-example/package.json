@@ -8,7 +8,7 @@
     "build": "parcel build index.html"
   },
   "dependencies": {
-    "browser-monkey": "3.0.0-beta.4",
+    "browser-monkey": "3.0.0-beta.6",
     "hyperdom": "latest"
   },
   "devDependencies": {

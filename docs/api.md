@@ -1,17 +1,19 @@
 # API Reference
+
 ## Overview
+
 The API is made up of three concepts: scopes, actions and assertions.
 
-* scopes are chains of queries, such as `find(css)` and `containing(css)`, that progressively narrow the scope of elements to be searched for. These queries return new scopes.
-* actions such as `click()` and `typeIn(text)` wait for the scope to be found before simulating a UI event. These return promises that resolve when the event has been dispatched.
+* scopes are chains of queries, such as `find(css)` and `containing(text)`, that progressively narrow the scope of elements to be searched for. These queries return new scopes.
+* actions such as `clickButton()` and `enterText(text)` wait for the scope to be found before simulating a UI event. These return promises that resolve when the event has been dispatched.
 * assertions such as `shouldExist()` and `shouldHave(properties)` can be made on scopes to ensure that they exist or contain text, classes or other properties.
 
 All scope chains are immutable, so you can reuse portions of a scope chain to build new chains:
 
 ```js
-const details = browser.find('.details'); // finds .details
-const name = details.find('.name');       // finds .details .name
-const email = details.find('.email');     // finds .details .email
+const details = page.find('.details')    // finds .details
+const name = details.find('.name')       // finds .details .name
+const email = details.find('.email')     // finds .details .email
 ...
 ```
 
@@ -20,6 +22,7 @@ The API starts with the browser scope, which contains everything on the page.
 You can also create DSLs for components on the page using `scope.component(methods)`. By extending a scope, you can add methods that represent elements of the component at a higher level than mere CSS selectors. It's probably worth noting that these methods should normally just return scopes and not perform actions or assertions.
 
 ## Immediate mode
+
 Although browser-monkey is designed to retry finding elements and assertions, if you can guarantee there will be no delays due to asynchronous application code or rendering, you may prefer to write synchronous tests. In this case, set the `immediate` option to `true`:
 
 ```js
@@ -146,7 +149,7 @@ You can then use the messages component:
 
 ```js
 await messages.messages().shouldHave({text: ['hi!', 'wassup?']});
-await messages.messageBox().typeIn("just hangin'");
+await messages.messageBox().enterText("just hangin'");
 await messages.sendButton().click();
 ```
 

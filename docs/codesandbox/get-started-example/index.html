@@ -21,7 +21,7 @@
 
     <script class="mocha-init">
       mocha.setup("bdd");
-      mocha.checkLeaks();
+      mocha.cleanReferencesAfterRun(false)
     </script>
 
     <script src="test/app.spec.js"></script>
