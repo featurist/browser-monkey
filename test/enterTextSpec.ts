@@ -6,11 +6,12 @@ describe('enterText', function () {
   let browser
 
   beforeEach(function () {
-    if (assembly) {
-      assembly.stop()
-    }
     assembly = new DomAssembly()
-    browser = assembly.browserMonkey().scope(document.body)
+    browser = assembly.browserMonkey()
+  })
+
+  afterEach(() => {
+    assembly.stop()
   })
 
   it('can get value of input', async () => {

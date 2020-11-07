@@ -86,7 +86,7 @@ export default class Dom {
   }
 
   public querySelectorAll (element: HTMLElement, selector: string, {visibleOnly = true} = {}): HTMLElement[] {
-    var children = Array.prototype.slice.call(element.querySelectorAll(selector))
+    let children = Array.prototype.slice.call(element.querySelectorAll(selector))
 
     children = visibleOnly
       ? children.filter(c => this.elementVisible(c))
@@ -115,13 +115,13 @@ export default class Dom {
   }
 
   private triggerEvent (element: HTMLElement, eventType, value?): void {
-    var creator = eventCreatorsByType[eventType]
+    const creator = eventCreatorsByType[eventType]
 
     if (!creator) {
       throw new Error('event type ' + JSON.stringify(eventType) + ' not recognised')
     }
 
-    var event = creator(value)
+    const event = creator(value)
 
     element.dispatchEvent(event)
   }
@@ -150,9 +150,9 @@ export default class Dom {
   }
 
   public selector (element: HTMLElement): string {
-    var id = element.id
-    var classes = element.className.split(/ +/g).filter(Boolean).sort()
-    var tag = element.tagName.toLowerCase()
+    const id = element.id
+    const classes = element.className.split(/ +/g).filter(Boolean).sort()
+    const tag = element.tagName.toLowerCase()
 
     return (id || '') +
       tag +
@@ -163,7 +163,7 @@ export default class Dom {
     element.focus()
     this.triggerEvent(element, 'keydown')
     this.triggerEvent(element, 'keypress')
-    var submitButton = element.form.querySelector('input[type="submit"], button[type="submit"]')
+    const submitButton = element.form.querySelector('input[type="submit"], button[type="submit"]')
     if (submitButton) {
       (submitButton as HTMLElement).click()
     } else {
@@ -180,7 +180,7 @@ function createMouseEvent (type): MouseEvent {
 
 function createEvent (type, params = {bubbles: true, cancelable: false}): Event {
   // IE compatible old school way of creating events.
-  var event = document.createEvent('Event')
+  const event = document.createEvent('Event')
   event.initEvent(type, params.bubbles, params.cancelable)
   return event
 }

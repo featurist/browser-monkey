@@ -1,6 +1,5 @@
 import {DomAssembly} from './assemblies/DomAssembly'
 import {expect} from 'chai'
-import pathUtils from 'path'
 
 describe('find', () => {
   let assembly

@@ -1,3 +1,4 @@
+const webpack = require('webpack')
 const path = require('path');
 
 const exclude = p => 
@@ -6,7 +7,6 @@ const exclude = p =>
 
 module.exports = {
   mode: 'none',
-  entry: './index.ts',
   optimization: {
     minimize: false,
   },
@@ -32,12 +32,18 @@ module.exports = {
     ],
   },
   devtool: 'inline-source-map',
+  plugins: [
+    // fix "process is not defined" error:
+    // (do "npm install process" before running the build)
+    new webpack.ProvidePlugin({
+      process: 'process/browser',
+    }),
+  ],
   resolve: {
     extensions: [ '.tsx', '.ts', '.js', '.jsx' ],
-  },
-  output: {
-    filename: 'index.js',
-    path: path.resolve(__dirname, 'dist'),
-    libraryTarget: 'commonjs2',
-  },
+    fallback: {
+      path: false,
+      assert: require.resolve('assert/')
+    }
+  }
 };

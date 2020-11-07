@@ -303,7 +303,7 @@ describe('set', function () {
     })
 
     it('waits until the desired option appears on the page', async () => {
-      const select = assembly.insertHtml(`
+      assembly.insertHtml(`
         <select>
           <option>One</option>
           <option>Two</option>

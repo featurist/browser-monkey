@@ -10,7 +10,7 @@ export function match (actual: any, expected: any): {isMatch: boolean, actual: a
         expected: actual,
       }
     } catch (e) {
-      if (e.hasOwnProperty('actual') && e.hasOwnProperty('expected')) {
+      if (e.actual && e.expected) {
         return {
           isMatch: false,
           actual: e.actual,

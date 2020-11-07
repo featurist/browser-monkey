@@ -2,7 +2,7 @@ export default async function retry<T>(fn: () => T, {interval = 10, timeout = 10
   const startTime = Date.now()
   let firstTry = true
 
-  while (true) {
+  for (;;) {
     try {
       return fn()
     } catch (e) {
