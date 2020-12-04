@@ -5,7 +5,7 @@ const files = [
   "test/**/*Spec.ts",
 ]
 
-const browsers = {
+const browserstackBrowsers = {
   'browserstack-windows-firefox': {
     base: 'BrowserStack',
     browser: 'Firefox',
@@ -51,6 +51,12 @@ const browsers = {
 }
 
 module.exports = function(config) {
+  const browser = process.env.BROWSER || 'Chrome'
+
+  const browsers = process.env.BROWSERS === 'all' ? Object.keys(browserstackBrowsers) : [
+    config.singleRun ? browser + 'Headless' : browser
+  ]
+
   config.set({
     basePath: "",
     frameworks: ["mocha"],
@@ -67,11 +73,7 @@ module.exports = function(config) {
     autoWatch: true,
     singleRun: false,
     concurrency: Infinity,
-
-    browsers: process.env.BROWSERS === 'all' ? Object.keys(browsers) : [
-      config.singleRun ? 'ChromeHeadless' : 'Chrome'
-    ],
-
+    browsers,
     browserStack: {
       username: process.env.BROWSERSTACK_USER,
       accessKey: process.env.BROWSERSTACK_PASSWORD

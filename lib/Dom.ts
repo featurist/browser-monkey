@@ -29,6 +29,77 @@ const eventCreatorsByType = {
   }
 }
 
+function getFormSubmits(form) {
+  return form.querySelectorAll('input[type=submit],button:not([type=reset])')
+}
+
+function multipleInputsAllowImplicitSubmissionAndNoSubmitElements(form) {
+  const submits = getFormSubmits(form)
+
+  // https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#implicit-submission
+  // some types of inputs can submit the form when hitting {enter}
+  // but only if they are the sole input that allows implicit submission
+  // and there are no buttons or input[submits] in the form
+  const implicitSubmissionInputs = Array.from(form.querySelectorAll('input')).filter(isInputAllowingImplicitFormSubmission)
+
+  return (implicitSubmissionInputs.length > 1) && (submits.length === 0)
+}
+
+function simulateSubmitHandler(form, event) {
+  // bail if we have multiple inputs allowing implicit submission and no submit elements
+  if (multipleInputsAllowImplicitSubmissionAndNoSubmitElements(form)) {
+    return
+  }
+
+  const defaultButton = getFormSubmits(form)[0]
+
+  // bail if the default button is in a 'disabled' state
+  if (defaultButton && defaultButton.disabled) {
+    return
+  }
+
+  // issue the click event to the 'default button' of the form
+  // we need this to be synchronous so not going through our
+  // own click command
+  // as of now, at least in Chrome, causing the click event
+  // on the button will indeed trigger the form submit event
+  // so we dont need to fire it manually anymore!
+  if (defaultButton) {
+    defaultButton.click()
+  } else {
+    // if we werent able to click the default button
+    // then synchronously fire the submit event
+    // currently this is sync but if we use a waterfall
+    // promise in the submit command it will break again
+    // consider changing type to a Promise and juggle logging
+    const submitForm = (e) => {
+      if (e == event) {
+        form.removeEventListener('keypress', submitForm)
+        form.dispatchEvent(createEvent('submit', { bubbles: true, cancelable: true }))
+      }
+    }
+    return form.addEventListener('keypress', submitForm)
+  }
+}
+
+function isInputAllowingImplicitFormSubmission(el) {
+  // https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#implicit-submission
+  return [
+    'text',
+    'search',
+    'url',
+    'tel',
+    'email',
+    'password',
+    'date',
+    'month',
+    'week',
+    'time',
+    'datetime-local',
+    'number',
+  ].includes(el.type)
+}
+
 export default class Dom {
   public enterText (element: HTMLInputElement, text: string | string[], {incremental = true} = {}): void {
     element.focus()
@@ -38,15 +109,9 @@ export default class Dom {
         this.triggerEvent(element, 'keydown', text)
         this.triggerEvent(element, 'keyup', text)
 
-        if (text == '{Enter}') {
+        if (element.form && isInputAllowingImplicitFormSubmission(element) && text == '{Enter}') {
           const event = createKeyboardEvent('keypress', text)
-          const submitForm = (e) => {
-            if (e == event) {
-              element.form.removeEventListener('keypress', submitForm)
-              element.form.dispatchEvent(createEvent('submit'))
-            }
-          }
-          element.form.addEventListener('keypress', submitForm)
+          simulateSubmitHandler(element.form, event)
           element.dispatchEvent(event)
         } else {
           this.triggerEvent(element, 'keypress', text)
@@ -163,7 +228,7 @@ export default class Dom {
     element.focus()
     this.triggerEvent(element, 'keydown')
     this.triggerEvent(element, 'keypress')
-    const submitButton = element.form.querySelector('input[type="submit"], button[type="submit"]')
+    const submitButton = getFormSubmits(element.form)[0]
     if (submitButton) {
       (submitButton as HTMLElement).click()
     } else {
@@ -179,10 +244,7 @@ function createMouseEvent (type): MouseEvent {
 }
 
 function createEvent (type, params = {bubbles: true, cancelable: false}): Event {
-  // IE compatible old school way of creating events.
-  const event = document.createEvent('Event')
-  event.initEvent(type, params.bubbles, params.cancelable)
-  return event
+  return new Event(type, params)
 }
 
 function matchKeyCode (text) {

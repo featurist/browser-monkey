@@ -6,7 +6,7 @@ describe('dom', () => {
 
   beforeEach(() => {
     assembly = new DomAssembly()
-    assembly.div()
+    assembly.createDiv()
   })
 
   afterEach(() => {

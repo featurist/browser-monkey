@@ -25,12 +25,12 @@ export class DomAssembly {
     this._normalRetry = false
   }
 
-  private div (): void {
+  private createDiv (): void {
     this._div = createTestDiv()
   }
 
   public browserMonkey (): Query {
-    this.div()
+    this.createDiv()
 
     const browserMonkey = new Query(this._div)
 
