@@ -12,21 +12,6 @@ describe('mount react', () => {
   })
 
   it('will check the dom every time react renders', async () => {
-    /* class App2 extends React.Component<{}, {text: string}> { */
-    /*   public constructor (props) { */
-    /*     super(props) */
-    /*     this.state = { */
-    /*       text: 'Haha' */
-    /*     } */
-    /*   } */
-
-    /*   public render (): React.ReactNode { */
-    /*     return <div> */
-    /*       <div className="text">{this.state.text}</div> */
-    /*       <button onClick={() => this.setState({text: 'React'})}>Click</button> */
-    /*     </div> */
-    /*   } */
-    /* } */
     class App extends React.Component {
       public constructor (props) {
         super(props)

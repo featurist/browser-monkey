@@ -7,6 +7,5 @@
 - Well thought out API.
 - Easy debugging.
 - Runs in your favourite test runner.
-- Legacy browser support (IE10+).
 
 [Get Started](introduction)

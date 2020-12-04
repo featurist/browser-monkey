@@ -4,4 +4,4 @@
 - **Links**
 - [![Code](https://icongr.am/feather/code.svg?size=16&color=808080)Demo Sandbox](https://codesandbox.io/s/2x8kv8voyn?from-embed)
 - [![Github](https://icongr.am/devicon/github-original.svg?color=808080&size=16)Github](https://github.com/featurist/browser-monkey)
-- [![NPM](https://icongram.jgog.in/simple/npm.svg?colored&size=16)NPM](https://www.npmjs.com/package/browser-monkey)
+- [![NPM](https://icongr.am/devicon/npm-original-wordmark.svg?size=16&color=currentColor)NPM](https://www.npmjs.com/package/browser-monkey)

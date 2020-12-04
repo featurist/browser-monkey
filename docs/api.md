@@ -21,84 +21,81 @@ The API starts with the browser scope, which contains everything on the page.
 
 You can also create DSLs for components on the page using `scope.component(methods)`. By extending a scope, you can add methods that represent elements of the component at a higher level than mere CSS selectors. It's probably worth noting that these methods should normally just return scopes and not perform actions or assertions.
 
-## Immediate mode
-
-Although browser-monkey is designed to retry finding elements and assertions, if you can guarantee there will be no delays due to asynchronous application code or rendering, you may prefer to write synchronous tests. In this case, set the `immediate` option to `true`:
-
-```js
-browser.set({ immediate: true })
-browser.click('Yummy')
-browser.click('Banana')
-browser.shouldHave({ text: 'Delicious' })
-```
-
 ## Options
 There are some options you can set, which are inherited by inner scopes.
 
 ```js
-scope.set({visibleOnly: false});
+scope.options({visibleOnly: false});
 const innerScope = scope.find('input');
 
-innerScope.get('visibleOnly'); // returns false
+innerScope.getOptions().visibleOnly; // returns false
 ```
 
 * `visibleOnly` if true, then only visible elements will be found, if false, then all elements are considered. Visible is determined by the element's computed CSS, see [jQuery's :visible selector](https://api.jquery.com/visible-selector/). Default is true.
 * `timeout` an integer specifying the milliseconds to wait for an element to appear. This can be overriden by specifying the timeout when calling an action.
+* `interval` a number of milliseconds to wait between querying DOM when waiting for element to appear.
 
-## mount
+## Mount
 
-Typically you will need to mount your application into the DOM before running your tests.
+Browser monkey creates a test DOM container that you need to mount your app into.
 
-Browser monkey comes with a handy way of doing this for popular web frameworks
+There are a couple of shortcuts for doing this in popular web frameworks. Otherwise, generic mount is equally straightforward.
 
-### react
-where YourReactApp is a react class [see here](test/app/react.jsx) for an example
-
-```js
-const reactMonkey = require('browser-monkey/react')
-const monkey = reactMonkey(new YourReactApp())
-```
-
-### hyperdom
-where YourHyperdomApp is a class that has a render method. [see here](test/app/hyperdom.jsx) for an example
+### React
 
 ```js
-const hyperdomMonkey = require('browser-monkey/hyperdom')
-const monkey = hyperdomMonkey(new YourHyperdomApp())
+import {ReactMount, Query} from 'browser-monkey'
+const mount = new ReactMount(React.createElement(YourReactApp, {}, null))
 ```
 
-### angular
-where YourAngularApp is a class with fields 'directiveName' and 'moduleName' [see here](test/app/angular.js) for an example
+[Example](https://github.com/featurist/browser-monkey/test/mountReactSpec.tsx)
+
+### Hyperdom
 
 ```js
-const angularMonkey = require('browser-monkey/angular')
-const monkey = angularMonkey({
-  directiveName: 'best-frameworks',
-  moduleName: 'FrameworksApp'
-})
-```
+import {HyperdomMount, Query} from 'browser-monkey'
+const mount = new HyperdomMount(new YourHyperdomApp())
+  ```
 
-### iframe
+[Example](test/mountSpec.ts)
+
+### Iframe
+
 You can also use browser-monkey to do full integration testing.
 Just give it the url of your web server
 
 ```js
-const iframeMonkey = require('browser-monkey/iframe')
-const monkey = iframeMonkey('http://your-app.example')
+import {IFrameMount, Query} from 'browser-monkey'
+const mount = new IFrameMount('http://example.com/some/page')
 ```
 
-and then you can use the monkey
+### Manual
+
+Browser-monkey mount gives you a reference to the test DOM container. It's just a DOM element, insert your html there.
 
 ```js
-monkey.find('h1').shouldHave({text: 'Hello World'});
+import { Mount, Query } from 'browser-monkey'
+const mount = new Mount()
+mount.containerElement().innerHTML = '<div>bananas</div>'
 ```
 
-The `monkey` is a normal browser monkey object which the has the following additional options:
+### Mount
 
- * mount - the mount object used to mount the app (useful for unmounting later)
- * app - the application passed to withApp
+Once mount is created, it is passed to the Query API. The result is browser-monkey API, scoped to the contents of mount's container DOM.
 
-you can retrieve these options using the options api eg. `monkey.get('app')`
+```js
+const page = new Query().mount(mount)
+// or
+const page = mount.mount(new Query())
+```
+
+### Unmount
+
+Remove test container (e.g. between tests):
+
+```js
+mount.unmount()
+```
 ## Scopes
 You can reset the starting point for the scope, the element from which all elements are searched for. By default this is the `<body>` element, but you can set it to a more specific element, or indeed another scope.
 
