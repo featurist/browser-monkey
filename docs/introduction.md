@@ -5,11 +5,11 @@ Browser Monkey is a DOM manipulation and assertion library. It helps you write f
 
 ## Features
 
- - Automatically waits for commands and assertions.
- - Create rich DSLs for your page structure.
- - Framework agnostic: works with React, Angular, jQuery, [Hyperdom](https://github.com/featurist/hyperdom) and many many more.
+ - Automatically waits for elements to appear on the page.
  - Simulates text entry and clicks.
+ - Rich DSLs for your page structure.
  - Promise based.
+ - Framework agnostic.
  - Typescript types.
 
 ## Example

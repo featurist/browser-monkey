@@ -6,7 +6,7 @@ The API is made up of three concepts: scopes, actions and assertions.
 
 * scopes are chains of queries, such as `find(css)` and `containing(text)`, that progressively narrow the scope of elements to be searched for. These queries return new scopes.
 * actions such as `clickButton()` and `enterText(text)` wait for the scope to be found before simulating a UI event. These return promises that resolve when the event has been dispatched.
-* assertions such as `shouldExist()` and `shouldHave(properties)` can be made on scopes to ensure that they exist or contain text, classes or other properties.
+* assertions such as `shouldExist()` and `shouldHaveElements()` can be made on scopes to ensure that they exist or contain text, classes or other properties.
 
 All scope chains are immutable, so you can reuse portions of a scope chain to build new chains:
 
@@ -21,25 +21,11 @@ The API starts with the browser scope, which contains everything on the page.
 
 You can also create DSLs for components on the page using `scope.component(methods)`. By extending a scope, you can add methods that represent elements of the component at a higher level than mere CSS selectors. It's probably worth noting that these methods should normally just return scopes and not perform actions or assertions.
 
-## Options
-There are some options you can set, which are inherited by inner scopes.
-
-```js
-scope.options({visibleOnly: false});
-const innerScope = scope.find('input');
-
-innerScope.getOptions().visibleOnly; // returns false
-```
-
-* `visibleOnly` if true, then only visible elements will be found, if false, then all elements are considered. Visible is determined by the element's computed CSS, see [jQuery's :visible selector](https://api.jquery.com/visible-selector/). Default is true.
-* `timeout` an integer specifying the milliseconds to wait for an element to appear. This can be overriden by specifying the timeout when calling an action.
-* `interval` a number of milliseconds to wait between querying DOM when waiting for element to appear.
-
 ## Mount
 
-Browser monkey creates a test DOM container that you need to mount your app into.
+Browser-monkey can create a test DOM container for you to mount your app into. This is convinient, but not required - you can put your DOM wherever you want.
 
-There are a couple of shortcuts for doing this in popular web frameworks. Otherwise, generic mount is equally straightforward.
+There are a couple of shortcuts for doing this for particular frameworks. Otherwise, generic mount is equally straightforward.
 
 ### React
 
@@ -48,21 +34,16 @@ import {ReactMount, Query} from 'browser-monkey'
 const mount = new ReactMount(React.createElement(YourReactApp, {}, null))
 ```
 
-[Example](https://github.com/featurist/browser-monkey/test/mountReactSpec.tsx)
-
 ### Hyperdom
 
 ```js
 import {HyperdomMount, Query} from 'browser-monkey'
 const mount = new HyperdomMount(new YourHyperdomApp())
-  ```
-
-[Example](test/mountSpec.ts)
+```
 
 ### Iframe
 
-You can also use browser-monkey to do full integration testing.
-Just give it the url of your web server
+Instead of mounting client side app directly, you can also give browser-monkey a url to load in an iframe. This is a more realistic test environment - it covers js bundling and `index.html` - and so it may be worth having tests like this as well. Iframe mount can also be used for other types of browser automations, e.g. web crawler.
 
 ```js
 import {IFrameMount, Query} from 'browser-monkey'
@@ -79,14 +60,14 @@ const mount = new Mount()
 mount.containerElement().innerHTML = '<div>bananas</div>'
 ```
 
-### Mount
+### Query mount
 
 Once mount is created, it is passed to the Query API. The result is browser-monkey API, scoped to the contents of mount's container DOM.
 
 ```js
 const page = new Query().mount(mount)
-// or
-const page = mount.mount(new Query())
+// or, without mount
+const page = new Query(document.querySelector('#my-test-container'))
 ```
 
 ### Unmount
@@ -96,23 +77,16 @@ Remove test container (e.g. between tests):
 ```js
 mount.unmount()
 ```
+
 ## Scopes
-You can reset the starting point for the scope, the element from which all elements are searched for. By default this is the `<body>` element, but you can set it to a more specific element, or indeed another scope.
+
+Scopes are chains of queries, such as `find(css)` and `containing(text)`, that progressively narrow the scope of elements to be searched for. These queries return new scopes.
+
+You can call `.scope()` explicitely to (re)set the starting point for the scope, the element from which all elements are searched for.
 
 ```js
-const scopeUnderElement = scope.scope(element | selector | anotherScope);
+const scopeUnderElement = page.scope(element)
 ```
-
-* `element` - an element. This can be an `<iframe>` element, in which case the scope will be the contents of the iframe.
-* `selector` - a CSS selector string
-* `anotherScope` a scope to define where to start this scope. This is useful if you want to set the starting scope of a comonent. E.g.
-
-    ```js
-    const component = browser.component({
-      ... methods ...
-    });
-    const componentScope = component.scope(browser.find('.component'));
-    ```
 
 ### component
 Represents a component on the page, with methods to access certain elements of the component.
@@ -149,6 +123,20 @@ await messages.messages().shouldHave({text: ['hi!', 'wassup?']});
 await messages.messageBox().enterText("just hangin'");
 await messages.sendButton().click();
 ```
+
+## Options
+There are some options you can set, which are inherited by inner scopes.
+
+```js
+scope.options({visibleOnly: false});
+const innerScope = scope.find('input');
+
+innerScope.getOptions().visibleOnly; // returns false
+```
+
+* `visibleOnly` if true, then only visible elements will be found, if false, then all elements are considered. Visible is determined by the element's computed CSS, see [jQuery's :visible selector](https://api.jquery.com/visible-selector/). Default is true.
+* `timeout` an integer specifying the milliseconds to wait for an element to appear. This can be overriden by specifying the timeout when calling an action.
+* `interval` a number of milliseconds to wait between querying DOM when waiting for element to appear.
 
 ## Query
 ### find
