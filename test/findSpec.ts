@@ -1,9 +1,10 @@
 import {DomAssembly} from './assemblies/DomAssembly'
 import {expect} from 'chai'
+import { Query } from '../lib/Query'
 
 describe('find', () => {
-  let assembly
-  let browser
+  let assembly: DomAssembly
+  let browser: Query
 
   beforeEach(function () {
     assembly = new DomAssembly()
@@ -15,6 +16,7 @@ describe('find', () => {
   })
 
   function assertFound (html, query): void {
+    assembly.emptyHtml()
     assembly.insertHtml(html)
 
     const expected = assembly.findAll('.expected')
@@ -48,7 +50,41 @@ describe('find', () => {
           <div class="inner"></div>
         </div>
       `,
-      browser.find('.outer').find('.inner')
+      browser.find('.outer').find('.inner'),
+    )
+  })
+
+  it('queries are immutable', () => {
+    const outerQuery = browser.find('.outer')
+
+    assertFound(
+      `
+        <div>
+          <div class="outer">
+            <div class="expected inner"></div>
+            <div class="anotherInner"></div>
+          </div>
+        </div>
+        <div>
+          <div class="inner"></div>
+        </div>
+      `,
+      outerQuery.find('.inner'),
+    )
+
+    assertFound(
+      `
+        <div>
+          <div class="outer">
+            <div class="expected anotherInner"></div>
+            <div class="inner"></div>
+          </div>
+        </div>
+        <div>
+          <div class="inner"></div>
+        </div>
+      `,
+      outerQuery.find('.anotherInner'),
     )
   })
 

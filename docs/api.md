@@ -2,28 +2,17 @@
 
 ## Overview
 
-The API is made up of three concepts: scopes, actions and assertions.
+The API is made up of three concepts: queries, actions and assertions.
 
-* scopes are chains of queries, such as `find(css)` and `containing(text)`, that progressively narrow the scope of elements to be searched for. These queries return new scopes.
-* actions such as `clickButton()` and `enterText(text)` wait for the scope to be found before simulating a UI event. These return promises that resolve when the event has been dispatched.
-* assertions such as `shouldExist()` and `shouldHaveElements()` can be made on scopes to ensure that they exist or contain text, classes or other properties.
+* queries are chains of methods, such as `find(css)` and `containing(text)`, that progressively narrow the scope of elements to be searched for. Queries return new queries.
+* actions such as `clickButton()` and `enterText(text)` "execute" the query chain, waiting for the elements to be found before simulating a UI event. These return promises that resolve when the event has been dispatched.
+* assertions such as `shouldExist()` and `shouldContain()` also "execute" the query chain and ensure that the elements exist or contain text, classes or other properties. These return promises that resolve if queries are satisfied, or rejected otherwise (after retrying query for some time).
 
-All scope chains are immutable, so you can reuse portions of a scope chain to build new chains:
-
-```js
-const details = page.find('.details')    // finds .details
-const name = details.find('.name')       // finds .details .name
-const email = details.find('.email')     // finds .details .email
-...
-```
-
-The API starts with the browser scope, which contains everything on the page.
-
-You can also create DSLs for components on the page using `scope.component(methods)`. By extending a scope, you can add methods that represent elements of the component at a higher level than mere CSS selectors. It's probably worth noting that these methods should normally just return scopes and not perform actions or assertions.
+You can also create semantic matchers using `query.define()`.
 
 ## Mount
 
-Browser-monkey can create a test DOM container for you to mount your app into. This is convinient, but not required - you can put your DOM wherever you want.
+Browser-monkey can create a test DOM container to mount your app into. This is convinient, but not required - you can put your DOM wherever you want.
 
 There are a couple of shortcuts for doing this for particular frameworks. Otherwise, generic mount is equally straightforward.
 
@@ -65,7 +54,7 @@ mount.containerElement().innerHTML = '<div>bananas</div>'
 Once mount is created, it is passed to the Query API. The result is browser-monkey API, scoped to the contents of mount's container DOM.
 
 ```js
-const page = new Query().mount(mount)
+const page = new Query(mount.containerElement())
 // or, without mount
 const page = new Query(document.querySelector('#my-test-container'))
 ```
@@ -78,78 +67,83 @@ Remove test container (e.g. between tests):
 mount.unmount()
 ```
 
-## Scopes
+## Query
 
-Scopes are chains of queries, such as `find(css)` and `containing(text)`, that progressively narrow the scope of elements to be searched for. These queries return new scopes.
+Queries are chains of methods, such as `find(css)` and `containing(text)`, that progressively narrow the scope of elements to be searched for. Queries return new queries.
 
-You can call `.scope()` explicitely to (re)set the starting point for the scope, the element from which all elements are searched for.
+All query chains are immutable, so you can reuse portions of a chain to build new chains:
+
+```js
+const page = new Query(mount.containerElement())
+
+const details = page.find('.details')    // finds .details
+const name = details.find('.name')       // finds .details .name
+const email = details.find('.email')     // finds .details .email
+```
+
+You can call `.scope()` explicitely to (re)set the starting point for the query, the element from which all elements are searched for.
 
 ```js
 const scopeUnderElement = page.scope(element)
 ```
 
-### component
-Represents a component on the page, with methods to access certain elements of the component.
+### options(options = {})
+
+There are some options you can set, which are inherited by inner queries.
 
 ```js
-const componentScope = scope.component(methods);
+const withInvisible = query.options({visibleOnly: false})
+
+withInvisible.find('div').getOptions().visibleOnly; // returns false
 ```
 
-* `methods` - an object containing functions for scopes of elements inside the component.
-* `componentScope` - a scope, but containing additional access methods
-
-You can create a component from another component too, simply extending the functionality in that component.
-
-For example, you may have an area on the page that deals with instant messages. You have a list of messages, a text box to enter a new message, and a button to send the message.
-
-```js
-const messages = browser.component({
-  messages: function () {
-    return this.find('.messages');
-  },
-  messageText: function () {
-    return this.find('input.message');
-  },
-  sendButton: function () {
-    return this.find('button', {text: 'Send'});
-  }
-});
-```
-
-You can then use the messages component:
-
-```js
-await messages.messages().shouldHave({text: ['hi!', 'wassup?']});
-await messages.messageBox().enterText("just hangin'");
-await messages.sendButton().click();
-```
-
-## Options
-There are some options you can set, which are inherited by inner scopes.
-
-```js
-scope.options({visibleOnly: false});
-const innerScope = scope.find('input');
-
-innerScope.getOptions().visibleOnly; // returns false
-```
-
-* `visibleOnly` if true, then only visible elements will be found, if false, then all elements are considered. Visible is determined by the element's computed CSS, see [jQuery's :visible selector](https://api.jquery.com/visible-selector/). Default is true.
+* `visibleOnly` if true, then only visible elements will be found, if false, then all elements are considered. Default is true.
 * `timeout` an integer specifying the milliseconds to wait for an element to appear. This can be overriden by specifying the timeout when calling an action.
 * `interval` a number of milliseconds to wait between querying DOM when waiting for element to appear.
 
-## Query
-### find
+### getOptions()
+
+Returns query options.
+
+### find(css)
+
 ```js
-const innerScope = scope.find(css, [options]);
+const innerQuery = query.find(css)
 ```
 
-Returns a new scope that matches `css`.
+Returns a new query that matches `css`.
 
-* `css` - css to find in the scope
-* `options.text` - text to find in the scope.
+### define(name, finderDefinition)
+
+Defines a custom "tag" that can be used instead of css as a `find`/`set` argument. This allows you to use more semantic selectors than css. Example:
+
+```js
+page.define('Flash', q => q.find('.messages .flash'))
+await page.shouldContain({'Flach': 'Success!'})
+```
+
+It's possible to define elements that accept parameters:
+
+```js
+page.define('Flash', (q, flashType) => q.find(`.flash-${flashType}`))
+await browser.shouldContain({
+  'Flash("success")': 'Success!',
+  'Flash("alert")': /Fail/,
+})
+```
+
+Custom definitions can be nested just as well as css:
+
+```js
+page.set({
+  CustomParent: {
+    CustomChild: "new value"
+  }
+})
+```
 
 ### is
+
 ```js
 const scope = scope.is(css);
 ```

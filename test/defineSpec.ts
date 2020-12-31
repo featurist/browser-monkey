@@ -1,5 +1,5 @@
-import {DomAssembly} from './assemblies/DomAssembly'
-import {expect} from 'chai'
+import { expect } from 'chai'
+import { DomAssembly } from './assemblies/DomAssembly'
 
 describe('define', function () {
   let assembly
@@ -30,6 +30,19 @@ describe('define', function () {
 
     expect(browser.find('Hello("one", 2)').result()).to.equal('hello one 2')
     expect(args).to.eql(['one', 2])
+  })
+
+  it('finds defined field', async function() {
+    assembly.insertHtml(`
+      <div class="flash-success">Success!</div>
+      <div class="flash-alert">Fail!</div>
+    `)
+    browser.define('Flash', (q, flashType) => q.find(`.flash-${flashType}`))
+
+    await browser.shouldContain({
+      'Flash("success")': 'Success!',
+      'Flash("alert")': /Fail/,
+    })
   })
 
   describe('definition not found', () => {

@@ -94,6 +94,10 @@ export class DomAssembly {
     return el.lastElementChild as HTMLElement
   }
 
+  public emptyHtml (): void {
+    this._div.innerHTML = ''
+  }
+
   public eventuallyDoNothing (): void {
     this.eventually(() => { /* do nothing */ })
   }

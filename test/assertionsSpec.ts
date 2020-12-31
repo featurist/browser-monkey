@@ -1,8 +1,9 @@
+import { Query } from '../lib/Query'
 import {DomAssembly} from './assemblies/DomAssembly'
 
 describe('assertions', () => {
   let assembly
-  let browser
+  let browser: Query
 
   beforeEach(() => {
     assembly = new DomAssembly()
@@ -28,16 +29,6 @@ describe('assertions', () => {
         assembly.assertRejection(bad, 'expected no elements')
       ])
     })
-
-    it('allows timeout and interval parameters to be used', async () => {
-      assembly.insertHtml('<div class="removing"></div>')
-
-      const promise = browser.find('.removing').shouldNotExist({ timeout: 500, interval: 100 }).then()
-
-      assembly.eventuallyDeleteHtml('.removing')
-
-      await promise
-    })
   })
 
   describe('is', () => {
@@ -60,7 +51,7 @@ describe('assertions', () => {
 
   describe('shouldExist', () => {
     it('eventually finds an element containing text', async () => {
-      const promise = browser.find('.element', { text: 'some t' }).shouldExist().then()
+      const promise = browser.find('.element').shouldExist().then()
       assembly.eventuallyInsertHtml('<div class="element"><div>some text</div></div>')
       await promise
     })
