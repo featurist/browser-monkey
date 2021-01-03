@@ -37,8 +37,8 @@ type Match = {
 }
 
 type FieldName = string | RegExp
-type FieldFinderDefinition = <Q extends Query>(query: Q, name: FieldName) => Q
-type FinderDefinition = <Q extends Query>(query: Q, ...any) => Q
+type FieldFinderDefinition = (query: Query, name: FieldName) => Query
+type FinderDefinition = (query: Query, ...any) => Query
 
 interface Definitions {
   inputs: InputDefinition[]
@@ -54,14 +54,13 @@ const missing = {}
 export class Query implements Promise<any> {
   private _transforms: Transform[]
   private _options: Options
-  private _input: any
-  private _actionExecuted: any
+  private _input: [HTMLElement]
+  private _actionExecuted = false
   private _action: Action
-  private _hasExpectation: boolean
+  private _hasExpectation = false
   private _dom: Dom
 
   public constructor (input: HTMLElement = document.body) {
-    this._hasExpectation = false
     this._transforms = []
     this._options = {
       visibleOnly: true,
@@ -70,7 +69,7 @@ export class Query implements Promise<any> {
       definitions: {
         inputs: [
           {
-            setter: (query, value) => {
+            setter: (query: Query, value) => {
               return query
                 .is('input[type=checkbox]')
                 .shouldHaveElements(1)
@@ -86,7 +85,7 @@ export class Query implements Promise<any> {
                   }
                 })
             },
-            values: (query) => {
+            values: (query: Query) => {
               return query
                 .is('input[type=checkbox]')
                 .map((checkbox) => {
@@ -95,7 +94,7 @@ export class Query implements Promise<any> {
             }
           },
           {
-            setter: (query, value) => {
+            setter: (query: Query, value) => {
               return query
                 .is('select')
                 .shouldHaveElements(1, 'expected to be select element')
@@ -112,7 +111,7 @@ export class Query implements Promise<any> {
                   }
                 })
             },
-            valueAsserters: (query, expected) => {
+            valueAsserters: (query: Query, expected) => {
               return query
                 .is('select')
                 .map((select) => {
@@ -149,7 +148,7 @@ export class Query implements Promise<any> {
                   }
                 })
             },
-            values: (query) => {
+            values: (query: Query) => {
               return query
                 .is('select')
                 .map((select) => {
@@ -159,7 +158,7 @@ export class Query implements Promise<any> {
             }
           },
           {
-            setter: (query, value) => {
+            setter: (query: Query, value) => {
               return query
                 .is(inputSelectors.settable)
                 .shouldHaveElements(1)
@@ -173,14 +172,14 @@ export class Query implements Promise<any> {
                   }
                 })
             },
-            values: (query) => {
+            values: (query: Query) => {
               return query.is(inputSelectors.gettable).map((input) => {
                 return input.value
               })
             }
           },
           {
-            values: (query) => {
+            values: (query: Query) => {
               return query.map((element) => {
                 return query._dom.elementInnerText(element)
               })
@@ -188,20 +187,20 @@ export class Query implements Promise<any> {
           },
         ],
         buttons: [
-          (query, name) => {
+          (query: Query, name) => {
             return query.findCss('button, input[type=button], input[type=submit], input[type=reset], a').containing(name)
           },
         ],
         fields: [
           {
             name: 'label',
-            definition: (query, name) => {
+            definition: (query: Query, name) => {
               return query.find('label').containing(name).find('input')
             },
           },
           {
             name: 'label-for',
-            definition: (query, name) => {
+            definition: (query: Query, name) => {
               return query.find('label[for]').containing(name).map(label => {
                 const id = label.getAttribute('for')
                 return label.ownerDocument.getElementById(id)
@@ -210,7 +209,7 @@ export class Query implements Promise<any> {
           },
           {
             name: 'aria-label',
-            definition: (query, name) => {
+            definition: (query: Query, name) => {
               return query.find('[aria-label]').filter(element => {
                 const label = element.getAttribute('aria-label')
                 return match(label, name).isMatch
@@ -219,7 +218,7 @@ export class Query implements Promise<any> {
           },
           {
             name: 'aria-labelledby',
-            definition: (query, name) => {
+            definition: (query: Query, name) => {
               return query.find('[aria-labelledby]').filter(element => {
                 const id = element.getAttribute('aria-labelledby')
                 const labelElement = element.ownerDocument.getElementById(id)
@@ -231,7 +230,7 @@ export class Query implements Promise<any> {
           },
           {
             name: 'placeholder',
-            definition: (query, name) => {
+            definition: (query: Query, name) => {
               return query.find(inputSelectors.gettable).containing(matchers.elementAttributes({
                 placeholder: name,
               }))
@@ -239,9 +238,9 @@ export class Query implements Promise<any> {
           },
         ],
         finders: {
-          Field: (q, value) => q.findLabel(value),
-          Button: (q, value) => q.findButton(value),
-          Css: (q, value) => q.findCss(value),
+          Field: (q: Query, value) => q.findLabel(value),
+          Button: (q: Query, value) => q.findButton(value),
+          Css: (q: Query, value) => q.findCss(value),
         },
       }
     }
@@ -254,11 +253,11 @@ export class Query implements Promise<any> {
     return 'Query';
   }
 
-  public transform (transform: Transform): this {
+  public transform (transform: Transform): Query {
     return this.clone(clone => clone._transforms.push(transform))
   }
 
-  public expect (expectation: (any) => void): this {
+  public expect (expectation: (any) => void): Query {
     const expectQuery = this.transform(function (value) {
       expectation.call(this, value)
       return value
@@ -269,7 +268,7 @@ export class Query implements Promise<any> {
     return expectQuery
   }
 
-  public action (action: Action): any {
+  public action (action: Action): Query {
     if (this._action) {
       throw new Error('can only have one action')
     }
@@ -279,7 +278,7 @@ export class Query implements Promise<any> {
     })
   }
 
-  public findButton (name: FieldName): this {
+  public findButton (name: FieldName): Query {
     return this.concat(this._options.definitions.buttons.map(definition => {
       return (q: Query): Query => {
         return definition(q, name)
@@ -287,7 +286,7 @@ export class Query implements Promise<any> {
     }))
   }
 
-  public findLabel (name: string): this {
+  public findLabel (name: string): Query {
     return this.concat(this._options.definitions.fields.map(({definition}) => {
       return (q: Query): Query => {
         return definition(q, name)
@@ -295,7 +294,7 @@ export class Query implements Promise<any> {
     }))
   }
 
-  public defineButtonFinder (name: string | FieldFinderDefinition, definition: FieldFinderDefinition): this {
+  public defineButtonFinder (name: string | FieldFinderDefinition, definition: FieldFinderDefinition): Query {
     if (!definition) {
       definition = name as FieldFinderDefinition
       name = undefined
@@ -304,7 +303,7 @@ export class Query implements Promise<any> {
     return this.clone(q => q._options.definitions.buttons.push(definition))
   }
 
-  public undefineButtonFinder (name: string): this {
+  public undefineButtonFinder (name: string): Query {
     return this.clone(q => {
       const index = q._options.definitions.buttons.findIndex(def => def.name === name)
       if (index >= 0) {
@@ -315,7 +314,7 @@ export class Query implements Promise<any> {
     })
   }
 
-  public defineFieldFinder (name: string | FieldFinderDefinition, definition?: FieldFinderDefinition): this {
+  public defineFieldFinder (name: string | FieldFinderDefinition, definition?: FieldFinderDefinition): Query {
     if (!definition) {
       definition = name as FieldFinderDefinition
       name = undefined
@@ -324,7 +323,7 @@ export class Query implements Promise<any> {
     return this.clone(q => q._options.definitions.fields.push({name: name as string, definition}))
   }
 
-  public undefineFieldFinder (name: string): this {
+  public undefineFieldFinder (name: string): Query {
     return this.clone(q => {
       const index = q._options.definitions.fields.findIndex(def => def.name === name)
       if (index >= 0) {
@@ -335,30 +334,31 @@ export class Query implements Promise<any> {
     })
   }
 
+  // TODO: try removing any
   public result (): any {
     return this.execute().value
   }
 
-  public resolve (input: any): this {
+  public resolve (input: any): Query {
     const resolved = this.clone()
     resolved._input = input
     resolved._transforms = []
     return resolved
   }
 
-  public map (map: (a: any) => any, description?: string): this {
+  public map (map: (a: any) => any, description?: string): Query {
     return this.transform((elements) => {
       return new ExecutedSimpleTransform(elements.map(map), description)
     })
   }
 
-  public filter (filter: (a: any) => boolean, description?: string): this {
+  public filter (filter: (a: any) => boolean, description?: string): Query {
     return this.transform((elements) => {
       return new ExecutedSimpleTransform(elements.filter(filter), description)
     })
   }
 
-  public concat (queryCreators: ((q: Query) => Query)[]): this {
+  public concat (queryCreators: ((q: Query) => Query)[]): Query {
     return this.transform((elements) => {
       const resolved = this.resolve(elements)
 
@@ -397,7 +397,7 @@ export class Query implements Promise<any> {
     }
   }
 
-  public firstOf (queryCreators: ((q: Query) => Query)[]): this {
+  public firstOf (queryCreators: ((q: Query) => Query)[]): Query {
     const transformed = this.transform((elements) => {
       const resolved = this.resolve(elements)
 
@@ -441,7 +441,7 @@ export class Query implements Promise<any> {
     return transformed
   }
 
-  public detect (queryCreators: {[key: string]: (q: Query) => Query}): this {
+  public detect (queryCreators: {[key: string]: (q: Query) => Query}): Query {
     const transformed = this.transform((elements) => {
       const resolved = this.resolve(elements)
 
@@ -497,11 +497,11 @@ export class Query implements Promise<any> {
     return transformed
   }
 
-  public options (options: Options): any {
+  public options (options: Options): Query {
     return this.clone(q => extend(q._options, options))
   }
 
-  public getOptions (): any {
+  public getOptions (): Options {
     return this._options
   }
 
@@ -558,7 +558,7 @@ export class Query implements Promise<any> {
       })
   }
 
-  public clone (modifier?: (clone: this) => void): this {
+  private clone (modifier?: (clone: Query) => void): Query {
     const clone = new (this.constructor as any)()
     clone.copyQueryFields(this)
     if (modifier) {
@@ -567,11 +567,13 @@ export class Query implements Promise<any> {
     return clone
   }
 
-  public input (value): this {
+  // TODO: why is this public?
+  public input (value): Query {
     return this.clone(q => q._input = value)
   }
 
-  public getInput (): this {
+  // TODO: rename `input`/`getInput` to something better
+  public getInput (): [HTMLElement] {
     return this._input
   }
 
@@ -585,7 +587,7 @@ export class Query implements Promise<any> {
     this._options.definitions = cloneDefinitions(from._options.definitions)
   }
 
-  public shouldHaveElements (count: number, message?: string): this {
+  public shouldHaveElements (count: number, message?: string): Query {
     return this.expect(elements => {
       if (elements.length !== count) {
         this.error(message || `expected ${count} ${pluralize('elements', count)}, found ` + elements.length)
@@ -593,7 +595,7 @@ export class Query implements Promise<any> {
     })
   }
 
-  public shouldExist (message?: string): this {
+  public shouldExist (message?: string): Query {
     return this.expect(elements => {
       if (elements.length < 1) {
         this.error(message || 'expected one or more elements, found ' + elements.length)
@@ -601,7 +603,7 @@ export class Query implements Promise<any> {
     })
   }
 
-  public shouldNotExist (message?: string): this {
+  public shouldNotExist (message?: string): Query {
     return this.expect(elements => {
       if (elements.length !== 0) {
         this.error(message || 'expected no elements, found ' + elements.length)
@@ -617,18 +619,18 @@ export class Query implements Promise<any> {
     return this.shouldExist().result()
   }
 
-  public click (selector?: string): this {
+  public click (selector?: string): Query {
     return this.optionalSelector(selector).shouldHaveElements(1).action(([element]) => {
       debug('click', element)
       this._dom.click(element)
     })
   }
 
-  public clickButton (name: FieldName): this {
+  public clickButton (name: FieldName): Query {
     return this.findButton(name).click()
   }
 
-  public submit (selector?: string): this {
+  public submit (selector?: string): Query {
     return this.optionalSelector(selector)
       .shouldHaveElements(1)
       .expect(([element]) => {
@@ -642,7 +644,7 @@ export class Query implements Promise<any> {
       })
   }
 
-  public enterText (selector: string, text?: string): this {
+  public enterText (selector: string, text?: string): Query {
     if (text === undefined) {
       text = selector
       selector = undefined
@@ -657,7 +659,7 @@ export class Query implements Promise<any> {
       })
   }
 
-  public scope (element: HTMLElement): this {
+  public scope (element: HTMLElement): Query {
     return this.input([element])
   }
 
@@ -665,7 +667,7 @@ export class Query implements Promise<any> {
     return mount.mount(this)
   }
 
-  public iframe (selector?: string): this {
+  public iframe (selector?: string): Query {
     return this.optionalSelector(selector).transform(elements => {
       return new ExecutedSimpleTransform(elements.map(element => {
         if (isIframe(element)) {
@@ -681,23 +683,24 @@ export class Query implements Promise<any> {
     })
   }
 
-  public enabled (): this {
+  public enabled (): Query {
     return this.filter(element => {
       const tagName = element.tagName
       return !((tagName === 'BUTTON' || tagName === 'INPUT') && element.disabled)
     }, 'enabled')
   }
 
-  public set (model: any): this {
+  // TODO: try to get rid of any
+  public set (model: any): Query {
     return this.action(elements => {
       const setters = []
 
       const actions = {
-        arrayLengthError: (query, actualLength, expectedLength): void => {
+        arrayLengthError: (query: Query, actualLength, expectedLength): void => {
           query.error('expected ' + expectedLength + ' ' + pluralize('elements', expectedLength) + ', found ' + actualLength)
         },
 
-        value: (query, model): ActualExpected => {
+        value: (query: Query, model): ActualExpected => {
           const setter = query.shouldHaveElements(1).setter(model).result()
           setters.push(() => setter())
           return {
@@ -706,7 +709,7 @@ export class Query implements Promise<any> {
           }
         },
 
-        expectOne: (query): ActualExpected => {
+        expectOne: (query: Query): ActualExpected => {
           query.shouldHaveElements(1).result()
           return {
             actual: {},
@@ -714,7 +717,7 @@ export class Query implements Promise<any> {
           }
         },
 
-        function: (query, model): ActualExpected => {
+        function: (query: Query, model): ActualExpected => {
           setters.push(() => this.runModelFunction(model, query))
           return {
             actual: undefined,
@@ -744,7 +747,7 @@ export class Query implements Promise<any> {
     await this.shouldNotExist()
   }
 
-  public shouldContain (model): this {
+  public shouldContain (model): Query {
     return this.expect(elements => {
       let isError = false
 
@@ -753,7 +756,7 @@ export class Query implements Promise<any> {
           isError = true
         },
 
-        expectOne: (query): ActualExpected => {
+        expectOne: (query: Query): ActualExpected => {
           try {
             query.shouldHaveElements(1).result()
             return {actual: {}, expected: {}}
@@ -770,7 +773,7 @@ export class Query implements Promise<any> {
           }
         },
 
-        value: (query, model): ActualExpected => {
+        value: (query: Query, model): ActualExpected => {
           const match = query.matchValue(model)
 
           if (!match.isMatch) {
@@ -780,7 +783,7 @@ export class Query implements Promise<any> {
           return match
         },
 
-        function: (query, model): ActualExpected => {
+        function: (query: Query, model): ActualExpected => {
           try {
             this.runModelFunction(model, query)
             return {
@@ -810,7 +813,7 @@ export class Query implements Promise<any> {
     })
   }
 
-  public index (index: number): this {
+  public index (index: number): Query {
     return this.transform(elements => {
       if (elements.length <= index) {
         this.error(`index(${index}) where there are only ${elements.length} elements`)
@@ -831,13 +834,13 @@ export class Query implements Promise<any> {
     return this
   }
 
-  private setter (value): this {
+  private setter (value): Query {
     return this.firstOf(this._options.definitions.inputs.filter(def => def.setter).map(def => {
       return query => def.setter(query, value)
     }))
   }
 
-  private valueAsserters (expected: any): this {
+  private valueAsserters (expected: any): Query {
     return this.transform(elements => {
       const definitions = this._options.definitions.inputs.filter(def => def.values || def.valueAsserters)
 
@@ -867,14 +870,15 @@ export class Query implements Promise<any> {
     this._options.definitions.inputs.unshift(inputDefinition)
   }
 
-  public containing (model: any): this {
+  // TODO: try getting rid of any
+  public containing (model: any): Query {
     return this.transform(elements => {
       const actions = {
-        arrayLengthError: (query, actualLength, expectedLength): void => {
+        arrayLengthError: (query: Query, actualLength, expectedLength): void => {
           query.error('expected ' + expectedLength + ' ' + pluralize('elements', expectedLength) + ', found ' + actualLength)
         },
 
-        value: (query, model): ActualExpected => {
+        value: (query: Query, model): ActualExpected => {
           const match = query.matchValue(model)
 
           if (!match.isMatch) {
@@ -884,15 +888,7 @@ export class Query implements Promise<any> {
           return match
         },
 
-        expectOne: (query): ActualExpected => {
-          query.expectOne().execute()
-          return {
-            actual: {},
-            expected: {},
-          }
-        },
-
-        function: (query, fn): ActualExpected => {
+        function: (query: Query, fn): ActualExpected => {
           this.runModelFunction(fn, query)
           return {actual: fn, expected: fn}
         }
@@ -932,7 +928,7 @@ export class Query implements Promise<any> {
     })
   }
 
-  public values (): this {
+  public values (): Query {
     return this.transform(elements => {
       const definitions = this._options.definitions.inputs.filter(def => def.values)
 
@@ -954,7 +950,7 @@ export class Query implements Promise<any> {
     })
   }
 
-  public findCss (selector: string): this {
+  public findCss (selector: string): Query {
     const findElements = this.transform(elements => {
       return new ExecutedSimpleTransform(flatten(elements.map(element => {
         return this._dom.querySelectorAll(element, selector, this._options)
@@ -964,7 +960,7 @@ export class Query implements Promise<any> {
     return findElements
   }
 
-  public find (selector: string): this {
+  public find (selector: string): Query {
     // name(arg1, arg2, ...)
     const match = /^\s*([$a-z_][0-9a-z_$]*)\s*(\((.*)\)\s*)?$/i.exec(selector)
 
@@ -988,13 +984,13 @@ export class Query implements Promise<any> {
     return this.findCss(selector)
   }
 
-  public is (selector: string): this {
+  public is (selector: string): Query {
     return this.filter(element => {
       return this._dom.elementMatches(element, selector)
     }, 'is: ' + selector)
   }
 
-  private runModelFunction(fn: (Query) => any, query: Query): ExecutedTransform | undefined {
+  private runModelFunction(fn: (query: Query) => any, query: Query): ExecutedTransform | undefined {
     const result = fn(query)
     if (result instanceof Query) {
       return result.execute()
@@ -1003,7 +999,7 @@ export class Query implements Promise<any> {
     }
   }
 
-  private optionalSelector (selector?: string): this {
+  private optionalSelector (selector?: string): Query {
     return selector ? this.find(selector) : this
   }
 
@@ -1029,6 +1025,7 @@ export class Query implements Promise<any> {
     }
   }
 
+  // TODO: try getting rid of any
   private mapModel (model: any, actions: Actions): any {
     const map = (query: Query, model: any): any => {
       if (model === missing) {
@@ -1135,9 +1132,10 @@ interface Actions {
   arrayLengthError (q: Query, actual: number, expected: number): void
   function (q: Query, model: any): ActualExpected
   value (q: Query, model: any): ActualExpected
-  expectOne (q: Query): ActualExpected
+  expectOne? (q: Query): ActualExpected
 }
 
+// TODO: try getting rid of any
 function spliceModelArrayFromActual (model, query: Query, actions: Actions): any[] {
   const length = query.result().length
 
@@ -1160,6 +1158,7 @@ function spliceModelArrayFromActual (model, query: Query, actions: Actions): any
   }
 }
 
+// TODO: try getting rid of any
 function arrayAssign (a: any[], b: any[]): any[] {
   return a.map((itemA, index) => {
     return index < b.length ? b[index] : itemA

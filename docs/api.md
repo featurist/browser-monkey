@@ -87,14 +87,14 @@ You can call `.scope()` explicitely to (re)set the starting point for the query,
 const scopeUnderElement = page.scope(element)
 ```
 
-### options(options = {})
+### options(options)
 
 There are some options you can set, which are inherited by inner queries.
 
 ```js
 const withInvisible = query.options({visibleOnly: false})
 
-withInvisible.find('div').getOptions().visibleOnly; // returns false
+withInvisible.find('div').getOptions().visibleOnly // => false
 ```
 
 * `visibleOnly` if true, then only visible elements will be found, if false, then all elements are considered. Default is true.
@@ -144,6 +144,8 @@ page.set({
 
 ### is
 
+# TODO: document
+
 ```js
 const scope = scope.is(css);
 ```
@@ -153,6 +155,7 @@ Returns a new scope that ensures that the element found matches the CSS. For exa
 * `css` - css to match against the scope
 
 ### containing
+
 ```js
 const scope = scope.containing(css, [options]);
 ```
@@ -508,3 +511,5 @@ const scopeWithEvents = scope.on(function (event) {
 * `event.optionElement` is the option element selected, in the case of type `'select option'`.
 * `event.text` is the text entered, in the case of type `'typing'`.
 * `event.html` is the html entered, in the case of type `'typing html'`.
+
+# TODO: document `result()`
