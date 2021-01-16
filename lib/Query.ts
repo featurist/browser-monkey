@@ -22,8 +22,8 @@ import flatten from 'lowscore/flatten'
 import {match} from './match'
 import * as matchers from './matchers'
 
-type Transform = (elements: any, executedTransforms: ExecutedTransform[]) => any
-type Action = (elements: any, executedTransforms: ExecutedTransform[]) => void
+type Transform = (elements: Array<HTMLElement>, executedTransforms: ExecutedTransform[]) => any
+type Action = (elements: Array<HTMLElement>, executedTransforms: ExecutedTransform[]) => void
 interface InputDefinition {
   values?: (query: Query) => Query
   setter?: (query: Query, value: any) => Query
@@ -82,7 +82,7 @@ export class Query implements Promise<any> {
                     throw new Error('expected boolean as argument to set checkbox')
                   }
                   return () => {
-                    if (query._dom.checked(checkbox) !== value) {
+                    if (query._dom.checked(checkbox as HTMLInputElement) !== value) {
                       debug('checkbox', checkbox, value)
                       query._dom.click(checkbox)
                     }
@@ -111,7 +111,7 @@ export class Query implements Promise<any> {
                   return () => {
                     const selectElement = option.parentNode
                     debug('select', selectElement)
-                    query._dom.selectOption(selectElement, option)
+                    query._dom.selectOption(selectElement as HTMLSelectElement, option as HTMLOptionElement)
                   }
                 })
             },
@@ -172,7 +172,7 @@ export class Query implements Promise<any> {
                   }
                   return () => {
                     debug('set', element, value)
-                    query._dom.enterText(element, value, {incremental: false})
+                    query._dom.enterText(element as HTMLInputElement, value, {incremental: false})
                   }
                 })
             },
@@ -644,7 +644,7 @@ export class Query implements Promise<any> {
       })
       .action(([element]) => {
         debug('submit', element)
-        this._dom.submit(element)
+        this._dom.submit(element as HTMLInputElement)
       })
   }
 
@@ -659,7 +659,7 @@ export class Query implements Promise<any> {
       .is(inputSelectors.settable)
       .action(([element]) => {
         debug('enterText', element, text)
-        this._dom.enterText(element, text)
+        this._dom.enterText(element as HTMLInputElement, text)
       })
   }
 
@@ -1092,17 +1092,8 @@ function cloneDefinitions(definitions: Definitions): Definitions {
   return result as Definitions
 }
 
-function isIframe (element): boolean {
-  return isHTMLElement(element, 'HTMLIFrameElement')
-}
-
-function isHTMLElement (element, subclass = 'HTMLElement'): boolean {
-  if (element.ownerDocument && element.ownerDocument.defaultView) {
-    // an element inside an iframe
-    return element instanceof element.ownerDocument.defaultView[subclass]
-  } else {
-    return false
-  }
+function isIframe (element: HTMLElement): element is HTMLIFrameElement {
+  return (element as HTMLIFrameElement).contentWindow !== undefined
 }
 
 type Retry = <T>(fn: () => T, options?: {timeout?: number, interval?: number}) => Promise<T>
