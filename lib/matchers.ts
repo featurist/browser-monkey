@@ -1,7 +1,8 @@
 import {match} from './match'
 import BrowserMonkeyAssertionError from './BrowserMonkeyAssertionError'
+import { Query } from './Query'
 
-export function elementAttributes (expected): (Query) => void {
+export function elementAttributes (expected): (query: Query) => void {
   return query => {
     const element = query.elementResult()
     const {isMatch, actual} = match(element, expected)

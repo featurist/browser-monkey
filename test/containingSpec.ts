@@ -29,6 +29,19 @@ describe('containing', function () {
       expect(transports).to.eql(cars)
     })
 
+    it('filters elements with text that match RegExp', () => {
+      assembly.insertHtml(`
+        <span class="found">car</span>
+        <span class="found">car</span>
+        <span>horse</span>
+        <span class="found">cart</span>
+      `)
+
+      const transports = browser.find('span').containing(/car/).result()
+      const cars = assembly.findAll('.found')
+      expect(transports).to.eql(cars)
+    })
+
     it('filters input elements that have the exact text', () => {
       assembly.insertHtml(`
         <input class="found" value="car"/>

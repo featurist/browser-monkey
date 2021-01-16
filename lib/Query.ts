@@ -40,6 +40,10 @@ type FieldName = string | RegExp
 type FieldFinderDefinition = (query: Query, name: FieldName) => Query
 type FinderDefinition = (query: Query, ...any) => Query
 
+type TextFilter = string | RegExp
+type FunctionFilter = (query: Query) => void
+type Filter = TextFilter | FunctionFilter
+
 interface Definitions {
   inputs: InputDefinition[]
   buttons: FieldFinderDefinition[]
@@ -870,8 +874,7 @@ export class Query implements Promise<any> {
     this._options.definitions.inputs.unshift(inputDefinition)
   }
 
-  // TODO: try getting rid of any
-  public containing (model: any): Query {
+  public containing (model: Filter | {[key: string]: Filter}): Query {
     return this.transform(elements => {
       const actions = {
         arrayLengthError: (query: Query, actualLength, expectedLength): void => {
