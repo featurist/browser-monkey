@@ -1,9 +1,10 @@
 import { expect } from 'chai'
 import { DomAssembly } from './assemblies/DomAssembly'
+import {Query} from '../lib/Query'
 
 describe('define', function () {
   let assembly
-  let browser
+  let browser: Query
 
   beforeEach(function () {
     assembly = new DomAssembly()

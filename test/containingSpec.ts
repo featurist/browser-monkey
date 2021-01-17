@@ -1,10 +1,11 @@
 import {DomAssembly} from './assemblies/DomAssembly'
 import {expect} from 'chai'
 import {elementAttributes} from '../lib/matchers'
+import {Query} from '../lib/Query'
 
 describe('containing', function () {
   let assembly
-  let browser
+  let browser: Query
 
   beforeEach(function () {
     assembly = new DomAssembly()

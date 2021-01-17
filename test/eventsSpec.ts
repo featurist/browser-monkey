@@ -1,10 +1,11 @@
 import {DomAssembly} from './assemblies/DomAssembly'
 import retry from '../lib/retry'
 import {expect} from 'chai'
+import {Query} from '../lib/Query'
 
 describe('events', function () {
   let assembly
-  let browser
+  let browser: Query
 
   beforeEach(function () {
     assembly = new DomAssembly()

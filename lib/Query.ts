@@ -298,7 +298,7 @@ export class Query implements Promise<any> {
     }))
   }
 
-  public defineButtonFinder (name: string | FieldFinderDefinition, definition: FieldFinderDefinition): Query {
+  public defineButtonFinder (name: string | FieldFinderDefinition, definition?: FieldFinderDefinition): Query {
     if (!definition) {
       definition = name as FieldFinderDefinition
       name = undefined
@@ -648,7 +648,7 @@ export class Query implements Promise<any> {
       })
   }
 
-  public enterText (selector: string, text?: string): Query {
+  public enterText (selector: string, text?: string | string[]): Query {
     if (text === undefined) {
       text = selector
       selector = undefined
