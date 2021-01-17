@@ -40,9 +40,9 @@ type FieldName = string | RegExp
 type FieldFinderDefinition = (query: Query, name: FieldName) => Query
 type FinderDefinition = (query: Query, ...any) => Query
 
-type TextFilter = string | RegExp
-type FunctionFilter = (query: Query) => void
-type Filter = TextFilter | FunctionFilter
+type LiteralModel = string | RegExp | boolean
+type FunctionModel = (query: Query) => void
+type Model = LiteralModel | FunctionModel | { [key: string]: Model } | Model[]
 
 interface Definitions {
   inputs: InputDefinition[]
@@ -694,8 +694,7 @@ export class Query implements Promise<any> {
     }, 'enabled')
   }
 
-  // TODO: try to get rid of any
-  public set (model: any): Query {
+  public set (model: Model): Query {
     return this.action(elements => {
       const setters = []
 
@@ -751,7 +750,7 @@ export class Query implements Promise<any> {
     await this.shouldNotExist()
   }
 
-  public shouldContain (model): Query {
+  public shouldContain (model: Model): Query {
     return this.expect(elements => {
       let isError = false
 
@@ -826,11 +825,11 @@ export class Query implements Promise<any> {
     })
   }
 
-  public define (name: string, finderDefinition): this {
+  public define (name: string | Object, finderDefinition?: FinderDefinition | string): this {
     if (typeof finderDefinition === 'function') {
-      this._options.definitions.finders[name] = finderDefinition
+      this._options.definitions.finders[name as string] = finderDefinition
     } else if (typeof finderDefinition === 'string') {
-      this._options.definitions.finders[name] = q => q.find(finderDefinition)
+      this._options.definitions.finders[name as string] = q => q.find(finderDefinition)
     } else if (name.constructor === Object && finderDefinition === undefined) {
       Object.keys(name).forEach(key => this.define(key, name[key]))
     }
@@ -874,7 +873,7 @@ export class Query implements Promise<any> {
     this._options.definitions.inputs.unshift(inputDefinition)
   }
 
-  public containing (model: Filter | {[key: string]: Filter}): Query {
+  public containing (model: Model): Query {
     return this.transform(elements => {
       const actions = {
         arrayLengthError: (query: Query, actualLength, expectedLength): void => {
@@ -1028,8 +1027,7 @@ export class Query implements Promise<any> {
     }
   }
 
-  // TODO: try getting rid of any
-  private mapModel (model: any, actions: Actions): any {
+  private mapModel (model: Model, actions: Actions): any {
     const map = (query: Query, model: any): any => {
       if (model === missing) {
         return {

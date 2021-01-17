@@ -1,10 +1,11 @@
 import {DomAssembly} from './assemblies/DomAssembly'
 import BrowserMonkeyAssertionError from '../lib/BrowserMonkeyAssertionError'
 import {elementAttributes} from '../lib/matchers'
+import {Query} from '../lib/Query'
 
 describe('shouldContain', function () {
   let assembly
-  let browser
+  let browser: Query
 
   beforeEach(function () {
     assembly = new DomAssembly()
