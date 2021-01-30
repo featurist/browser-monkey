@@ -92,7 +92,7 @@ export class Query implements Promise<any> {
             values: (query: Query) => {
               return query
                 .is('input[type=checkbox]')
-                .map((checkbox) => {
+                .map((checkbox: HTMLInputElement) => {
                   return query._dom.checked(checkbox)
                 })
             }
@@ -103,7 +103,7 @@ export class Query implements Promise<any> {
                 .is('select')
                 .shouldHaveElements(1, 'expected to be select element')
                 .findCss('option')
-                .filter(o => {
+                .filter((o: HTMLInputElement) => {
                   return match(o.value, value).isMatch || match(query._dom.elementInnerText(o), value).isMatch
                 }, `option with text or value ${JSON.stringify(value)}`)
                 .shouldHaveElements(1, `expected one option element with text or value ${JSON.stringify(value)}`)
@@ -118,7 +118,7 @@ export class Query implements Promise<any> {
             valueAsserters: (query: Query, expected) => {
               return query
                 .is('select')
-                .map((select) => {
+                .map((select: HTMLSelectElement) => {
                   return () => {
                     const value = select.value
 
@@ -155,7 +155,7 @@ export class Query implements Promise<any> {
             values: (query: Query) => {
               return query
                 .is('select')
-                .map((select) => {
+                .map((select: HTMLSelectElement) => {
                   const selectedOption = select.options[select.selectedIndex]
                   return selectedOption && query._dom.elementInnerText(selectedOption)
                 })
@@ -177,7 +177,7 @@ export class Query implements Promise<any> {
                 })
             },
             values: (query: Query) => {
-              return query.is(inputSelectors.gettable).map((input) => {
+              return query.is(inputSelectors.gettable).map((input: HTMLInputElement) => {
                 return input.value
               })
             }
@@ -350,13 +350,13 @@ export class Query implements Promise<any> {
     return resolved
   }
 
-  public map (map: (a: any) => any, description?: string): Query {
+  public map <E extends HTMLElement>(map: (e: E) => any, description?: string): Query {
     return this.transform((elements) => {
       return new ExecutedSimpleTransform(elements.map(map), description)
     })
   }
 
-  public filter (filter: (a: any) => boolean, description?: string): Query {
+  public filter <E extends HTMLElement>(filter: (e: E) => boolean, description?: string): Query {
     return this.transform((elements) => {
       return new ExecutedSimpleTransform(elements.filter(filter), description)
     })
@@ -690,7 +690,7 @@ export class Query implements Promise<any> {
   public enabled (): Query {
     return this.filter(element => {
       const tagName = element.tagName
-      return !((tagName === 'BUTTON' || tagName === 'INPUT') && element.disabled)
+      return !((tagName === 'BUTTON' || tagName === 'INPUT') && (element as HTMLInputElement).disabled)
     }, 'enabled')
   }
 

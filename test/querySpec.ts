@@ -340,7 +340,7 @@ describe('query', () => {
       const contacts = browser
         .find('.contact')
         .filter(contact => {
-          return contact.querySelector('.name').innerText === 'Sally'
+          return (contact.querySelector('.name') as HTMLElement).innerText === 'Sally'
         })
         .shouldHaveElements(1)
         .then()
