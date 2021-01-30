@@ -8,7 +8,7 @@ The API is made up of three concepts: queries, actions and assertions.
 * actions such as `clickButton()` and `enterText(text)` "execute" the query chain, waiting for the elements to be found before simulating a UI event. These return promises that resolve when the event has been dispatched.
 * assertions such as `shouldExist()` and `shouldContain()` also "execute" the query chain and ensure that the elements exist or contain text, classes or other properties. These return promises that resolve if queries are satisfied, or rejected otherwise (after retrying query for some time).
 
-You can also create semantic matchers using `query.define()`.
+It is also possible to create semantic matchers (to be used in queries) with `query.define()`.
 
 ## Mount
 
@@ -55,8 +55,6 @@ Once mount is created, it is passed to the Query API. The result is browser-monk
 
 ```js
 const page = new Query(mount.containerElement())
-// or, without mount
-const page = new Query(document.querySelector('#my-test-container'))
 ```
 
 ### Unmount
@@ -65,6 +63,14 @@ Remove test container (e.g. between tests):
 
 ```js
 mount.unmount()
+```
+
+### No Mount
+
+Simply pass DOM element to query constructor:
+
+```js
+const page = new Query(document.querySelector('#my-test-container'))
 ```
 
 ## Query
@@ -81,13 +87,13 @@ const name = details.find('.name')       // finds .details .name
 const email = details.find('.email')     // finds .details .email
 ```
 
-You can call `.scope()` explicitely to (re)set the starting point for the query, the element from which all elements are searched for.
+You can call `.scope()` explicitely to (re)set the starting point for the query (an element from which all elements are searched for):
 
 ```js
 const scopeUnderElement = page.scope(element)
 ```
 
-### options(options)
+### options(options: Options): Query
 
 There are some options you can set, which are inherited by inner queries.
 
@@ -101,19 +107,19 @@ withInvisible.find('div').getOptions().visibleOnly // => false
 * `timeout` an integer specifying the milliseconds to wait for an element to appear. This can be overriden by specifying the timeout when calling an action.
 * `interval` a number of milliseconds to wait between querying DOM when waiting for element to appear.
 
-### getOptions()
+### getOptions(): Options
 
 Returns query options.
 
-### find(css)
+### find(css: string): Query
 
 ```js
 const innerQuery = query.find(css)
 ```
 
-Returns a new query that matches `css`.
+Returns a new query that matches `css`. A semantic matcher (see below) can also be used instead of CSS selector.
 
-### define(name, finderDefinition)
+### define(name: string | Object, finderDefinition?: FinderDefinition): void
 
 Defines a custom "tag" that can be used instead of css as a `find`/`set` argument. This allows you to use more semantic selectors than css. Example:
 
@@ -132,6 +138,16 @@ await browser.shouldContain({
 })
 ```
 
+Multiple matchers can be defined at the same time:
+
+```js
+page.define({
+  Success: q => q.find('.flash .success'),
+  Alert: q => q.find('.flash .alert')
+})
+```
+
+TODO: move this to `set()` documentation
 Custom definitions can be nested just as well as css:
 
 ```js
@@ -142,53 +158,65 @@ page.set({
 })
 ```
 
-### is
+### is(selector: string): Query
 
-# TODO: document
-
-```js
-const scope = scope.is(css);
-```
-
-Returns a new scope that ensures that the element found matches the CSS. For example, `scope.find('li').is('.enabled')` ensures that the `<li>` has the class `enabled`.
-
-* `css` - css to match against the scope
-
-### containing
+Narrows the scope to match selector. This is useful for composability. Consider the following example:
 
 ```js
-const scope = scope.containing(css, [options]);
+const alert = page.find('.alert')
+
+// and then later
+await alert.is('.success').shouldExist()
+
+// and further down
+await alert.is('.danger').shouldExist()
 ```
 
-Ensures that the scope contains the `css` and `options.text`, the scope returned still refers to the outer scope. This is useful, for example, in finding list items that contain certain elements, but still referring to the list items.
-
-* `css` - css to find in the scope
-* `options.text` - text to find in the scope.
-
-For example, find the `li` that contains the `h2` with the text `Second`, and click the link in the `li`.
+To expand on composability. `find('.a').is('.b')` is the same as `find('.a.b')` but _not_ the same as `find('.a').find('.b')`. The latter matches
 
 ```html
-<ul>
-  <li>
-    <h2>First</h2>
-    <a href="first">link</a>
-  </li>
-  <li>
-    <h2>Second</h2>
-    <a href="second">link</a>
-  </li>
-  <li>
-    <h2>Third</h2>
-    <a href="third">link</a>
-  </li>
-</ul>
+<p class="a">
+  <p class="b"></p>
+</p>
 ```
 
+whereas `find('.a').is('.b')` matches
+
+```html
+<p class="a b"></p>
+```
+
+### containing(filter: text | RegExp | Object): Query
+
+Narrows a scope based on its content. For example:
+
 ```js
-browser.find('ul li').containing('h2', {text: 'Second'}).find('a').click();
+const scope = page.find('.alert').containing('Success!')
+```
+
+Will only yield elements with class `alert` whose text content is 'Success!'. A RegExp can be used instead of a string for elements that _contain_ 'Success!'.
+
+It's also possible to examine the content of individual bits inside the scope:
+
+```js
+const scope = page.find('.result').containing({
+  '.title': 'Title',
+  '.body': /Body/
+})
+```
+
+Text content is not the only filtering option - element attributes can be inspected too:
+
+```js
+import {matchers} from 'browser-monkey'
+
+const scope = page.find('.result').containing({
+  '.body': matchers.elementAttributes({style: {color: 'red'}})
+})
 ```
 
 ### filter
+
 ```js
 const scope = scope.filter(filter);
 ```
@@ -196,6 +224,7 @@ const scope = scope.filter(filter);
 * `filter(element)` a function that takes a DOM element, and returns either truthy or falsey. If truthy, then the element will be considered as part of the scope, if falsey then it won't.
 
 ## Assertions
+
 ### shouldExist
 Wait for an element to exist.
 
