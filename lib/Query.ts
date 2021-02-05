@@ -350,7 +350,7 @@ export class Query implements Promise<any> {
     return resolved
   }
 
-  public map <E extends HTMLElement>(map: (e: E) => any, description?: string): Query {
+  private map <E extends HTMLElement>(map: (e: E) => any, description?: string): Query {
     return this.transform((elements) => {
       return new ExecutedSimpleTransform(elements.map(map), description)
     })
@@ -373,7 +373,7 @@ export class Query implements Promise<any> {
     })
   }
 
-  public error (message: string, {expected = undefined, actual = undefined} = {}): void {
+  private error (message: string, {expected = undefined, actual = undefined} = {}): void {
     throw new BrowserMonkeyAssertionError(message, { expected, actual })
   }
 

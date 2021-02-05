@@ -23,7 +23,7 @@ describe("Browser-monkey", function () {
   })
 
   it("finds text", async function () {
-    await page.find("h1").containing("Hello, Lubbers!").shouldExist()
+    await page.find("h1").shouldContain("Hello, Lubbers!")
   })
 
   it("fills an input", async function () {
@@ -39,7 +39,7 @@ describe("Browser-monkey", function () {
   it("finds text, eventually rendered by an ajax call", async function () {
     // Another way to submit search form
     await page.enterText('input', ['punk ipa', '{Enter}'])
-    await page.containing(/Punk IPA 2010 - Current/).shouldExist()
+    await page.shouldContain(/Punk IPA 2010 - Current/)
   })
 })
 

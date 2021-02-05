@@ -360,30 +360,31 @@ describe('query', () => {
     })
   })
 
-  describe('map', () => {
-    it('can map elements', async () => {
-      const contacts = browser
-        .find('.contact')
-        .map(contact => {
-          return contact.querySelector('.name')
-        })
-        .shouldExist()
-        .then()
+  // `map` has been moved to private
+  // describe('map', () => {
+  //   it('can map elements', async () => {
+  //     const contacts = browser
+  //       .find('.contact')
+  //       .map(contact => {
+  //         return contact.querySelector('.name')
+  //       })
+  //       .shouldExist()
+  //       .then()
 
-      assembly.eventuallyInsertHtml(`
-        <div class="contact">
-          <div class="name">Sally</div>
-          <div class="address">32 Yellow Drive</div>
-        </div>
-        <div class="contact">
-          <div class="name">Bob</div>
-          <div class="address">32 Red Drive</div>
-        </div>
-      `)
+  //     assembly.eventuallyInsertHtml(`
+  //       <div class="contact">
+  //         <div class="name">Sally</div>
+  //         <div class="address">32 Yellow Drive</div>
+  //       </div>
+  //       <div class="contact">
+  //         <div class="name">Bob</div>
+  //         <div class="address">32 Red Drive</div>
+  //       </div>
+  //     `)
 
-      expect(await contacts).to.eql(assembly.findAll('.name'))
-    })
-  })
+  //     expect(await contacts).to.eql(assembly.findAll('.name'))
+  //   })
+  // })
 
   describe('actions', () => {
     it('actions are only executed once', async () => {
@@ -458,8 +459,9 @@ describe('query', () => {
       `)
 
       const elementsFound = browser.concat([
-        b => b.find('.a'),
-        b => b.find('.b')
+        q => q.find('.a'),
+        q => q.find('.b'),
+        q => q.find('.x'),
       ]).result()
 
       expect(elementsFound).to.eql([a, b])

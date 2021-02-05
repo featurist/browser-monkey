@@ -172,19 +172,7 @@ await alert.is('.success').shouldExist()
 await alert.is('.danger').shouldExist()
 ```
 
-To expand on composability. `find('.a').is('.b')` is the same as `find('.a.b')` but _not_ the same as `find('.a').find('.b')`. The latter matches
-
-```html
-<p class="a">
-  <p class="b"></p>
-</p>
-```
-
-whereas `find('.a').is('.b')` matches
-
-```html
-<p class="a b"></p>
-```
+To expand on composability. In the end, `find('.a').is('.b')` is the same as `find('.a.b')`. However the latter is atomic. Whereas the former can be constructed programmatically bit by bit.
 
 ### containing(filter: text | RegExp | Object): Query
 
@@ -215,17 +203,17 @@ const scope = page.find('.result').containing({
 })
 ```
 
-### filter
+### filter(fn): Query
 
-```js
-const scope = scope.filter(filter);
-```
+Narrows scope based on a filtering function that takes a DOM element, and returns either truthy or falsey. If truthy, then the element will be considered as part of the scope, if falsey then it won't.
 
-* `filter(element)` a function that takes a DOM element, and returns either truthy or falsey. If truthy, then the element will be considered as part of the scope, if falsey then it won't.
+TODO: document `result()`
+
 
 ## Assertions
 
 ### shouldExist
+
 Wait for an element to exist.
 
 ```js
