@@ -261,7 +261,7 @@ export class Query implements Promise<any> {
     return this.clone(clone => clone._transforms.push(transform))
   }
 
-  public expect (expectation: (any) => void): Query {
+  public expect <E extends HTMLElement>(expectation: (elements: E[]) => void): Query {
     const expectQuery = this.transform(function (value) {
       expectation.call(this, value)
       return value
@@ -516,16 +516,20 @@ export class Query implements Promise<any> {
   }
 
   public then (resolve?: (r) => any, reject?: (e) => any): Promise<any> {
-    this.assertHasActionOrExpectation()
+    let query: Query = this
 
-    const retry = retryFromOptions(this._options)
+    if (!this._hasExpectation && !this._action) {
+      query = query.shouldExist()
+    }
+
+    const retry = retryFromOptions(query._options)
 
     let retries = 0
     const startTime = new Date()
 
     const promise = Promise.resolve(retry(() => {
       retries++
-      return this.execute().value
+      return query.execute().value
     })).catch(error => {
       if (error instanceof BrowserMonkeyAssertionError) {
         error.retries = retries
@@ -638,7 +642,7 @@ export class Query implements Promise<any> {
     return this.optionalSelector(selector)
       .shouldHaveElements(1)
       .expect(([element]) => {
-        if (!element.form) {
+        if (!(element as HTMLInputElement).form) {
           throw new BrowserMonkeyAssertionError('expected element to be inside a form for submit')
         }
       })

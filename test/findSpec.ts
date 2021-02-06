@@ -24,6 +24,24 @@ describe('find', () => {
     expect(query.result()).to.eql(expected)
   }
 
+  it('resolves with found elements', async function() {
+    const [selectedElements, insertedElement] = await Promise.all([
+      browser.find('.test').then(),
+      assembly.eventuallyInsertHtml(
+        `<div class="test"></div>`
+      )
+    ])
+
+    expect(selectedElements).to.eql([insertedElement])
+  })
+
+  it('throws if nothing found', async function() {
+    await assembly.assertRejection(
+      browser.find('.stuff').then(),
+      "expected one or more elements, found 0 (found: find('.stuff') [0])"
+    )
+  })
+
   it('finds all elements that match', () => {
     assertFound(
       `

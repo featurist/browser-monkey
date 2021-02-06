@@ -87,6 +87,19 @@ const name = details.find('.name')       // finds .details .name
 const email = details.find('.email')     // finds .details .email
 ```
 
+A query can be "resolved" in a number of ways:
+
+```js
+// Simply resolving it as promise returns found elements (or rejects after timeout if none found)
+const elements = await name
+
+// Use a specific assertion
+const elements = await name.shouldHaveElements(2)
+
+// Call `result()` to grab whatever elements match (if any) without waiting
+const elements = name.result()
+```
+
 You can call `.scope()` explicitely to (re)set the starting point for the query (an element from which all elements are searched for):
 
 ```js
