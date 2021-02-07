@@ -518,30 +518,19 @@ describe('query', () => {
       assembly.insertHtml('<div class="content">content<div class="c"/>C</div>')
 
       const promise = browser.find('.content').firstOf([
-        b => b.find('.a').shouldExist(),
-        b => b.find('.b').shouldExist()
+        b => b.find('.a'),
+        b => b.find('.b')
       ])
 
       await assembly.assertRejection(promise, "all queries failed in firstOf (found: path(find('.content') [1], firstOf(expected one or more elements, found 0 (found: find('.a') [0]), expected one or more elements, found 0 (found: find('.b') [0])) [0]))")
-    })
-
-    it('throws if one of the queries does not have an assertion or action', async () => {
-      assembly.insertHtml('<div class="content">content<div class="c"/>C</div>')
-
-      const promise = browser.find('.content').firstOf([
-        b => b.find('.a'),
-        b => b.find('.b').shouldExist()
-      ])
-
-      await assembly.assertRejection(promise, 'no expectations or actions in query')
     })
   })
 
   describe('detect', () => {
     it('finds the first of two or more queries', async () => {
       const promise = browser.detect({
-        a: q => q.find('.a').shouldExist(),
-        b: q => q.find('.b').shouldExist()
+        a: q => q.find('.a'),
+        b: q => q.find('.b')
       }).then()
 
       const bPromise = assembly.eventuallyInsertHtml('<div class="b">B</div>')
@@ -563,17 +552,6 @@ describe('query', () => {
       })
 
       await assembly.assertRejection(promise, "all queries failed in detect (found: path(find('.content') [1], detect(a: expected one or more elements, found 0 (found: find('.a') [0]), b: expected one or more elements, found 0 (found: find('.b') [0])) [0]))")
-    })
-
-    it('throws if one of the queries does not have an assertion or action', async () => {
-      assembly.insertHtml('<div class="content">content<div class="c"/>C</div>')
-
-      const promise = browser.find('.content').detect({
-        a: b => b.find('.a'),
-        b: b => b.find('.b').shouldExist()
-      })
-
-      await assembly.assertRejection(promise, 'no expectations or actions in query')
     })
   })
 })

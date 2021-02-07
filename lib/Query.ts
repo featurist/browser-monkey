@@ -408,9 +408,9 @@ export class Query implements Promise<any> {
       const values = queryCreators.map(query => {
         try {
           const q = runQueryCreator(query, resolved)
-          q.assertHasActionOrExpectation()
+
           return {
-            value: q.execute()
+            value: q.ensureExpectation().execute()
           }
         } catch (e) {
           if (e instanceof BrowserMonkeyAssertionError) {
@@ -454,10 +454,10 @@ export class Query implements Promise<any> {
 
         try {
           const q = runQueryCreator(queryCreator, resolved)
-          q.assertHasActionOrExpectation()
+
           return {
             key,
-            value: q.execute()
+            value: q.ensureExpectation().execute()
           }
         } catch (e) {
           if (e instanceof BrowserMonkeyAssertionError) {
@@ -509,27 +509,15 @@ export class Query implements Promise<any> {
     return this._options
   }
 
-  private assertHasActionOrExpectation (): void {
-    if (!this._hasExpectation && !this._action) {
-      throw new Error('no expectations or actions in query, use .result(), or add an expectation or an action')
-    }
-  }
-
   public then (resolve?: (r) => any, reject?: (e) => any): Promise<any> {
-    let query: Query = this
-
-    if (!this._hasExpectation && !this._action) {
-      query = query.shouldExist()
-    }
-
-    const retry = retryFromOptions(query._options)
+    const retry = retryFromOptions(this._options)
 
     let retries = 0
     const startTime = new Date()
 
     const promise = Promise.resolve(retry(() => {
       retries++
-      return query.execute().value
+      return this.ensureExpectation().execute().value
     })).catch(error => {
       if (error instanceof BrowserMonkeyAssertionError) {
         error.retries = retries
@@ -1077,6 +1065,13 @@ export class Query implements Promise<any> {
     }
 
     return map(this, model)
+  }
+
+  private ensureExpectation(): Query {
+    if (!this._hasExpectation && !this._action) {
+      return this.shouldExist()
+    }
+    return this
   }
 }
 
