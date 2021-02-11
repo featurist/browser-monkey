@@ -46,6 +46,24 @@ describe('labels', function () {
       )
     })
 
+    it('select with label as parent', () => {
+      // note that select element's innerText includes the text
+      // of the options, so we use regexp to search for the label.
+      assertFoundElementByLabel(
+        browser,
+        `
+          <label>
+            Favourite Colour
+            <select class="result">
+              <option>Red</option>
+              <option>Green</option>
+            </select>
+          </label>
+        `,
+        'Field(/Favourite Colour/)'
+      )
+    })
+
     it('checkbox pointed to by label with for attribute', () => {
       assertFoundElementByLabel(
         browser,

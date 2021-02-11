@@ -25,6 +25,7 @@ import * as matchers from './matchers'
 type Transform = (elements: Array<HTMLElement>, executedTransforms: ExecutedTransform[]) => any
 type Action = (elements: Array<HTMLElement>, executedTransforms: ExecutedTransform[]) => void
 interface InputDefinition {
+  selector?: string,
   values?: (query: Query) => Query
   setter?: (query: Query, value: any) => Query
   valueAsserters?: (query: Query, expected: any) => Query
@@ -73,9 +74,9 @@ export class Query implements Promise<any> {
       definitions: {
         inputs: [
           {
+            selector: 'input[type=checkbox]',
             setter: (query: Query, value) => {
               return query
-                .is('input[type=checkbox]')
                 .shouldHaveElements(1)
                 .transform(([checkbox]) => {
                   if (typeof value !== 'boolean') {
@@ -98,9 +99,9 @@ export class Query implements Promise<any> {
             }
           },
           {
+            selector: 'select',
             setter: (query: Query, value) => {
               return query
-                .is('select')
                 .shouldHaveElements(1, 'expected to be select element')
                 .findCss('option')
                 .filter((o: HTMLInputElement) => {
@@ -162,9 +163,9 @@ export class Query implements Promise<any> {
             }
           },
           {
+            selector: inputSelectors.settable,
             setter: (query: Query, value) => {
               return query
-                .is(inputSelectors.settable)
                 .shouldHaveElements(1)
                 .transform(([element]) => {
                   if (typeof value !== 'string') {
@@ -199,7 +200,7 @@ export class Query implements Promise<any> {
           {
             name: 'label',
             definition: (query: Query, name) => {
-              return query.find('label').containing(name).find('input')
+              return query.find('label').containing(name).find(query.inputSelector())
             },
           },
           {
@@ -829,9 +830,13 @@ export class Query implements Promise<any> {
     return this
   }
 
+  private inputSelector (): string {
+    return this._options.definitions.inputs.map(i => i.selector).filter(Boolean).join(',')
+  }
+
   private setter (value): Query {
     return this.firstOf(this._options.definitions.inputs.filter(def => def.setter).map(def => {
-      return query => def.setter(query, value)
+      return query => def.setter(query.is(def.selector), value)
     }))
   }
 
