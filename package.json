@@ -2,17 +2,16 @@
   "name": "browser-monkey",
   "version": "3.0.0-beta.8",
   "description": "reliable dom testing",
-  "main": "dist/index.js",
   "files": [
-    "dist/*",
     "lib/*",
     "test/*",
-    "index.ts"
+    "index.*",
+    "*Mount.*"
   ],
   "scripts": {
     "test": "yarn test-electron-mocha && eslint .",
     "test-karma": "karma start --single-run",
-    "test-electron-mocha": "yarn electron-mocha test/**/*Spec.{js,ts}",
+    "test-electron-mocha": "yarn electron-mocha test/**/*Spec.ts",
     "electron-mocha": "electron-mocha --disable-site-isolation-trials --full-trace --color --main electron/foreignIframe.js -r ts-node/register --renderer",
     "mocha": "mocha -r test/register.js",
     "prepare": "tsc -p tsconfig.build.json",
@@ -36,7 +35,7 @@
     "babel-loader": "^8.1.0",
     "chai": "4.2.0",
     "codesandbox-example-links": "^1.1.0",
-    "electron": "11.0.3",
+    "electron": "12.0.0-beta.30",
     "electron-mocha": "^10.0.0",
     "eslint": "^7.12.1",
     "eslint-config-standard": "^16.0.1",

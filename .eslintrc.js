@@ -21,7 +21,8 @@ module.exports = {
     "mocha",
   ],
   ignorePatterns: [
-    "dist/",
+    "lib/**/*.js",
+    "test/**/*.js",
     "docs/",
     "docs-dist/",
   ],

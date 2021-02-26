@@ -1,9 +1,6 @@
 {
   "extends": "./tsconfig.json",
-  "files": [
-    "index.ts"
-  ],
-  "include": ["lib/**/*"],
+  "include": ["lib/**/*.tsx?"],
   "compilerOptions": {
     "lib": ["es2015", "dom"],
     "target": "ES5"

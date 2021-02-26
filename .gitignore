@@ -2,6 +2,13 @@
 *.orig
 /node_modules/
 .DS_Store
-/dist/
 docs-dist/
 .exrc
+test/**/*.js
+test/**/*.js.map
+lib/**/*.js
+lib/**/*.js.map
+index.js*
+*Mount.js*
+tsconfig.tsbuildinfo
+tsconfig.build.tsbuildinfo

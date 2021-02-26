@@ -18,15 +18,21 @@ There are a couple of shortcuts for doing this for particular frameworks. Otherw
 
 ### React
 
+Assumes `react-dom` module is installed.
+
 ```js
-import {ReactMount, Query} from 'browser-monkey'
+import {Query} from 'browser-monkey'
+import ReactMount from 'browser-monkey/ReactMount'
 const mount = new ReactMount(React.createElement(YourReactApp, {}, null))
 ```
 
 ### Hyperdom
 
+Assumes `hyperdom` module is installed.
+
 ```js
-import {HyperdomMount, Query} from 'browser-monkey'
+import {Query} from 'browser-monkey'
+import HyperdomMount from 'browser-monkey/HyperdomMount'
 const mount = new HyperdomMount(new YourHyperdomApp())
 ```
 

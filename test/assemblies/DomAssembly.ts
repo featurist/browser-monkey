@@ -1,6 +1,6 @@
 /* global location */
 
-const createTestDiv = require('../../lib/createTestDiv')
+import createTestDiv from '../../lib/createTestDiv'
 const pathUtils = require('path')
 import retry from '../../lib/retry'
 const { expect } = require('chai')

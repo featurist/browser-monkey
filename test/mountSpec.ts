@@ -1,11 +1,11 @@
 import {Query} from '../lib/Query'
 import {DomAssembly} from './assemblies/DomAssembly'
-import ReactMount from '../lib/ReactMount'
+import ReactMount from '../ReactMount'
 import IFrameMount from '../lib/IFrameMount'
 import Mount from '../lib/Mount'
 import ReactApp from './app/react'
 import React from 'react'
-import HyperdomMount from '../lib/HyperdomMount'
+import HyperdomMount from '../HyperdomMount'
 import HyperdomApp from './app/hyperdom'
 
 describe('mount', () => {

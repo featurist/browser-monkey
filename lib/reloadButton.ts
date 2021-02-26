@@ -1,7 +1,7 @@
 const hobostyle = require('hobostyle')
 const extend = require('lowscore/extend')
 
-module.exports = function reloadButton (_options) {
+export default function reloadButton (_options) {
   const options = extend({
     style: true,
     class: 'browser-monkey-reload'

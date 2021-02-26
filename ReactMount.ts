@@ -1,11 +1,11 @@
-import Mount from './Mount'
+import ReactDOM from 'react-dom'
+import Mount from './lib/Mount'
 
 export default class ReactMount extends Mount {
   public constructor (vdom: any) {
     super()
     const div = this.containerElement()
 
-    const ReactDOM = require('react-dom')
     ReactDOM.render(vdom, div)
   }
 }

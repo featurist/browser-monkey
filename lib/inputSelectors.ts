@@ -16,7 +16,7 @@ const settable =
   'input[type=range],' +
   'textarea'
 
-module.exports = {
+export default {
   settable,
   gettable: 'input,textarea',
 }

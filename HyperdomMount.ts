@@ -1,5 +1,6 @@
-import Mount from './Mount'
 import extend from 'lowscore/extend'
+import hyperdom from 'hyperdom'
+import Mount from './lib/Mount'
 
 export default class HyperdomMount extends Mount {
   constructor (app: any, options?) {
@@ -12,7 +13,6 @@ export default class HyperdomMount extends Mount {
     if (options && (options.hash || options.url) && options.router) {
       options.router.push(options.url || options.hash)
     }
-    const hyperdom = require('hyperdom')
     hyperdom.append(testDiv, app, extend({ requestRender: setTimeout }, options))
   }
 }
