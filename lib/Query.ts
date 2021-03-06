@@ -14,7 +14,8 @@ import extend from 'lowscore/extend'
 import retry from './retry'
 import inspect from 'object-inspect'
 import uniq from 'lowscore/uniq'
-const debug = require('debug')('browser-monkey')
+import _debug from 'debug'
+const debug = _debug('browser-monkey')
 import inputSelectors from './inputSelectors'
 import object from 'lowscore/object'
 import range from 'lowscore/range'

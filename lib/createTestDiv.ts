@@ -1,6 +1,6 @@
 let div
 
-module.exports = function () {
+export default function () {
   if (div && div.parentNode) {
     div.parentNode.removeChild(div)
   }

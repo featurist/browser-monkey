@@ -1,8 +1,8 @@
-const webpackConfig = require("./webpack.config");
+const webpackConfig = require("./webpack.config.cjs");
 
 const files = [
   {pattern: "test/*.html", included: false},
-  "test/**/*Spec.ts",
+  {pattern: "test/**/*Spec.ts"},
 ]
 
 const browserstackBrowsers = {

@@ -1,7 +1,7 @@
 import retry from '../lib/retry'
 import hyperdom, {html as h} from 'hyperdom'
 import {DomAssembly} from './assemblies/DomAssembly'
-const {expect} = require('chai')
+import {expect} from 'chai'
 import {Query} from '../lib/Query'
 
 describe('hyperdom integration', function () {

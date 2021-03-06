@@ -7,7 +7,7 @@
     "outDir": "./dist",
     "allowJs": true,
     "target": "ES6",
-    "module": "CommonJS",
+    "moduleResolution": "node",
     "jsx": "react",
     "jsxFactory": "hyperdom.jsx",
     "sourceMap": true

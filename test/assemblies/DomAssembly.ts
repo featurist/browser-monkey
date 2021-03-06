@@ -1,12 +1,12 @@
 /* global location */
 
-const createTestDiv = require('../../lib/createTestDiv')
-const pathUtils = require('path')
+import createTestDiv from '../../lib/createTestDiv'
+import pathUtils from 'path'
 import retry from '../../lib/retry'
-const { expect } = require('chai')
+import { expect } from 'chai'
 import Dom from '../../lib/Dom'
 import {Query} from '../../lib/Query'
-const object = require('lowscore/object')
+import object from 'lowscore/object'
 import inspect from 'object-inspect'
 
 export class DomAssembly {

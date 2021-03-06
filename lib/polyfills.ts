@@ -1,4 +1,4 @@
-module.exports.MouseEvent = (function () {
+export const MouseEvent = (function () {
   try {
     new MouseEvent('click') // eslint-disable-line
     return MouseEvent // eslint-disable-line
@@ -8,7 +8,7 @@ module.exports.MouseEvent = (function () {
 
   const MouseEventPolyfill = function (eventType, params) {
     params = params || { bubbles: false, cancelable: false }
-    var mouseEvent = document.createEvent('MouseEvent')
+    const mouseEvent = document.createEvent('MouseEvent')
     mouseEvent.initMouseEvent(
       eventType,
       params.bubbles,
@@ -36,7 +36,7 @@ module.exports.MouseEvent = (function () {
 })()
 
 // based on https://github.com/lifaon74/events-polyfill/blob/5ccca4002aa07f16ed1c298145f20c06d3544a29/src/constructors/KeyboardEvent.js
-module.exports.KeyboardEvent = (function () {
+export const KeyboardEvent = (function () {
   try {
     new KeyboardEvent('keyup') // eslint-disable-line
     return KeyboardEvent // eslint-disable-line
@@ -56,6 +56,7 @@ module.exports.KeyboardEvent = (function () {
     ].filter(Boolean).join(' ')
 
     const keyEvent = document.createEvent('KeyboardEvent')
+    // @ts-ignore
     keyEvent.initKeyboardEvent(
       eventType,
       !!params.bubbles,

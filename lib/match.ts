@@ -1,4 +1,4 @@
-const object = require('lowscore/object')
+import object from 'lowscore/object'
 
 // TODO: get rid of `any`
 export function match (actual: any, expected: any): {isMatch: boolean, actual: any, expected: any} {

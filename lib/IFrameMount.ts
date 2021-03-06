@@ -1,5 +1,6 @@
 import _debug from 'debug'
 import Mount from './Mount'
+// @ts-ignore
 import hobostyle from 'hobostyle'
 import { iframeResizer } from 'iframe-resizer'
 import {Query} from '../lib/Query'
