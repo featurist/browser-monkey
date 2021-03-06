@@ -1,7 +1,7 @@
 import hobostyle from 'hobostyle'
-import extend from 'lowscore/extend'
+import {extend} from 'lowscore'
 
-module.exports = function reloadButton (_options) {
+export default function reloadButton (_options) {
   const options = extend({
     style: true,
     class: 'browser-monkey-reload'

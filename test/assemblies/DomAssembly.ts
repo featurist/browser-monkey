@@ -6,7 +6,7 @@ import retry from '../../lib/retry'
 import { expect } from 'chai'
 import Dom from '../../lib/Dom'
 import {Query} from '../../lib/Query'
-import object from 'lowscore/object'
+import {object} from 'lowscore'
 import inspect from 'object-inspect'
 
 export class DomAssembly {

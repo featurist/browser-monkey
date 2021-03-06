@@ -1,6 +1,5 @@
 import {MouseEvent, KeyboardEvent} from './polyfills'
 import normaliseText from './normaliseText'
-// @ts-ignore
 import keycode from 'keycode'
 
 const eventCreatorsByType = {

@@ -1,6 +1,6 @@
 import Mount from './Mount'
 import hyperdom from 'hyperdom'
-import extend from 'lowscore/extend'
+import {extend} from 'lowscore'
 
 export default class HyperdomMount extends Mount {
   constructor (app: any, options?) {

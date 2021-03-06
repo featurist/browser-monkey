@@ -1,4 +1,4 @@
-import object from 'lowscore/object'
+import {object} from 'lowscore'
 
 // TODO: get rid of `any`
 export function match (actual: any, expected: any): {isMatch: boolean, actual: any, expected: any} {

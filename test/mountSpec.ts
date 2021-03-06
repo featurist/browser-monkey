@@ -10,6 +10,7 @@ import HyperdomApp from './app/hyperdom'
 
 describe('mount', () => {
   testMount('hyperdom', () => new HyperdomMount(new HyperdomApp()))
+  // @ts-ignore
   testMount('react', () => new ReactMount(React.createElement(ReactApp, {}, null)))
   testMount('iframe', () => new IFrameMount(DomAssembly.localUrl('iframe-mount-test.html')))
 
