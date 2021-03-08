@@ -7,7 +7,8 @@
     "dist/*",
     "lib/*",
     "test/*",
-    "index.ts"
+    "index.ts",
+    "*Mount.js*"
   ],
   "scripts": {
     "test": "yarn test-electron-mocha && eslint .",
@@ -15,7 +16,7 @@
     "test-electron-mocha": "yarn electron-mocha test/**/*Spec.{js,ts}",
     "electron-mocha": "electron-mocha --disable-site-isolation-trials --full-trace --color --main electron/foreignIframe.js -r ts-node/register --renderer",
     "mocha": "mocha -r test/register.js",
-    "prepare": "tsc -p tsconfig.build.json",
+    "prepare": "tsc -p tsconfig.build.json && ./export-mounts.js && node -r ./HyperdomMount.js -r ./ReactMount.js -e '1'",
     "docs": "yarn build-docs && docsify serve --no-open --port 3003 ./docs-dist",
     "watch-docs": "ls docs/*.md | entr yarn build-docs",
     "build-docs": "rm -rf ./docs-dist && cp -r ./docs ./docs-dist && codesandbox-example-links --output-dir=./docs-dist ./docs/*.md",
