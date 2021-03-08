@@ -1,6 +1,6 @@
 {
   "name": "browser-monkey",
-  "version": "3.0.0-beta.8",
+  "version": "3.0.0-beta.9",
   "description": "reliable dom testing",
   "main": "dist/index.js",
   "files": [
