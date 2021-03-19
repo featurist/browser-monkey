@@ -158,7 +158,7 @@ describe('dom', () => {
       const events = []
       const checkbox = assembly.insertHtml('<input type="checkbox"/>')
 
-      ;['mousedown', 'mouseup', 'click'].forEach(type => {
+      ;['mousedown', 'mouseup', 'click', 'focusin'].forEach(type => {
         checkbox.addEventListener(type, () => events.push(type))
       })
 
@@ -167,7 +167,8 @@ describe('dom', () => {
       expect(events).to.eql([
         'mousedown',
         'mouseup',
-        'click'
+        'focusin',
+        'click',
       ])
 
       expect(checkbox.checked).to.equal(true)

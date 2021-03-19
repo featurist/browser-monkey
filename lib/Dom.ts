@@ -146,8 +146,8 @@ export default class Dom {
   public click (element: HTMLElement): void {
     this.triggerEvent(element, 'mousedown')
     this.triggerEvent(element, 'mouseup')
-    element.click()
     element.focus()
+    element.click()
   }
 
   public querySelectorAll (element: HTMLElement, selector: string, {visibleOnly = true} = {}): HTMLElement[] {
