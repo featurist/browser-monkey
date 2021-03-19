@@ -46,6 +46,19 @@ describe('labels', function () {
       )
     })
 
+    it('radio button with label as parent', () => {
+      assertFoundElementByLabel(
+        browser,
+        `
+          <label>
+            <input type=radio class="result" />
+            Feature Enabled
+          </label>
+        `,
+        'Field("Feature Enabled")'
+      )
+    })
+
     it('select with label as parent', () => {
       // note that select element's innerText includes the text
       // of the options, so we use regexp to search for the label.

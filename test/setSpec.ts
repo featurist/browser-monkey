@@ -71,6 +71,32 @@ describe('set', function () {
 
       expect(checkbox.checked).to.equal(true)
     })
+
+    it('can set radio buttons', async () => {
+      const radio = assembly.insertHtml(`
+        <input type=radio class="radio"/>
+      `)
+
+      await browser.set({
+        '.radio': true,
+      })
+
+      expect(radio.checked).to.equal(true)
+    })
+
+    it('cannot unset a radio button', async () => {
+      const radio = assembly.insertHtml(`
+        <input type=radio class="radio" checked/>
+      `)
+
+      expect(() => {
+        browser.set({
+          '.radio': false,
+        }).result()
+      }).to.throw('')
+
+      expect(radio.checked).to.equal(true)
+    })
   })
 
   describe('values', () => {

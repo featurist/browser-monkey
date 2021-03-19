@@ -15,25 +15,96 @@ describe('buttons', function () {
     assembly.stop()
   })
 
-  it('can recognise a button with exact text', function () {
-    const button = assembly.insertHtml('<button>Login</button>')
+  function assertButtonFound(html, label): void {
+    assembly.insertHtml(html)
 
-    const elements = browser.findButton('Login').result()
-    expect(elements).to.eql([button])
+    const elements = browser.findButton(label).result()
+    const expected = assembly.find('.expected')
+    expect(expected, 'no `.expected` element found').to.exist
+    expect(elements).to.eql([expected])
+  }
+
+  function assertButtonNotFound(html, label): void {
+    assembly.insertHtml(html)
+
+    const elements = browser.findButton(label).result()
+    expect(elements).to.eql([])
+  }
+
+  it('can recognise a button with exact text', function () {
+    assertButtonFound(
+      '<button class=expected>Login</button>',
+      'Login'
+    )
   })
 
   it("doesn't recognise a button without exact text match", function () {
-    assembly.insertHtml('<button>Login</button>')
-
-    const elements = browser.findButton('Logi').result()
-    expect(elements).to.eql([])
+    assertButtonNotFound(
+      '<button class=expected>Login</button>',
+      'ogin'
+    )
   })
 
   it('can recognise an input of type button with exact value', function () {
-    const button = assembly.insertHtml('<input type="button" value="Login" />')
+    assertButtonFound(
+      '<input type="button" value="Login" class=expected />',
+      'Login'
+    )
+  })
 
-    const elements = browser.findButton('Login').result()
-    expect(elements).to.eql([button])
+  it('can click on radio buttons by their label', function () {
+    assertButtonFound(
+      `
+        <label>
+          <input type=radio class=expected />
+          Feature One
+        </label>
+      `,
+      'Feature One'
+    )
+  })
+
+  it('can click on checkboxes by their label', function () {
+    assertButtonFound(
+      `
+        <label>
+          <input type=checkbox class=expected />
+          Feature Enabled
+        </label>
+      `,
+      'Feature Enabled'
+    )
+  })
+
+  it('can click a checkbox pointed to by label with for attribute', () => {
+    assertButtonFound(
+      `
+        <label for="my-checkbox">
+          Feature Enabled
+        </label>
+        <input id="my-checkbox" type=checkbox class=expected />
+      `,
+      'Feature Enabled'
+    )
+  })
+
+  it('can find a checkbox by its aria-label', () => {
+    assertButtonFound(
+      `
+        <input aria-label="Search" type=checkbox class=expected />
+      `,
+      'Search'
+    )
+  })
+
+  it('can find a checkbox by its aria-label', () => {
+    assertButtonFound(
+      `
+        <label id="search-label">Search</label>
+        <input aria-labelledby="search-label" type=checkbox class=expected />
+      `,
+      'Search'
+    )
   })
 
   it("doesn't recognise an input of type button without exact value match", function () {

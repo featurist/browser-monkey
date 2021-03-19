@@ -115,6 +115,16 @@ describe('shouldContain', function () {
       })
     })
 
+    it('can assert radio button', async () => {
+      assembly.insertHtml(`
+        <input type=radio class="radio" checked/>
+      `)
+
+      await browser.shouldContain({
+        '.radio': true,
+      })
+    })
+
     it('can assert checkbox', async () => {
       assembly.insertHtml(`
         <input type=checkbox class="check" checked/>

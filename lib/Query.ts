@@ -20,7 +20,7 @@ import object from 'lowscore/object'
 import range from 'lowscore/range'
 import flatten from 'lowscore/flatten'
 import {match} from './match'
-import * as matchers from './matchers'
+import * as fieldDefinitions from './fieldDefinitions'
 
 type Transform = (elements: Array<HTMLElement>, executedTransforms: ExecutedTransform[]) => any
 type Action = (elements: Array<HTMLElement>, executedTransforms: ExecutedTransform[]) => void
@@ -47,7 +47,7 @@ type Model = LiteralModel | FunctionModel | { [key: string]: Model } | Model[]
 
 interface Definitions {
   inputs: InputDefinition[]
-  buttons: FieldFinderDefinition[]
+  buttons: ({name: string, definition: FieldFinderDefinition})[]
   fields: ({name: string, definition: FieldFinderDefinition})[]
   finders: {
     [key: string]: FinderDefinition
@@ -73,6 +73,31 @@ export class Query implements Promise<any> {
       interval: 10,
       definitions: {
         inputs: [
+          {
+            selector: 'input[type=radio]',
+            setter: (query: Query, value) => {
+              return query
+                .shouldHaveElements(1)
+                .transform(([radio]) => {
+                  if (value !== true) {
+                    throw new Error('a radio button cannot be unset, or set to any value other than true')
+                  }
+                  return () => {
+                    if (!query._dom.checked(radio as HTMLInputElement)) {
+                      debug('radio', radio, value)
+                      query._dom.click(radio)
+                    }
+                  }
+                })
+            },
+            values: (query: Query) => {
+              return query
+                .is('input[type=radio]')
+                .map((radio: HTMLInputElement) => {
+                  return query._dom.checked(radio)
+                })
+            }
+          },
           {
             selector: 'input[type=checkbox]',
             setter: (query: Query, value) => {
@@ -163,7 +188,7 @@ export class Query implements Promise<any> {
             }
           },
           {
-            selector: inputSelectors.settable,
+            selector: inputSelectors.canSetText,
             setter: (query: Query, value) => {
               return query
                 .shouldHaveElements(1)
@@ -178,7 +203,7 @@ export class Query implements Promise<any> {
                 })
             },
             values: (query: Query) => {
-              return query.is(inputSelectors.gettable).map((input: HTMLInputElement) => {
+              return query.is(inputSelectors.canGetText).map((input: HTMLInputElement) => {
                 return input.value
               })
             }
@@ -192,55 +217,18 @@ export class Query implements Promise<any> {
           },
         ],
         buttons: [
-          (query: Query, name) => {
-            return query.findCss('button, input[type=button], input[type=submit], input[type=reset], a').containing(name)
-          },
+          fieldDefinitions.button,
+          fieldDefinitions.label(() => inputSelectors.canBeClicked),
+          fieldDefinitions.labelFor,
+          fieldDefinitions.ariaLabel,
+          fieldDefinitions.ariaLabelledBy,
         ],
         fields: [
-          {
-            name: 'label',
-            definition: (query: Query, name) => {
-              return query.find('label').containing(name).find(query.inputSelector())
-            },
-          },
-          {
-            name: 'label-for',
-            definition: (query: Query, name) => {
-              return query.find('label[for]').containing(name).map(label => {
-                const id = label.getAttribute('for')
-                return label.ownerDocument.getElementById(id)
-              }, 'for attribute').filter(Boolean)
-            },
-          },
-          {
-            name: 'aria-label',
-            definition: (query: Query, name) => {
-              return query.find('[aria-label]').filter(element => {
-                const label = element.getAttribute('aria-label')
-                return match(label, name).isMatch
-              }, 'aria-label')
-            },
-          },
-          {
-            name: 'aria-labelledby',
-            definition: (query: Query, name) => {
-              return query.find('[aria-labelledby]').filter(element => {
-                const id = element.getAttribute('aria-labelledby')
-                const labelElement = element.ownerDocument.getElementById(id)
-                if (labelElement) {
-                  return match(query._dom.elementInnerText(labelElement), name).isMatch
-                }
-              }, 'aria-label')
-            },
-          },
-          {
-            name: 'placeholder',
-            definition: (query: Query, name) => {
-              return query.find(inputSelectors.gettable).containing(matchers.elementAttributes({
-                placeholder: name,
-              }))
-            },
-          },
+          fieldDefinitions.label(query => query.inputSelector()),
+          fieldDefinitions.labelFor,
+          fieldDefinitions.ariaLabel,
+          fieldDefinitions.ariaLabelledBy,
+          fieldDefinitions.placeholder,
         ],
         finders: {
           Field: (q: Query, value) => q.findLabel(value),
@@ -252,6 +240,10 @@ export class Query implements Promise<any> {
     this._dom = new Dom()
 
     this._input = [input]
+  }
+
+  public dom() {
+    return this._dom
   }
 
   public get [Symbol.toStringTag](): string {
@@ -284,7 +276,7 @@ export class Query implements Promise<any> {
   }
 
   public findButton (name: FieldName): Query {
-    return this.concat(this._options.definitions.buttons.map(definition => {
+    return this.concat(this._options.definitions.buttons.map(({definition}) => {
       return (q: Query): Query => {
         return definition(q, name)
       }
@@ -305,7 +297,10 @@ export class Query implements Promise<any> {
       name = undefined
     }
 
-    return this.clone(q => q._options.definitions.buttons.push(definition))
+    return this.clone(q => q._options.definitions.buttons.push({
+      name: name as string,
+      definition
+    }))
   }
 
   public undefineButtonFinder (name: string): Query {
@@ -325,7 +320,10 @@ export class Query implements Promise<any> {
       name = undefined
     }
 
-    return this.clone(q => q._options.definitions.fields.push({name: name as string, definition}))
+    return this.clone(q => q._options.definitions.fields.push({
+      name: name as string,
+      definition
+    }))
   }
 
   public undefineFieldFinder (name: string): Query {
@@ -351,7 +349,7 @@ export class Query implements Promise<any> {
     return resolved
   }
 
-  private map <E extends HTMLElement>(map: (e: E) => any, description?: string): Query {
+  public map <E extends HTMLElement>(map: (e: E) => any, description?: string): Query {
     return this.transform((elements) => {
       return new ExecutedSimpleTransform(elements.map(map), description)
     })
@@ -649,7 +647,7 @@ export class Query implements Promise<any> {
 
     return this.optionalSelector(selector)
       .shouldHaveElements(1)
-      .is(inputSelectors.settable)
+      .is(inputSelectors.canSetText)
       .action(([element]) => {
         debug('enterText', element, text)
         this._dom.enterText(element as HTMLInputElement, text)
