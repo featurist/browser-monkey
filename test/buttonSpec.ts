@@ -45,6 +45,13 @@ describe('buttons', function () {
     )
   })
 
+  it('can recognise an input of type submit with exact value', function () {
+    assertButtonFound(
+      '<input type="submit" value="Login" class=expected />',
+      'Login'
+    )
+  })
+
   it('can recognise an input of type button with exact value', function () {
     assertButtonFound(
       '<input type="button" value="Login" class=expected />',
@@ -97,7 +104,7 @@ describe('buttons', function () {
     )
   })
 
-  it('can find a checkbox by its aria-label', () => {
+  it('can find a checkbox by its aria-labelledby', () => {
     assertButtonFound(
       `
         <label id="search-label">Search</label>

@@ -2,6 +2,7 @@ import { Query } from './Query'
 import { match } from './match'
 import { withPlaceholders } from './inputSelectors'
 import * as matchers from './matchers'
+import Dom from './Dom'
 
 export const button = {
   name: 'button',
@@ -44,7 +45,8 @@ export const ariaLabelledBy = {
       const id = element.getAttribute('aria-labelledby')
       const labelElement = element.ownerDocument.getElementById(id)
       if (labelElement) {
-        return match(query.dom().elementInnerText(labelElement), name).isMatch
+        const dom = new Dom()
+        return match(dom.elementInnerText(labelElement), name).isMatch
       }
     }, 'aria-label')
   },

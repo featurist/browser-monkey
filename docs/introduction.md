@@ -14,6 +14,6 @@ Browser Monkey is a DOM manipulation and assertion library. It helps you write f
 
 ## Example
 
-[view code](/docs/codesandbox/get-started-example/test/app.spec.js#L3-L44)
+[view code](/docs/codesandbox/get-started-example/test/app.spec.js#L3-L43)
 
 [codesandbox](/docs/codesandbox/get-started-example?module=/test/app.spec.js)

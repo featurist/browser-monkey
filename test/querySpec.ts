@@ -261,15 +261,16 @@ describe('query', () => {
     })
   })
 
-  describe('input', () => {
-    it('input sets the input used in transform', async () => {
-      const query = browser
-        .input('a')
-        .transform(x => `input: ${x}`)
+  // transform() has been moved to private
+  // describe('input', () => {
+  //   it('input sets the input used in transform', async () => {
+  //     const query = browser
+  //       .input('a')
+  //       .transform(x => `input: ${x}`)
 
-      expect(query.result()).to.eql('input: a')
-    })
-  })
+  //     expect(query.result()).to.eql('input: a')
+  //   })
+  // })
 
   describe('scope', () => {
     it('when scope is one element, sets the input to an array of one', () => {
@@ -316,24 +317,25 @@ describe('query', () => {
     })
   })
 
-  describe('transform', () => {
-    it('can map all the elements', async () => {
-      const contacts = browser
-        .find('.name')
-        .transform(names => {
-          return names.map(contact => contact.innerText).join(', ')
-        })
-        .expect(x => expect(x).to.not.be.empty)
-        .then()
+  // Moved to private
+  // describe('transform', () => {
+  //   it('can map all the elements', async () => {
+  //     const contacts = browser
+  //       .find('.name')
+  //       .transform(names => {
+  //         return names.map(contact => contact.innerText).join(', ')
+  //       })
+  //       .expect(x => expect(x).to.not.be.empty)
+  //       .then()
 
-      assembly.eventuallyInsertHtml(`
-        <div class="name">Sally</div>
-        <div class="name">Bob</div>
-      `)
+  //     assembly.eventuallyInsertHtml(`
+  //       <div class="name">Sally</div>
+  //       <div class="name">Bob</div>
+  //     `)
 
-      expect(await contacts).to.eql('Sally, Bob')
-    })
-  })
+  //     expect(await contacts).to.eql('Sally, Bob')
+  //   })
+  // })
 
   describe('filter', () => {
     it('can filter elements', async () => {
@@ -360,68 +362,68 @@ describe('query', () => {
     })
   })
 
-  // `map` has been moved to private
-  // describe('map', () => {
-  //   it('can map elements', async () => {
-  //     const contacts = browser
-  //       .find('.contact')
-  //       .map(contact => {
-  //         return contact.querySelector('.name')
-  //       })
-  //       .shouldExist()
-  //       .then()
+  describe('map', () => {
+    it('can map elements', async () => {
+      const contacts = browser
+        .find('.contact')
+        .map(contact => {
+          return contact.querySelector('.name')
+        })
+        .shouldExist()
+        .then()
 
-  //     assembly.eventuallyInsertHtml(`
-  //       <div class="contact">
-  //         <div class="name">Sally</div>
-  //         <div class="address">32 Yellow Drive</div>
-  //       </div>
-  //       <div class="contact">
-  //         <div class="name">Bob</div>
-  //         <div class="address">32 Red Drive</div>
-  //       </div>
-  //     `)
-
-  //     expect(await contacts).to.eql(assembly.findAll('.name'))
-  //   })
-  // })
-
-  describe('actions', () => {
-    it('actions are only executed once', async () => {
-      let actionExecuted = 0
-
-      assembly.insertHtml(`
-        <div>A</div>
+      assembly.eventuallyInsertHtml(`
+        <div class="contact">
+          <div class="name">Sally</div>
+          <div class="address">32 Yellow Drive</div>
+        </div>
+        <div class="contact">
+          <div class="name">Bob</div>
+          <div class="address">32 Red Drive</div>
+        </div>
       `)
 
-      const action = browser.find('div').action(function () {
-        actionExecuted++
-      })
-
-      await action
-      expect(actionExecuted).to.equal(1)
-      await action
-      expect(actionExecuted).to.equal(1)
-    })
-
-    it('actions return the element or elements they acted on', async () => {
-      const divA = assembly.insertHtml(`
-        <div>A</div>
-      `)
-      const divB = assembly.insertHtml(`
-        <div>B</div>
-      `)
-
-      let givenElements
-      const action = browser.find('div').action(function (els) {
-        givenElements = els
-      })
-
-      const elements = await action
-      expect(elements).to.eql([divA, divB])
-      expect(givenElements).to.eql([divA, divB])
+      expect(await contacts).to.eql(assembly.findAll('.name'))
     })
   })
+
+  // Moved to private
+  // describe('actions', () => {
+  //   it('actions are only executed once', async () => {
+  //     let actionExecuted = 0
+
+  //     assembly.insertHtml(`
+  //       <div>A</div>
+  //     `)
+
+  //     const action = browser.find('div').action(function () {
+  //       actionExecuted++
+  //     })
+
+  //     await action
+  //     expect(actionExecuted).to.equal(1)
+  //     await action
+  //     expect(actionExecuted).to.equal(1)
+  //   })
+
+  //   it('actions return the element or elements they acted on', async () => {
+  //     const divA = assembly.insertHtml(`
+  //       <div>A</div>
+  //     `)
+  //     const divB = assembly.insertHtml(`
+  //       <div>B</div>
+  //     `)
+
+  //     let givenElements
+  //     const action = browser.find('div').action(function (els) {
+  //       givenElements = els
+  //     })
+
+  //     const elements = await action
+  //     expect(elements).to.eql([divA, divB])
+  //     expect(givenElements).to.eql([divA, divB])
+  //   })
+  // })
 
   describe('errors', () => {
     it('shows what it was able to map', async () => {

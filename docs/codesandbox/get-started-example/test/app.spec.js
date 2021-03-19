@@ -8,9 +8,8 @@ describe("Browser-monkey", function () {
   let mount, page
 
   beforeEach(function () {
-    if (mount) {
-      mount.unmount()
-    }
+    if (mount) mount.unmount()
+
     // Create test DOM container
     mount = new Mount({ className: 'test-mount' })
 

@@ -16,21 +16,10 @@ describe('define', function () {
   })
 
   it('can define a field', () => {
-    browser.define('Hello', q => q.transform(() => 'hello'))
+    assembly.insertHtml('<div class=hello>bye</div>')
+    browser.define('Hello', q => q.find('.hello'))
 
-    expect(browser.find('Hello').result()).to.equal('hello')
-  })
-
-  it('can define a field with arguments', () => {
-    let args
-
-    browser.define('Hello', (q, arg1, arg2) => q.transform(() => {
-      args = [arg1, arg2]
-      return `hello ${arg1} ${arg2}`
-    }))
-
-    expect(browser.find('Hello("one", 2)').result()).to.equal('hello one 2')
-    expect(args).to.eql(['one', 2])
+    expect(browser.find('Hello').result()).to.eql(assembly.findAll('.hello'))
   })
 
   it('finds defined field', async function() {

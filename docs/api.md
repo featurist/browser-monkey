@@ -5,7 +5,7 @@
 The API is made up of three concepts: queries, actions and assertions.
 
 * queries are chains of methods, such as `find(css)` and `containing(text)`, that progressively narrow the scope of elements to be searched for. Queries return new queries.
-* actions such as `clickButton()` and `enterText(text)` "execute" the query chain, waiting for the elements to be found before simulating a UI event. These return promises that resolve when the event has been dispatched.
+* actions such as `clickButton()` and `enterText(text)` "execute" the query chain, waiting for the elements to be found before simulating a corresponding UI event. These return promises that resolve when the event has been dispatched. There is also `set({...})` that allows to set multiple multiple inputs at once.
 * assertions such as `shouldExist()` and `shouldContain()` also "execute" the query chain and ensure that the elements exist or contain text, classes or other properties. These return promises that resolve if queries are satisfied, or rejected otherwise (after retrying query for some time).
 
 It is also possible to create semantic matchers (to be used in queries) with `query.define()`.
@@ -19,14 +19,16 @@ There are a couple of shortcuts for doing this for particular frameworks. Otherw
 ### React
 
 ```js
-import {ReactMount, Query} from 'browser-monkey'
+import {Query} from 'browser-monkey'
+import ReactMount from 'browser-monkey/ReactMount'
 const mount = new ReactMount(React.createElement(YourReactApp, {}, null))
 ```
 
 ### Hyperdom
 
 ```js
-import {HyperdomMount, Query} from 'browser-monkey'
+import {Query} from 'browser-monkey'
+import HyperdomMount from 'browser-monkey/HyperdomMount'
 const mount = new HyperdomMount(new YourHyperdomApp())
 ```
 
@@ -44,7 +46,7 @@ const mount = new IFrameMount('http://example.com/some/page')
 Browser-monkey mount gives you a reference to the test DOM container. It's just a DOM element, insert your html there.
 
 ```js
-import { Mount, Query } from 'browser-monkey'
+import {Mount, Query} from 'browser-monkey'
 const mount = new Mount()
 mount.containerElement().innerHTML = '<div>bananas</div>'
 ```
@@ -91,13 +93,13 @@ A query can be "resolved" in a number of ways:
 
 ```js
 // Simply resolving it as promise returns found elements (or rejects after timeout if none found)
-const elements = await name
+const elements = await details
 
 // Use a specific assertion
-const elements = await name.shouldHaveElements(2)
+const elements = await details.shouldHaveElements(2)
 
-// Call `result()` to grab whatever elements match (if any) without waiting
-const elements = name.result()
+// Call `result()` to grab whatever elements match _without_ waiting
+const elements = details.result()
 ```
 
 You can call `.scope()` explicitely to (re)set the starting point for the query (an element from which all elements are searched for):
@@ -185,7 +187,7 @@ await alert.is('.success').shouldExist()
 await alert.is('.danger').shouldExist()
 ```
 
-To expand on composability. In the end, `find('.a').is('.b')` is the same as `find('.a.b')`. However the latter is atomic. Whereas the former can be constructed programmatically bit by bit.
+In the end, `find('.a').is('.b')` is the same as `find('.a.b')`. However the latter is atomic. Whereas the former can be composed programmatically bit by bit.
 
 ### containing(filter: text | RegExp | Object): Query
 
@@ -220,8 +222,26 @@ const scope = page.find('.result').containing({
 
 Narrows scope based on a filtering function that takes a DOM element, and returns either truthy or falsey. If truthy, then the element will be considered as part of the scope, if falsey then it won't.
 
-TODO: document `result()`
+### result(): any
 
+Use this to get an immediate (synchronous) result of a query.
+
+```js
+const elements = page.find('.thing').result()
+```
+
+### findButton(string): Query
+
+Finds button by one of these:
+
+- `input[type=button|submit]`, `button` or `a` element text
+- `label` text, enclosing an `input[type=radio|checkbox]`
+- `label` text whose `for` attribute points to an `input[type=checkbox]`
+- checkbox's `aria-label`
+- `label` text whose `id` is referenced by a checkbox's `aria-labelledby`
+- custom finder, defined by `defineButtonFinder()`
+
+If you find button in order to click than you probably want `clickButton()` instead.
 
 ## Assertions
 

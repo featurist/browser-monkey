@@ -242,15 +242,11 @@ export class Query implements Promise<any> {
     this._input = [input]
   }
 
-  public dom() {
-    return this._dom
-  }
-
   public get [Symbol.toStringTag](): string {
     return 'Query';
   }
 
-  public transform (transform: Transform): Query {
+  private transform (transform: Transform): Query {
     return this.clone(clone => clone._transforms.push(transform))
   }
 
@@ -265,7 +261,7 @@ export class Query implements Promise<any> {
     return expectQuery
   }
 
-  public action (action: Action): Query {
+  private action (action: Action): Query {
     if (this._action) {
       throw new Error('can only have one action')
     }
@@ -275,7 +271,7 @@ export class Query implements Promise<any> {
     })
   }
 
-  public findButton (name: FieldName): Query {
+  public findButton (name: string): Query {
     return this.concat(this._options.definitions.buttons.map(({definition}) => {
       return (q: Query): Query => {
         return definition(q, name)
@@ -621,7 +617,7 @@ export class Query implements Promise<any> {
     })
   }
 
-  public clickButton (name: FieldName): Query {
+  public clickButton (name: string): Query {
     return this.findButton(name).click()
   }
 
