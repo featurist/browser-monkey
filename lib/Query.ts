@@ -279,7 +279,7 @@ export class Query implements Promise<any> {
     }))
   }
 
-  public findLabel (name: string): Query {
+  private findLabel (name: string): Query {
     return this.concat(this._options.definitions.fields.map(({definition}) => {
       return (q: Query): Query => {
         return definition(q, name)

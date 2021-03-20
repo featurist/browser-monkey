@@ -243,6 +243,16 @@ Finds button by one of these:
 
 If you find button in order to click than you probably want `clickButton()` instead.
 
+### defineButtonFinder(string | fn): Query
+
+If you have custom button - e.g. `<div class="button"></div>` - then you can use `defineButtonFinder()` to have browser-monkey look it up when calling `findButton()`/`clickButton()` methods:
+
+```js
+const query = page.defineButtonFinder((query, name) => query.find('div.button').containing(name))
+
+await query.clickButton('Login')
+```
+
 ## Assertions
 
 ### shouldExist
