@@ -1,7 +1,7 @@
 import {DomAssembly} from './assemblies/DomAssembly'
 import {Query} from '../lib/Query'
 
-describe('buttons', function () {
+describe('shouldAppearAfter shouldDisappearAfter', function () {
   let assembly
   let browser: Query
 
