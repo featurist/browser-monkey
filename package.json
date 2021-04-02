@@ -11,12 +11,14 @@
     "*Mount.js*"
   ],
   "scripts": {
-    "test": "yarn test-electron-mocha && eslint .",
+    "test": "yarn test-electron-mocha && yarn test-mocha && yarn test-jest && eslint .",
     "test-karma": "karma start --single-run",
-    "test-electron-mocha": "yarn electron-mocha test/**/*Spec.{js,ts}",
+    "test-electron-mocha": "yarn electron-mocha test/*Spec.{js,ts} test/mount/*Spec.{js,ts}",
     "test-electron-mocha-watch": "rg --files | entr yarn test-electron-mocha",
     "electron-mocha": "electron-mocha --disable-site-isolation-trials --full-trace --color --main electron/foreignIframe.js -r ts-node/register --renderer",
-    "mocha": "mocha -r test/register.js",
+    "test-mocha": "yarn mocha test/*Spec.{js,ts}",
+    "test-jest": "yarn jest",
+    "mocha": "TEST_JSDOM=true mocha -r test/register.js -r test/jsdom.js",
     "prepare": "tsc -p tsconfig.build.json && ./export-mounts.js && node -r ./HyperdomMount.js -r ./ReactMount.js -e '1'",
     "docs": "yarn build-docs && yarn docsify serve --no-open --port 3003 ./docs-dist",
     "watch-docs": "ls docs/*.md | entr -r yarn docs",
@@ -51,6 +53,7 @@
     "express": "^4.16.4",
     "gh-pages": "^3.1.0",
     "hyperdom": "^2.1.0",
+    "jest": "^26.6.3",
     "karma": "5.2.3",
     "karma-browserstack-launcher": "https://github.com/karma-runner/karma-browserstack-launcher",
     "karma-chrome-launcher": "3.1.0",
@@ -66,6 +69,7 @@
     "process": "latest",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
+    "ts-jest": "^26.5.4",
     "ts-loader": "^8.0.9",
     "ts-node": "^9.0.0",
     "webpack": "^5.4.0",
@@ -106,5 +110,13 @@
   "bugs": {
     "url": "https://github.com/featurist/browser-monkey/issues"
   },
-  "homepage": "https://github.com/featurist/browser-monkey"
+  "homepage": "https://github.com/featurist/browser-monkey",
+  "jest": {
+    "testMatch": [
+      "<rootDir>/test/jest/**.test.ts"
+    ],
+    "transform": {
+      "^.+\\.(ts|tsx)$": "ts-jest"
+    }
+  }
 }

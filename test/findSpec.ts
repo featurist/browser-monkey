@@ -118,36 +118,40 @@ describe('find', () => {
     expect(browser.find('.missing').result()).to.eql([])
   })
 
-  describe('iframes', () => {
-    it('can search into iframes', async () => {
-      const iframe = browser.iframe('iframe')
+  if (DomAssembly.domCanLoadIFrames) {
+    describe('iframes', () => {
+      it('can search into iframes', async () => {
+        const iframe = browser.iframe('iframe')
 
-      assembly.useNormalRetry()
-      assembly.eventuallyInsertHtml(`<iframe src="${DomAssembly.localUrl('page1.html')}"/>`)
+        assembly.useNormalRetry()
+        assembly.eventuallyInsertHtml(`<iframe src="${DomAssembly.localUrl('page1.html')}"/>`)
 
-      await iframe.clickButton('page 2')
-      await iframe.shouldContain({h1: 'Page 2'})
+        await iframe.clickButton('page 2')
+        await iframe.shouldContain({h1: 'Page 2'})
+      })
     })
-  })
+  }
 
-  describe('visibility', () => {
-    it('should not find an element that is visually hidden', () => {
-      assembly.insertHtml('<div class="element">hello <span style="display:none;">world</span></div>')
+  if (DomAssembly.domHasVisibility) {
+    describe('visibility', () => {
+      it('should not find an element that is visually hidden', () => {
+        assembly.insertHtml('<div class="element">hello <span style="display:none;">world</span></div>')
 
-      return browser.find('.element > span').shouldNotExist()
+        return browser.find('.element > span').shouldNotExist()
+      })
+
+      it('should find an element that is visually hidden when visibleOnly = false', () => {
+        assembly.insertHtml('<div class="element">hello <span style="display:none;">world</span></div>')
+
+        browser.options({ visibleOnly: false })
+        return browser.find('.element > span').shouldExist()
+      })
+
+      it('should find elements that are visually hidden because of how html renders them', () => {
+        assembly.insertHtml('<select><option>First</option><option>Second</option></select>')
+
+        return browser.find('select option').shouldContain(['First', 'Second'])
+      })
     })
-
-    it('should find an element that is visually hidden when visibleOnly = false', () => {
-      assembly.insertHtml('<div class="element">hello <span style="display:none;">world</span></div>')
-
-      browser.options({ visibleOnly: false })
-      return browser.find('.element > span').shouldExist()
-    })
-
-    it('should find elements that are visually hidden because of how html renders them', () => {
-      assembly.insertHtml('<select><option>First</option><option>Second</option></select>')
-
-      return browser.find('select option').shouldContain(['First', 'Second'])
-    })
-  })
+  }
 })

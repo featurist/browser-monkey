@@ -1,5 +1,3 @@
-/* global location */
-
 const createTestDiv = require('../../lib/createTestDiv')
 const pathUtils = require('path')
 import retry from '../../lib/retry'
@@ -9,6 +7,8 @@ import {Query} from '../../lib/Query'
 const object = require('lowscore/object')
 import inspect from 'object-inspect'
 
+const testJSDOM = process.env.TEST_JSDOM
+
 export class DomAssembly {
   private delayedOperations: number
   private retries: (() => void)[]
@@ -16,6 +16,11 @@ export class DomAssembly {
   private dom: Dom
   private _div: HTMLElement
   private _normalRetry: boolean
+
+  public static domCanHaveFocus = !testJSDOM
+  public static domHasInnerText = !testJSDOM
+  public static domHasVisibility = !testJSDOM
+  public static domCanLoadIFrames = !testJSDOM
 
   public constructor () {
     this.delayedOperations = 0
@@ -71,7 +76,7 @@ export class DomAssembly {
   }
 
   public static localUrl (path): string {
-    return location.protocol === 'file:'
+    return window.location.protocol === 'file:'
       ? 'file://' + pathUtils.join(pathUtils.join(__dirname, '..'), path)
       : '/base/test/' + path
   }

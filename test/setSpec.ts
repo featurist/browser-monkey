@@ -1,13 +1,16 @@
 import {DomAssembly} from './assemblies/DomAssembly'
+import Dom from '../lib/Dom'
 import {expect} from 'chai'
 import {Query} from '../lib/Query'
 
 describe('set', function () {
   let assembly
   let browser: Query
+  let dom: Dom
 
   beforeEach(function () {
     assembly = new DomAssembly()
+    dom = new Dom()
     browser = assembly.browserMonkey()
   })
 
@@ -41,7 +44,7 @@ describe('set', function () {
       })
 
       const selectedItem = assembly.find('select').selectedOptions[0]
-      expect(selectedItem.innerText).to.equal('Two')
+      expect(dom.elementInnerText(selectedItem)).to.equal('Two')
     })
 
     it('can set select fields with regex', async () => {
@@ -57,7 +60,7 @@ describe('set', function () {
       })
 
       const selectedItem = assembly.find('select').selectedOptions[0]
-      expect(selectedItem.innerText).to.equal('Two')
+      expect(dom.elementInnerText(selectedItem)).to.equal('Two')
     })
 
     it('can set checkbox fields', async () => {
@@ -301,11 +304,11 @@ describe('set', function () {
 
       await browser.set({
         '.street': streetQuery => {
-          streetQuery.shouldHaveElements(1).result()[0].innerText = 'hi'
+          streetQuery.shouldHaveElements(1).result()[0].innerHTML = 'hi'
         }
       })
 
-      expect(assembly.find('.street').innerText).to.equal('hi')
+      expect(dom.elementInnerText(assembly.find('.street'))).to.equal('hi')
     })
   })
 
@@ -348,7 +351,7 @@ describe('set', function () {
       await promise
 
       const selectedItem = assembly.find('select').selectedOptions[0]
-      expect(selectedItem.innerText).to.equal('Three')
+      expect(dom.elementInnerText(selectedItem)).to.equal('Three')
     })
   })
 

@@ -1,14 +1,17 @@
 import {expect} from 'chai'
 import {DomAssembly} from './assemblies/DomAssembly'
 import {Query} from '../lib/Query'
+import Dom from '../lib/Dom'
 
 describe('query', () => {
   let assembly: DomAssembly
   let browser: Query
+  let dom: Dom
 
   beforeEach(() => {
     assembly = new DomAssembly()
     browser = assembly.browserMonkey()
+    dom = new Dom()
   })
 
   afterEach(() => {
@@ -294,7 +297,7 @@ describe('query', () => {
     it('waits for the input to eventually pass the assertion', async () => {
       const hello = browser
         .expect(elements => {
-          expect(elements.some(element => element.innerText.includes('hello'))).to.equal(true)
+          expect(elements.some(element => dom.elementInnerText(element).includes('hello'))).to.equal(true)
         })
         .then()
 
@@ -308,7 +311,7 @@ describe('query', () => {
     it('eventually throws the last error if it never passes', async () => {
       const hello = browser
         .expect(elements => {
-          expect(elements.some(element => element.innerText.includes('hello')), 'expected to see hello').to.equal(true)
+          expect(elements.some(element => dom.elementInnerText(element).includes('hello')), 'expected to see hello').to.equal(true)
         })
         .then()
 
@@ -345,7 +348,7 @@ describe('query', () => {
       const contacts = browser
         .find('.contact')
         .filter(contact => {
-          return (contact.querySelector('.name') as HTMLElement).innerText === 'Sally'
+          return dom.elementInnerText(contact.querySelector('.name') as HTMLElement) === 'Sally'
         })
         .shouldHaveElements(1)
         .then()

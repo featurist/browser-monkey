@@ -2,14 +2,17 @@ import {DomAssembly} from './assemblies/DomAssembly'
 import BrowserMonkeyAssertionError from '../lib/BrowserMonkeyAssertionError'
 import {elementAttributes} from '../lib/matchers'
 import {Query} from '../lib/Query'
+import Dom from '../lib/Dom'
 
 describe('shouldContain', function () {
   let assembly
   let browser: Query
+  let dom: Dom
 
   beforeEach(function () {
     assembly = new DomAssembly()
     browser = assembly.browserMonkey()
+    dom = new Dom()
   })
 
   afterEach(() => {
@@ -445,7 +448,7 @@ describe('shouldContain', function () {
       await browser.shouldContain({
         'h1': 'Title',
         '.content': query => {
-          if (!/Content/.test(query.elementResult().innerText)) {
+          if (!/Content/.test(dom.elementInnerText(query.elementResult()))) {
             throw new BrowserMonkeyAssertionError('asdf')
           }
         }
@@ -463,7 +466,7 @@ describe('shouldContain', function () {
       await assembly.assertExpectedActual(browser, {
         'h1': 'Title',
         '.content': query => {
-          if (/Content/.test(query.elementResult().innerText)) {
+          if (/Content/.test(dom.elementInnerText(query.elementResult()))) {
             throw new BrowserMonkeyAssertionError('asdf', {actual: 'error actual', expected: 'error expected'})
           }
         }

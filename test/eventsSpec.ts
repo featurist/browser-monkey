@@ -48,7 +48,9 @@ describe('events', function () {
   })
 
   function assertBrowserHasFocus (): void {
-    expect(document.hasFocus(), 'the browser must be in focus for this test!').to.equal(true)
+    if (DomAssembly.domCanHaveFocus) {
+      expect(document.hasFocus(), 'the browser must be in focus for this test!').to.equal(true)
+    }
   }
 
   it('typeIn element should fire change and then blur event on input', async function () {

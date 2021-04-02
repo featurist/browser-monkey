@@ -92,31 +92,59 @@ describe('dom', () => {
     })
   })
 
-  describe('innerText', () => {
-    it('normalises innerText removing extra spaces at the end of lines', () => {
-      const element = assembly.insertHtml(`
-        <div>
-          first
-          line
-          <br/>
-          second
-          line
-        </div>
-      `)
+  if (DomAssembly.domHasInnerText) {
+    describe('innerText', () => {
+      it('normalises innerText removing extra spaces at the end of lines', () => {
+        const element = assembly.insertHtml(`
+          <div>
+            first
+            line
+            <br/>
+            second
+            line
+          </div>
+        `)
 
-      expect(assembly.dom.elementInnerText(element)).to.equal('first line\nsecond line')
+        expect(assembly.dom.elementInnerText(element)).to.equal('first line\nsecond line')
+      })
+
+      it('normalises innerText removing extra spaces between words', () => {
+        const element = assembly.insertHtml(`
+          <div>
+            two     words
+          </div>
+        `)
+
+        expect(assembly.dom.elementInnerText(element)).to.equal('two words')
+      })
     })
+  } else {
+    describe('innerText', () => {
+      it('normalises innerText removing extra spaces at the end of lines', () => {
+        const element = assembly.insertHtml(`
+          <div>
+            first
+            line
+            <br/>
+            second
+            line
+          </div>
+        `)
 
-    it('normalises innerText removing extra spaces between words', () => {
-      const element = assembly.insertHtml(`
-        <div>
-          two     words
-        </div>
-      `)
+        expect(assembly.dom.elementInnerText(element)).to.equal('first\nline\n\nsecond\nline')
+      })
 
-      expect(assembly.dom.elementInnerText(element)).to.equal('two words')
+      it('normalises innerText removing extra spaces between words', () => {
+        const element = assembly.insertHtml(`
+          <div>
+            two     words
+          </div>
+        `)
+
+        expect(assembly.dom.elementInnerText(element)).to.equal('two words')
+      })
     })
-  })
+  }
 
   describe('clicking', () => {
     it('clicks an element and sends correct events', () => {
@@ -434,49 +462,51 @@ describe('dom', () => {
     })
   })
 
-  describe('visibility', () => {
-    it('when element is visible it returns true', () => {
-      const element = assembly.insertHtml('<div>hi</div>')
+  if (DomAssembly.domHasVisibility) {
+    describe('visibility', () => {
+      it('when element is visible it returns true', () => {
+        const element = assembly.insertHtml('<div>hi</div>')
 
-      expect(assembly.dom.elementVisible(element)).to.equal(true)
+        expect(assembly.dom.elementVisible(element)).to.equal(true)
+      })
+
+      it('when element is visible but empty returns true', () => {
+        const element = assembly.insertHtml('<div></div>')
+
+        expect(assembly.dom.elementVisible(element)).to.equal(true)
+      })
+
+      it('when element is display:none it returns false', () => {
+        const element = assembly.insertHtml('<div style="display: none">hi</div>')
+
+        expect(assembly.dom.elementVisible(element)).to.equal(false)
+      })
+
+      it('when element is visible but parent is not', () => {
+        assembly.insertHtml('<div style="display: none"><div id="child">hi</div></div>')
+
+        const element = assembly.find('#child')
+
+        expect(assembly.dom.elementVisible(element)).to.equal(false)
+      })
+
+      it('when element is option and select is visible, returns true', () => {
+        assembly.insertHtml('<select><option id="option">1</option><select>')
+
+        const element = assembly.find('#option')
+
+        expect(assembly.dom.elementVisible(element)).to.equal(true)
+      })
+
+      it('when element is option and select is not visible, returns false', () => {
+        assembly.insertHtml('<select style="display: none"><option id="option">1</option><select>')
+
+        const element = assembly.find('#option')
+
+        expect(assembly.dom.elementVisible(element)).to.equal(false)
+      })
     })
-
-    it('when element is visible but empty returns true', () => {
-      const element = assembly.insertHtml('<div></div>')
-
-      expect(assembly.dom.elementVisible(element)).to.equal(true)
-    })
-
-    it('when element is display:none it returns false', () => {
-      const element = assembly.insertHtml('<div style="display: none">hi</div>')
-
-      expect(assembly.dom.elementVisible(element)).to.equal(false)
-    })
-
-    it('when element is visible but parent is not', () => {
-      assembly.insertHtml('<div style="display: none"><div id="child">hi</div></div>')
-
-      const element = assembly.find('#child')
-
-      expect(assembly.dom.elementVisible(element)).to.equal(false)
-    })
-
-    it('when element is option and select is visible, returns true', () => {
-      assembly.insertHtml('<select><option id="option">1</option><select>')
-
-      const element = assembly.find('#option')
-
-      expect(assembly.dom.elementVisible(element)).to.equal(true)
-    })
-
-    it('when element is option and select is not visible, returns false', () => {
-      assembly.insertHtml('<select style="display: none"><option id="option">1</option><select>')
-
-      const element = assembly.find('#option')
-
-      expect(assembly.dom.elementVisible(element)).to.equal(false)
-    })
-  })
+  }
 
   describe('matches', function () {
     describe('tagName', function () {

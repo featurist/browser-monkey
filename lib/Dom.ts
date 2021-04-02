@@ -101,6 +101,12 @@ function isInputAllowingImplicitFormSubmission(el) {
 }
 
 export default class Dom {
+  private jsdom: boolean
+
+  public constructor({jsdom = window.navigator.userAgent.includes('jsdom')} = {}) {
+    this.jsdom = jsdom
+  }
+
   public enterText (element: HTMLInputElement, text: string | string[], {incremental = true} = {}): void {
     element.focus()
 
@@ -140,7 +146,11 @@ export default class Dom {
   }
 
   public elementInnerText (element: HTMLElement): string {
-    return normaliseText(element.innerText)
+    const text = this.jsdom
+      ? element.textContent
+      : element.innerText
+
+    return normaliseText(text)
   }
 
   public click (element: HTMLElement): void {
@@ -151,13 +161,11 @@ export default class Dom {
   }
 
   public querySelectorAll (element: HTMLElement, selector: string, {visibleOnly = true} = {}): HTMLElement[] {
-    let children = Array.prototype.slice.call(element.querySelectorAll(selector))
+    const children = Array.prototype.slice.call(element.querySelectorAll(selector))
 
-    children = visibleOnly
+    return visibleOnly && !this.jsdom
       ? children.filter(c => this.elementVisible(c))
       : children
-
-    return children
   }
 
   public elementVisible (element: HTMLElement): boolean {
@@ -240,11 +248,11 @@ export default class Dom {
 
 function createMouseEvent (type): MouseEvent {
   // @ts-ignore
-  return new MouseEvent(type, { bubbles: true, cancelable: true })
+  return new window.MouseEvent(type, { bubbles: true, cancelable: true })
 }
 
 function createEvent (type, params = {bubbles: true, cancelable: false}): Event {
-  return new Event(type, params)
+  return new window.Event(type, params)
 }
 
 function matchKeyCode (text) {
@@ -253,7 +261,7 @@ function matchKeyCode (text) {
 
 function createKeyboardEvent (type, key): KeyboardEvent {
   // @ts-ignore
-  const event = new KeyboardEvent(type, { bubbles: true, cancelable: true })
+  const event = new window.KeyboardEvent(type, { bubbles: true, cancelable: true })
 
   const match = matchKeyCode(key)
 
