@@ -18,7 +18,7 @@
     "electron-mocha": "electron-mocha --disable-site-isolation-trials --full-trace --color --main electron/foreignIframe.js -r ts-node/register --renderer",
     "mocha": "mocha -r test/register.js",
     "prepare": "tsc -p tsconfig.build.json && ./export-mounts.js && node -r ./HyperdomMount.js -r ./ReactMount.js -e '1'",
-    "docs": "yarn build-docs && docsify serve --no-open --port 3003 ./docs-dist",
+    "docs": "yarn build-docs && yarn docsify serve --no-open --port 3003 ./docs-dist",
     "watch-docs": "ls docs/*.md | entr yarn build-docs",
     "build-docs": "rm -rf ./docs-dist && cp -r ./docs ./docs-dist && codesandbox-example-links --output-dir=./docs-dist ./docs/*.md",
     "publish-docs": "yarn build-docs && gh-pages -t -d docs-dist"
@@ -38,6 +38,7 @@
     "babel-loader": "^8.1.0",
     "chai": "4.2.0",
     "codesandbox-example-links": "^1.1.0",
+    "docsify-cli": "^4.4.3",
     "electron": "12.0.0",
     "electron-mocha": "^10.0.0",
     "eslint": "^7.12.1",
