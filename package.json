@@ -19,7 +19,7 @@
     "mocha": "mocha -r test/register.js",
     "prepare": "tsc -p tsconfig.build.json && ./export-mounts.js && node -r ./HyperdomMount.js -r ./ReactMount.js -e '1'",
     "docs": "yarn build-docs && yarn docsify serve --no-open --port 3003 ./docs-dist",
-    "watch-docs": "ls docs/*.md | entr yarn build-docs",
+    "watch-docs": "ls docs/*.md | entr -r yarn docs",
     "build-docs": "rm -rf ./docs-dist && cp -r ./docs ./docs-dist && codesandbox-example-links --output-dir=./docs-dist ./docs/*.md",
     "publish-docs": "yarn build-docs && gh-pages -t -d docs-dist"
   },

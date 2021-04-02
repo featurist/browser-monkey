@@ -222,6 +222,12 @@ const scope = page.find('.result').containing({
 
 Narrows scope based on a filtering function that takes a DOM element, and returns either truthy or falsey. If truthy, then the element will be considered as part of the scope, if falsey then it won't.
 
+```js
+const [sally] = await page
+  .find('.contact')
+  .filter(e => e.querySelector('.name').innerText === 'Sally')
+```
+
 ### result(): any
 
 Use this to get an immediate (synchronous) result of a query.
