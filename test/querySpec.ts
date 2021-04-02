@@ -30,11 +30,14 @@ describe('query', () => {
 
   describe('options', () => {
     it('returns a new Browser Monkey object without modifying the current one', () => {
-      expect(browser.options({timeout: 400}).getOptions().timeout).to.equal(400)
+      browser.options({timeout: 400})
+      expect(browser.getOptions().timeout).to.equal(400)
     })
 
     it('overrides previously set option', () => {
-      expect(browser.options({timeout: 400}).options({timeout: 4000}).getOptions().timeout).to.equal(4000)
+      browser.options({timeout: 400})
+      browser.options({timeout: 4000})
+      expect(browser.getOptions().timeout).to.equal(4000)
     })
   })
 

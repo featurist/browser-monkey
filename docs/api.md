@@ -113,9 +113,9 @@ const scopeUnderElement = page.scope(element)
 Set query options. They are inherited by inner queries.
 
 ```js
-const withInvisible = query.options({visibleOnly: false})
+query.options({visibleOnly: false})
 
-withInvisible.find('div').getOptions().visibleOnly // => false
+query.find('div').getOptions().visibleOnly // => false
 ```
 
 * `visibleOnly` if true, then only visible elements will be found, if false, then all elements are considered. Default is true.
@@ -147,7 +147,7 @@ It's possible to define elements that accept parameters:
 
 ```js
 page.define('Flash', (q, flashType) => q.find(`.flash-${flashType}`))
-await browser.shouldContain({
+await page.shouldContain({
   'Flash("success")': 'Success!',
   'Flash("alert")': /Fail/,
 })

@@ -140,9 +140,9 @@ describe('buttons', function () {
       const button = assembly.insertHtml('<div class="button">Login</div>')
       assembly.insertHtml('<div class="button">Another</div>')
 
-      const query = browser.defineButtonFinder((query, name) => query.find('div.button').containing(name))
+      browser.defineButtonFinder((query, name) => query.find('div.button').containing(name))
 
-      const elements = query.findButton('Login').result()
+      const elements = browser.findButton('Login').result()
       expect(elements).to.eql([button])
     })
 
@@ -150,10 +150,22 @@ describe('buttons', function () {
       const button = assembly.insertHtml('<button>Login</button>')
       assembly.insertHtml('<button>Another</button>')
 
-      const query = browser.defineButtonFinder((query, name) => query.find('div.button').containing(name))
+      browser.defineButtonFinder((query, name) => query.find('div.button').containing(name))
 
-      const elements = query.findButton('Login').result()
+      const elements = browser.findButton('Login').result()
       expect(elements).to.eql([button])
+    })
+  })
+
+  describe('undefining buttons', function() {
+    it('undefined button definitions no longer find buttons', function() {
+      assembly.insertHtml('<button>Login</button>')
+      let elements = browser.findButton('Login').result()
+      expect(elements.length).to.eql(1)
+
+      browser.undefineButtonFinder('button')
+      elements = browser.findButton('Login').result()
+      expect(elements.length).to.eql(0)
     })
   })
 
@@ -181,14 +193,14 @@ describe('buttons', function () {
     })
 
     it('can click a defined button', async () => {
-      const query = browser.defineButtonFinder((query, name) => query.find('div.button').containing(name))
-      await assertCanClickButton('<div class="target button">Login</div>', () => query.click('Button("Login")'))
+      browser.defineButtonFinder((query, name) => query.find('div.button').containing(name))
+      await assertCanClickButton('<div class="target button">Login</div>', () => browser.click('Button("Login")'))
     })
 
     it('throws if the button cannot be found to click', async () => {
-      const query = browser.defineButtonFinder((query, name) => query.find('div.button').containing(name))
+      browser.defineButtonFinder((query, name) => query.find('div.button').containing(name))
       assembly.insertHtml('<button class="target">Login</button>')
-      await assembly.assertRejection(query.clickButton('Logout'), "expected 1 element, found 0")
+      await assembly.assertRejection(browser.clickButton('Logout'), "expected 1 element, found 0")
     })
   })
 })

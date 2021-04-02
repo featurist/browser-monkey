@@ -34,7 +34,7 @@ export class DomAssembly {
 
     const browserMonkey = new Query(this._div)
 
-    return browserMonkey.options({
+    browserMonkey.options({
       retry: (fn) => {
         if (this._normalRetry) {
           return retry(fn)
@@ -54,6 +54,7 @@ export class DomAssembly {
         }
       }
     })
+    return browserMonkey
   }
 
   public tick (): void {

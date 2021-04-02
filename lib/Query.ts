@@ -287,50 +287,46 @@ export class Query implements Promise<any> {
     }))
   }
 
-  public defineButtonFinder (name: string | FieldFinderDefinition, definition?: FieldFinderDefinition): Query {
+  public defineButtonFinder (name: string | FieldFinderDefinition, definition?: FieldFinderDefinition): void {
     if (!definition) {
       definition = name as FieldFinderDefinition
       name = undefined
     }
 
-    return this.clone(q => q._options.definitions.buttons.push({
+    this._options.definitions.buttons.push({
       name: name as string,
       definition
-    }))
-  }
-
-  public undefineButtonFinder (name: string): Query {
-    return this.clone(q => {
-      const index = q._options.definitions.buttons.findIndex(def => def.name === name)
-      if (index >= 0) {
-        q._options.definitions.buttons.splice(index, 1)
-      } else {
-        throw new Error(`field definition ${JSON.stringify(name)} doesn't exist`)
-      }
     })
   }
 
-  public defineFieldFinder (name: string | FieldFinderDefinition, definition?: FieldFinderDefinition): Query {
+  public undefineButtonFinder (name: string): void {
+    const index = this._options.definitions.buttons.findIndex(def => def.name === name)
+    if (index >= 0) {
+      this._options.definitions.buttons.splice(index, 1)
+    } else {
+      throw new Error(`field definition ${JSON.stringify(name)} doesn't exist`)
+    }
+  }
+
+  public defineFieldFinder (name: string | FieldFinderDefinition, definition?: FieldFinderDefinition): void {
     if (!definition) {
       definition = name as FieldFinderDefinition
       name = undefined
     }
 
-    return this.clone(q => q._options.definitions.fields.push({
+    this._options.definitions.fields.push({
       name: name as string,
       definition
-    }))
+    })
   }
 
-  public undefineFieldFinder (name: string): Query {
-    return this.clone(q => {
-      const index = q._options.definitions.fields.findIndex(def => def.name === name)
-      if (index >= 0) {
-        q._options.definitions.fields.splice(index, 1)
-      } else {
-        throw new Error(`field definition ${JSON.stringify(name)} doesn't exist`)
-      }
-    })
+  public undefineFieldFinder (name: string): void {
+    const index = this._options.definitions.fields.findIndex(def => def.name === name)
+    if (index >= 0) {
+      this._options.definitions.fields.splice(index, 1)
+    } else {
+      throw new Error(`field definition ${JSON.stringify(name)} doesn't exist`)
+    }
   }
 
   // TODO: try removing any
@@ -496,8 +492,8 @@ export class Query implements Promise<any> {
     return transformed
   }
 
-  public options (options: Options): Query {
-    return this.clone(q => extend(q._options, options))
+  public options (options: Options): void {
+    extend(this._options, options)
   }
 
   public getOptions (): Options {
