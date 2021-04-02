@@ -254,20 +254,25 @@ If you find button in order to click than you probably want `clickButton()` inst
 Define custom button finder. If you have non-standard buttons - e.g. `<div class="button"></div>` - then you can use `defineButtonFinder()` to have browser-monkey look it up when calling `findButton()`/`clickButton()` methods:
 
 ```js
-const query = page.defineButtonFinder((query, name) => query.find('div.button').containing(name))
+const query = page.defineButtonFinder(
+  (query, name) => query.find('div.button').containing(name)
+)
 
 await query.clickButton('Login')
 ```
 
-You can name custom finders so that they can be later removed with [`undefineButtonFinder()`](#undefine-button-finder).
+You can name custom finders so that they can be later removed with [`undefineButtonFinder()`](#undefineButtonFinder).
 
 ```js
-const query = page.defineButtonFinder('div-button', (query, name) => query.find('div.button').containing(name))
+const query = page.defineButtonFinder(
+  'div-button',
+  (query, name) => query.find('div.button').containing(name)
+)
 ```
 
 ### undefineButtonFinder
 
-Remove button definition. You can remove both built-in button definitions and custom ones defined with [`defineButtonFinder()`](#define-button-finder).
+Remove button definition. You can remove both built-in button definitions and custom ones defined with [`defineButtonFinder()`](#defineButtonFinder).
 
 ```js
 // built-in
