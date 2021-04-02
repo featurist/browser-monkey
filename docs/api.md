@@ -108,9 +108,9 @@ You can call `.scope()` explicitely to (re)set the starting point for the query 
 const scopeUnderElement = page.scope(element)
 ```
 
-### options(options: Options): Query
+### options
 
-There are some options you can set, which are inherited by inner queries.
+Set query options. They are inherited by inner queries.
 
 ```js
 const withInvisible = query.options({visibleOnly: false})
@@ -122,11 +122,11 @@ withInvisible.find('div').getOptions().visibleOnly // => false
 * `timeout` an integer specifying the milliseconds to wait for an element to appear. This can be overriden by specifying the timeout when calling an action.
 * `interval` a number of milliseconds to wait between querying DOM when waiting for element to appear.
 
-### getOptions(): Options
+### getOptions
 
 Returns query options.
 
-### find(css: string): Query
+### find
 
 ```js
 const innerQuery = query.find(css)
@@ -134,7 +134,7 @@ const innerQuery = query.find(css)
 
 Returns a new query that matches `css`. A semantic matcher (see below) can also be used instead of CSS selector.
 
-### define(name: string | Object, finderDefinition?: FinderDefinition): void
+### define
 
 Defines a custom "tag" that can be used instead of css as a `find`/`set` argument. This allows you to use more semantic selectors than css. Example:
 
@@ -173,7 +173,7 @@ page.set({
 })
 ```
 
-### is(selector: string): Query
+### is
 
 Narrows the scope to match selector. This is useful for composability. Consider the following example:
 
@@ -189,7 +189,7 @@ await alert.is('.danger').shouldExist()
 
 In the end, `find('.a').is('.b')` is the same as `find('.a.b')`. However the latter is atomic. Whereas the former can be composed programmatically bit by bit.
 
-### containing(filter: text | RegExp | Object): Query
+### containing
 
 Narrows a scope based on its content. For example:
 
@@ -218,9 +218,9 @@ const scope = page.find('.result').containing({
 })
 ```
 
-### filter(fn): Query
+### filter
 
-Narrows scope based on a filtering function that takes a DOM element, and returns either truthy or falsey. If truthy, then the element will be considered as part of the scope, if falsey then it won't.
+Narrow query scope based on a filtering function. The function receives a DOM element as its argument and returns either truthy or falsey. If truthy, then the element will be considered as part of the scope, if falsey then it won't.
 
 ```js
 const [sally] = await page
@@ -228,7 +228,7 @@ const [sally] = await page
   .filter(e => e.querySelector('.name').innerText === 'Sally')
 ```
 
-### result(): any
+### result
 
 Use this to get an immediate (synchronous) result of a query.
 
@@ -236,9 +236,9 @@ Use this to get an immediate (synchronous) result of a query.
 const elements = page.find('.thing').result()
 ```
 
-### findButton(string): Query
+### findButton
 
-Finds button by one of these:
+Find button by one of the following criteria:
 
 - `input[type=button|submit]`, `button` or `a` element text
 - `label` text, enclosing an `input[type=radio|checkbox]`
@@ -249,15 +249,40 @@ Finds button by one of these:
 
 If you find button in order to click than you probably want `clickButton()` instead.
 
-### defineButtonFinder(string | fn): Query
+### defineButtonFinder
 
-If you have custom button - e.g. `<div class="button"></div>` - then you can use `defineButtonFinder()` to have browser-monkey look it up when calling `findButton()`/`clickButton()` methods:
+Define custom button finder. If you have non-standard buttons - e.g. `<div class="button"></div>` - then you can use `defineButtonFinder()` to have browser-monkey look it up when calling `findButton()`/`clickButton()` methods:
 
 ```js
 const query = page.defineButtonFinder((query, name) => query.find('div.button').containing(name))
 
 await query.clickButton('Login')
 ```
+
+You can name custom finders so that they can be later removed with [`undefineButtonFinder()`](#undefine-button-finder).
+
+```js
+const query = page.defineButtonFinder('div-button', (query, name) => query.find('div.button').containing(name))
+```
+
+### undefineButtonFinder
+
+Remove button definition. You can remove both built-in button definitions and custom ones defined with [`defineButtonFinder()`](#define-button-finder).
+
+```js
+// built-in
+page.undefineButtonFinder('aria-labelledby')
+// custom
+page.undefineButtonFinder('div-button')
+```
+
+Built-in definitions:
+
+- `button`: elements that match `button, input[type=button], input[type=submit], input[type=reset], a`
+- `label`: labels that contain a clickable input
+- `label-for`: labels with `for` attribute
+- `aria-label`: elements with attribute `aria-label`
+- `aria-labelledby`: elements whole `id` is referenced by another element's `aria-labelledby`
 
 ## Assertions
 
