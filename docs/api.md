@@ -235,14 +235,6 @@ const [sally] = await page
   .filter(e => e.querySelector('.name').innerText === 'Sally')
 ```
 
-### result
-
-Use this to get an immediate (synchronous) result of a query.
-
-```js
-const elements = page.find('.thing').result()
-```
-
 ### findButton
 
 Find button by one of the following criteria:
@@ -298,7 +290,56 @@ Built-in definitions:
 
 ### addFieldDefinition
 
+When you use `find("Field('some-input')")`, browser-monkey is matching against a few built-in field definitions. It should cover most cases, but sometimes your inputs are special and then you might want to teach browser-monkey to recognise them.
 
+For example, let's say that in your universe this is an input:
+
+```html
+<div class="result" data-label="Search"/>
+```
+
+By default, browser-monkey won't recognise it as such. But with `addFieldDefinition` it will:
+
+```js
+await page.set({ "Field('Search')": 'bananas' })
+// => error!
+
+page.addFieldDefinition('data-label', (query, label) => (
+  query.find(`[data-label=${label}]`)
+))
+
+await page.set({ "Field('Search')": 'bananas' })
+// => ok!
+```
+
+### removeFieldDefinition
+
+Remove field definition. E.g:
+
+```js
+browser.removeFieldDefinition('data-label')
+```
+
+### result
+
+Synchronously resolves query:
+
+```js
+page.find('.thing') // => new Query object
+page.find('.thing').result() // => array of matching elements
+```
+
+### map
+
+Use Javascript to transform a query (rather than css).
+
+Sometimes, it's easier to define a query in Javascript. For example, getting a "target" element of a label's "for" attribute isn't even possible in css. So we could use something like this:
+
+```js
+page.find('label[for]').map(e => (
+  document.getElementById(e.getAttribute('for'))
+)).filter(Boolean)
+```
 
 ## Assertions
 
@@ -618,5 +659,3 @@ const scopeWithEvents = scope.on(function (event) {
 * `event.optionElement` is the option element selected, in the case of type `'select option'`.
 * `event.text` is the text entered, in the case of type `'typing'`.
 * `event.html` is the html entered, in the case of type `'typing html'`.
-
-# TODO: document `result()`

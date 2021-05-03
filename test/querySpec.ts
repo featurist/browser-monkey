@@ -372,9 +372,7 @@ describe('query', () => {
     it('can map elements', async () => {
       const contacts = browser
         .find('.contact')
-        .map(contact => {
-          return contact.querySelector('.name')
-        })
+        .map(e => e.querySelector('.name'))
         .shouldExist()
         .then()
 

@@ -251,7 +251,9 @@ describe('labels', function () {
 
   describe('label definitions', () => {
     it('can define a new way of finding labels', () => {
-      browser.addFieldDefinition((query, label) => query.findCss(`[data-label=${JSON.stringify(label)}]`))
+      browser.addFieldDefinition((query, label) => (
+        query.find(`[data-label=${JSON.stringify(label)}]`)
+      ))
 
       assertFoundElementByLabel(
         browser,
