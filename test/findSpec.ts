@@ -143,7 +143,7 @@ describe('find', () => {
       it('should find an element that is visually hidden when visibleOnly = false', () => {
         assembly.insertHtml('<div class="element">hello <span style="display:none;">world</span></div>')
 
-        browser.options({ visibleOnly: false })
+        browser.setOptions({ visibleOnly: false })
         return browser.find('.element > span').shouldExist()
       })
 

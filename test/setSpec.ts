@@ -364,8 +364,8 @@ describe('set', function () {
         </form>
       `)
 
-      browser.define('phone', b => b.find('.phone'))
-      browser.define('firstName', b => b.find('.first-name'))
+      browser.addField('phone', b => b.find('.phone'))
+      browser.addField('firstName', b => b.find('.first-name'))
 
       await browser.set({
         phone: '123123123',
@@ -384,7 +384,7 @@ describe('set', function () {
         </form>
       `)
 
-      browser.define('form', (b, name) => b.find('* [name=' + JSON.stringify(name) + ']'))
+      browser.addField('form', (b, name) => b.find('* [name=' + JSON.stringify(name) + ']'))
 
       await browser.set({
         'form("phone")': '123123123',

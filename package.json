@@ -18,6 +18,7 @@
     "electron-mocha": "electron-mocha --disable-site-isolation-trials --full-trace --color --main electron/foreignIframe.js -r ts-node/register --renderer",
     "test-mocha": "yarn mocha test/*Spec.{js,ts}",
     "test-jest": "yarn jest",
+    "watch-types": "tsc -w --noEmit",
     "mocha": "TEST_JSDOM=true mocha -r test/register.js -r test/jsdom.js",
     "prepare": "tsc -p tsconfig.build.json && ./export-mounts.js && node -r ./HyperdomMount.js -r ./ReactMount.js -e '1'",
     "docs": "yarn build-docs && yarn docsify serve --no-open --port 3003 ./docs-dist",

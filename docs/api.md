@@ -8,7 +8,7 @@ The API is made up of three concepts: queries, actions and assertions.
 * actions such as `clickButton()` and `enterText(text)` "execute" the query chain, waiting for the elements to be found before simulating a corresponding UI event. These return promises that resolve when the event has been dispatched. There is also `set({...})` that allows to set multiple multiple inputs at once.
 * assertions such as `shouldExist()` and `shouldContain()` also "execute" the query chain and ensure that the elements exist or contain text, classes or other properties. These return promises that resolve if queries are satisfied, or rejected otherwise (after retrying query for some time).
 
-It is also possible to create semantic matchers (to be used in queries) with `query.define()`.
+It is also possible to create semantic matchers (to be used in queries) with `query.addField()`.
 
 ## Mount
 
@@ -108,12 +108,12 @@ You can call `.scope()` explicitely to (re)set the starting point for the query 
 const scopeUnderElement = page.scope(element)
 ```
 
-### options
+### setOptions
 
 Set query options. They are inherited by inner queries.
 
 ```js
-query.options({visibleOnly: false})
+query.setOptions({visibleOnly: false})
 
 query.find('div').getOptions().visibleOnly // => false
 ```
@@ -132,21 +132,21 @@ Returns query options.
 const innerQuery = query.find(css)
 ```
 
-Returns a new query that matches `css`. A semantic matcher (see below) can also be used instead of CSS selector.
+Returns a new query that matches `css`. A semantic matcher (see [`addField()`](#addField)) can also be used instead of CSS selector.
 
-### define
+### addField
 
 Defines a custom "tag" that can be used instead of css as a `find`/`set` argument. This allows you to use more semantic selectors than css. Example:
 
 ```js
-page.define('Flash', q => q.find('.messages .flash'))
+page.addField('Flash', q => q.find('.messages .flash'))
 await page.shouldContain({'Flach': 'Success!'})
 ```
 
 It's possible to define elements that accept parameters:
 
 ```js
-page.define('Flash', (q, flashType) => q.find(`.flash-${flashType}`))
+page.addField('Flash', (q, flashType) => q.find(`.flash-${flashType}`))
 await page.shouldContain({
   'Flash("success")': 'Success!',
   'Flash("alert")': /Fail/,
@@ -156,14 +156,13 @@ await page.shouldContain({
 Multiple matchers can be defined at the same time:
 
 ```js
-page.define({
+page.addField({
   Success: q => q.find('.flash .success'),
   Alert: q => q.find('.flash .alert')
 })
 ```
 
-TODO: move this to `set()` documentation
-Custom definitions can be nested just as well as css:
+Custom definitions can be used in [`set()`](#set) just as well as css:
 
 ```js
 page.set({
@@ -171,6 +170,14 @@ page.set({
     CustomChild: "new value"
   }
 })
+```
+
+### removeField
+
+Removes field defined with [`addField()`](#addField).
+
+```js
+page.removeField('Flash')
 ```
 
 ### is
@@ -245,40 +252,40 @@ Find button by one of the following criteria:
 - `label` text whose `for` attribute points to an `input[type=checkbox]`
 - checkbox's `aria-label`
 - `label` text whose `id` is referenced by a checkbox's `aria-labelledby`
-- custom finder, defined by `defineButtonFinder()`
+- custom finder, defined by `addButtonDefinition()`
 
 If you find button in order to click than you probably want `clickButton()` instead.
 
-### defineButtonFinder
+### addButtonDefinition
 
-Define custom button finder. If you have non-standard buttons - e.g. `<div class="button"></div>` - then you can use `defineButtonFinder()` to have browser-monkey look it up when calling `findButton()`/`clickButton()` methods:
+Define custom button finder. If you have non-standard buttons - e.g. `<div class="button"></div>` - then you can use `addButtonDefinition()` to have browser-monkey look it up when calling `findButton()`/`clickButton()` methods:
 
 ```js
-const query = page.defineButtonFinder(
+const query = page.addButtonDefinition(
   (query, name) => query.find('div.button').containing(name)
 )
 
 await query.clickButton('Login')
 ```
 
-You can name custom finders so that they can be later removed with [`undefineButtonFinder()`](#undefineButtonFinder).
+You can name custom finders so that they can be later removed with [`removeButtonDefinition()`](#removeButtonDefinition).
 
 ```js
-const query = page.defineButtonFinder(
+const query = page.addButtonDefinition(
   'div-button',
   (query, name) => query.find('div.button').containing(name)
 )
 ```
 
-### undefineButtonFinder
+### removeButtonDefinition
 
-Remove button definition. You can remove both built-in button definitions and custom ones defined with [`defineButtonFinder()`](#defineButtonFinder).
+Remove button definition. You can remove both built-in button definitions and custom ones defined with [`addButtonDefinition()`](#addButtonDefinition).
 
 ```js
 // built-in
-page.undefineButtonFinder('aria-labelledby')
+page.removeButtonDefinition('aria-labelledby')
 // custom
-page.undefineButtonFinder('div-button')
+page.removeButtonDefinition('div-button')
 ```
 
 Built-in definitions:
@@ -288,6 +295,10 @@ Built-in definitions:
 - `label-for`: labels with `for` attribute
 - `aria-label`: elements with attribute `aria-label`
 - `aria-labelledby`: elements whole `id` is referenced by another element's `aria-labelledby`
+
+### addFieldDefinition
+
+
 
 ## Assertions
 

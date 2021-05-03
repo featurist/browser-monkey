@@ -595,7 +595,7 @@ describe('shouldContain', function () {
         </div>
       `)
 
-      browser.define('Header', q => q.find('h1'))
+      browser.addField('Header', q => q.find('h1'))
 
       await browser.shouldContain({
         Header: 'Title',
@@ -611,7 +611,7 @@ describe('shouldContain', function () {
         </div>
       `)
 
-      browser.define('Header', 'h1')
+      browser.addField('Header', 'h1')
 
       await browser.shouldContain({
         Header: 'Title',
@@ -627,7 +627,7 @@ describe('shouldContain', function () {
         </div>
       `)
 
-      browser.define({
+      browser.addField({
         Header: 'h1',
         Content: q => q.find('.content'),
       })
@@ -650,7 +650,7 @@ describe('shouldContain', function () {
         </section>
       `)
 
-      browser.define('Section', (query, value) => {
+      browser.addField('Section', (query, value) => {
         return query.find('section').containing({h1: value})
       })
 
@@ -674,9 +674,9 @@ describe('shouldContain', function () {
         </div>
       `)
 
-      browser.define({
+      browser.addField({
         Title: 'h1',
-        Content: q => q.find('.content').define({
+        Content: (q: Query) => q.find('.content').addField({
           Title: '.title',
           Body: '.body'
         }),

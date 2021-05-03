@@ -140,7 +140,7 @@ describe('buttons', function () {
       const button = assembly.insertHtml('<div class="button">Login</div>')
       assembly.insertHtml('<div class="button">Another</div>')
 
-      browser.defineButtonFinder((query, name) => query.find('div.button').containing(name))
+      browser.addButtonDefinition((query, name) => query.find('div.button').containing(name))
 
       const elements = browser.findButton('Login').result()
       expect(elements).to.eql([button])
@@ -150,7 +150,7 @@ describe('buttons', function () {
       const button = assembly.insertHtml('<button>Login</button>')
       assembly.insertHtml('<button>Another</button>')
 
-      browser.defineButtonFinder((query, name) => query.find('div.button').containing(name))
+      browser.addButtonDefinition((query, name) => query.find('div.button').containing(name))
 
       const elements = browser.findButton('Login').result()
       expect(elements).to.eql([button])
@@ -163,7 +163,7 @@ describe('buttons', function () {
       let elements = browser.findButton('Login').result()
       expect(elements.length).to.eql(1)
 
-      browser.undefineButtonFinder('button')
+      browser.removeButtonDefinition('button')
       elements = browser.findButton('Login').result()
       expect(elements.length).to.eql(0)
     })
@@ -193,12 +193,12 @@ describe('buttons', function () {
     })
 
     it('can click a defined button', async () => {
-      browser.defineButtonFinder((query, name) => query.find('div.button').containing(name))
+      browser.addButtonDefinition((query, name) => query.find('div.button').containing(name))
       await assertCanClickButton('<div class="target button">Login</div>', () => browser.click('Button("Login")'))
     })
 
     it('throws if the button cannot be found to click', async () => {
-      browser.defineButtonFinder((query, name) => query.find('div.button').containing(name))
+      browser.addButtonDefinition((query, name) => query.find('div.button').containing(name))
       assembly.insertHtml('<button class="target">Login</button>')
       await assembly.assertRejection(browser.clickButton('Logout'), "expected 1 element, found 0")
     })

@@ -287,7 +287,7 @@ export class Query implements Promise<any> {
     }))
   }
 
-  public defineButtonFinder (name: string | FieldFinderDefinition, definition?: FieldFinderDefinition): void {
+  public addButtonDefinition (name: string | FieldFinderDefinition, definition?: FieldFinderDefinition): this {
     if (!definition) {
       definition = name as FieldFinderDefinition
       name = undefined
@@ -297,18 +297,22 @@ export class Query implements Promise<any> {
       name: name as string,
       definition
     })
+
+    return this
   }
 
-  public undefineButtonFinder (name: string): void {
+  public removeButtonDefinition (name: string): this {
     const index = this._options.definitions.buttons.findIndex(def => def.name === name)
     if (index >= 0) {
       this._options.definitions.buttons.splice(index, 1)
     } else {
       throw new Error(`field definition ${JSON.stringify(name)} doesn't exist`)
     }
+
+    return this
   }
 
-  public defineFieldFinder (name: string | FieldFinderDefinition, definition?: FieldFinderDefinition): void {
+  public addFieldDefinition (name: string | FieldFinderDefinition, definition?: FieldFinderDefinition): this {
     if (!definition) {
       definition = name as FieldFinderDefinition
       name = undefined
@@ -318,15 +322,19 @@ export class Query implements Promise<any> {
       name: name as string,
       definition
     })
+
+    return this
   }
 
-  public undefineFieldFinder (name: string): void {
+  public removeFieldDefinition (name: string): this {
     const index = this._options.definitions.fields.findIndex(def => def.name === name)
     if (index >= 0) {
       this._options.definitions.fields.splice(index, 1)
     } else {
       throw new Error(`field definition ${JSON.stringify(name)} doesn't exist`)
     }
+
+    return this
   }
 
   // TODO: try removing any
@@ -492,8 +500,9 @@ export class Query implements Promise<any> {
     return transformed
   }
 
-  public options (options: Options): void {
+  public setOptions (options: Options): this {
     extend(this._options, options)
+    return this
   }
 
   public getOptions (): Options {
@@ -808,14 +817,24 @@ export class Query implements Promise<any> {
     })
   }
 
-  public define (name: string | Object, finderDefinition?: FinderDefinition | string): this {
+  public addField (name: string | Object, finderDefinition?: FinderDefinition | string): this {
     if (typeof finderDefinition === 'function') {
       this._options.definitions.finders[name as string] = finderDefinition
     } else if (typeof finderDefinition === 'string') {
       this._options.definitions.finders[name as string] = q => q.find(finderDefinition)
     } else if (name.constructor === Object && finderDefinition === undefined) {
-      Object.keys(name).forEach(key => this.define(key, name[key]))
+      Object.keys(name).forEach(key => this.addField(key, name[key]))
     }
+
+    return this
+  }
+
+  public removeField(name: string): this {
+    if (!this._options.definitions.finders[name]) {
+      throw new Error(`field definition ${JSON.stringify(name)} doesn't exist`)
+    }
+
+    delete this._options.definitions.finders[name]
 
     return this
   }
@@ -856,8 +875,9 @@ export class Query implements Promise<any> {
     })
   }
 
-  public defineInput (inputDefinition: InputDefinition): void {
+  public addInputDefinition (inputDefinition: InputDefinition): this {
     this._options.definitions.inputs.unshift(inputDefinition)
+    return this
   }
 
   public containing (model: Model): Query {

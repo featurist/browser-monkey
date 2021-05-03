@@ -39,7 +39,7 @@ export class DomAssembly {
 
     const browserMonkey = new Query(this._div)
 
-    browserMonkey.options({
+    browserMonkey.setOptions({
       retry: (fn) => {
         if (this._normalRetry) {
           return retry(fn)

@@ -17,7 +17,7 @@ describe('define', function () {
 
   it('can define a field', () => {
     assembly.insertHtml('<div class=hello>bye</div>')
-    browser.define('Hello', q => q.find('.hello'))
+    browser.addField('Hello', q => q.find('.hello'))
 
     expect(browser.find('Hello').result()).to.eql(assembly.findAll('.hello'))
   })
@@ -27,12 +27,23 @@ describe('define', function () {
       <div class="flash-success">Success!</div>
       <div class="flash-alert">Fail!</div>
     `)
-    browser.define('Flash', (q, flashType) => q.find(`.flash-${flashType}`))
+    browser.addField('Flash', (q, flashType) => q.find(`.flash-${flashType}`))
 
     await browser.shouldContain({
       'Flash("success")': 'Success!',
       'Flash("alert")': /Fail/,
     })
+  })
+
+  it('removes field definition', function() {
+    assembly.insertHtml('<div class=hello>bye</div>')
+    browser.addField('Hello', q => q.find('.hello'))
+
+    expect(browser.find('Hello').result()).to.eql(assembly.findAll('.hello'))
+
+    browser.removeField('Hello')
+
+    expect(() => browser.find('Hello(1)')).to.throw('no such definition Hello')
   })
 
   describe('definition not found', () => {

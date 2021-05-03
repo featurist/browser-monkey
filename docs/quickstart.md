@@ -1,20 +1,13 @@
 # Quick start
 
-Install Browser Monkey as a dev dependency:
-
-```bash
-yarn add browser-monkey --dev
-```
-
-You will need a browser environment to run your tests in. For general feature development we recommend using [electron](#electron) - it does not require any javascript bundling and so your tests will run faster. For testing across different browser environments you can use something like [karma](#karma).
-
-For this example we will create a small react application.
+Let's craete a tiny React project and test it with Browser Monkey.
 
 ```bash
 yarn add react react-dom
+yarn add browser-monkey --dev
 ```
 
-Now create a test file: `test/appSpec.js`
+Now create a test file: `test/appSpec.js`.
 For simplicity we will create our react application in the test file.
 
 ```js
@@ -37,6 +30,8 @@ describe('greeting', () => {
   })
 })
 ```
+
+You will need a browser environment to run your tests in. For general feature development we recommend using [electron](#electron) - it does not require any javascript bundling and so your tests will run faster. For testing across different browser environments you can use something like [karma](#karma).
 
 ## Electron
 

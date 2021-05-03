@@ -251,7 +251,7 @@ describe('labels', function () {
 
   describe('label definitions', () => {
     it('can define a new way of finding labels', () => {
-      browser.defineFieldFinder((query, label) => query.findCss(`[data-label=${JSON.stringify(label)}]`))
+      browser.addFieldDefinition((query, label) => query.findCss(`[data-label=${JSON.stringify(label)}]`))
 
       assertFoundElementByLabel(
         browser,
@@ -263,7 +263,7 @@ describe('labels', function () {
     })
 
     it('can add and remove a label definition by name', async () => {
-      browser.defineFieldFinder('data-label', (query, label) => query.findCss(`[data-label=${JSON.stringify(label)}]`))
+      browser.addFieldDefinition('data-label', (query, label) => query.findCss(`[data-label=${JSON.stringify(label)}]`))
 
       assertFoundElementByLabel(
         browser,
@@ -273,13 +273,13 @@ describe('labels', function () {
         'Field("Search")'
       )
 
-      browser.undefineFieldFinder('data-label')
+      browser.removeFieldDefinition('data-label')
 
       await browser.find('Field("Search")').shouldNotExist().result()
     })
 
     it("throws if we try to undefine a label that doesn't exist", async () => {
-      expect(() => browser.undefineFieldFinder('data-label')).to.throw("doesn't exist")
+      expect(() => browser.removeFieldDefinition('data-label')).to.throw("doesn't exist")
     })
   })
 })
