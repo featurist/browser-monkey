@@ -24,7 +24,8 @@ export default class Mount {
   }
 
   public mount (query: Query): Query {
-    return query.scope(this._mountDiv)
+    query.setInput(this._mountDiv)
+    return query
   }
 
   public unmount (): void {

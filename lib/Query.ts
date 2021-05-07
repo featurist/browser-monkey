@@ -20,7 +20,19 @@ import object from 'lowscore/object'
 import range from 'lowscore/range'
 import flatten from 'lowscore/flatten'
 import {match} from './match'
-import * as fieldDefinitions from './fieldDefinitions'
+import {
+  Matcher,
+  matcherFinder,
+  createMatcher,
+  parseMatcher
+} from './Matcher'
+import { Button } from './Button'
+import { Field } from './Field'
+import { Css } from './Css'
+
+export { MultiMatcher } from './MultiMatcher'
+
+export { Button, Field, createMatcher, Css }
 
 type Transform = (elements: Array<HTMLElement>, executedTransforms: ExecutedTransform[]) => any
 type Action = (elements: Array<HTMLElement>, executedTransforms: ExecutedTransform[]) => void
@@ -37,21 +49,12 @@ type Match = {
   expected: any,
 }
 
-type FieldName = string | RegExp
-type FieldFinderDefinition = (query: Query, name: FieldName) => Query
-type FinderDefinition = (query: Query, ...any) => Query
-
 type LiteralModel = string | RegExp | boolean
 type FunctionModel = (query: Query) => void
 type Model = LiteralModel | FunctionModel | { [key: string]: Model } | Model[]
 
 interface Definitions {
   inputs: InputDefinition[]
-  buttons: ({name: string, definition: FieldFinderDefinition})[]
-  fields: ({name: string, definition: FieldFinderDefinition})[]
-  finders: {
-    [key: string]: FinderDefinition
-  }
 }
 
 const missing = {}
@@ -59,7 +62,7 @@ const missing = {}
 export class Query implements Promise<any> {
   private _transforms: Transform[]
   private _options: Options
-  private _input: [HTMLElement]
+  private _input: HTMLElement[]
   private _actionExecuted = false
   private _action: Action
   private _hasExpectation = false
@@ -215,28 +218,10 @@ export class Query implements Promise<any> {
               })
             }
           },
-        ],
-        buttons: [
-          fieldDefinitions.button,
-          fieldDefinitions.label(() => inputSelectors.canBeClicked),
-          fieldDefinitions.labelFor,
-          fieldDefinitions.ariaLabel,
-          fieldDefinitions.ariaLabelledBy,
-        ],
-        fields: [
-          fieldDefinitions.label(query => query.inputSelector()),
-          fieldDefinitions.labelFor,
-          fieldDefinitions.ariaLabel,
-          fieldDefinitions.ariaLabelledBy,
-          fieldDefinitions.placeholder,
-        ],
-        finders: {
-          Field: (q: Query, value) => q.findLabel(value),
-          Button: (q: Query, value) => q.findButton(value),
-          Css: (q: Query, value) => q.findCss(value),
-        },
+        ]
       }
     }
+
     this._dom = new Dom()
 
     this._input = [input]
@@ -269,72 +254,6 @@ export class Query implements Promise<any> {
     return this.clone(clone => {
       clone._action = action
     })
-  }
-
-  public findButton (name: string): Query {
-    return this.concat(this._options.definitions.buttons.map(({definition}) => {
-      return (q: Query): Query => {
-        return definition(q, name)
-      }
-    }))
-  }
-
-  private findLabel (name: string): Query {
-    return this.concat(this._options.definitions.fields.map(({definition}) => {
-      return (q: Query): Query => {
-        return definition(q, name)
-      }
-    }))
-  }
-
-  public addButtonDefinition (name: string | FieldFinderDefinition, definition?: FieldFinderDefinition): this {
-    if (!definition) {
-      definition = name as FieldFinderDefinition
-      name = undefined
-    }
-
-    this._options.definitions.buttons.push({
-      name: name as string,
-      definition
-    })
-
-    return this
-  }
-
-  public removeButtonDefinition (name: string): this {
-    const index = this._options.definitions.buttons.findIndex(def => def.name === name)
-    if (index >= 0) {
-      this._options.definitions.buttons.splice(index, 1)
-    } else {
-      throw new Error(`field definition ${JSON.stringify(name)} doesn't exist`)
-    }
-
-    return this
-  }
-
-  public addFieldDefinition (name: string | FieldFinderDefinition, definition?: FieldFinderDefinition): this {
-    if (!definition) {
-      definition = name as FieldFinderDefinition
-      name = undefined
-    }
-
-    this._options.definitions.fields.push({
-      name: name as string,
-      definition
-    })
-
-    return this
-  }
-
-  public removeFieldDefinition (name: string): this {
-    const index = this._options.definitions.fields.findIndex(def => def.name === name)
-    if (index >= 0) {
-      this._options.definitions.fields.splice(index, 1)
-    } else {
-      throw new Error(`field definition ${JSON.stringify(name)} doesn't exist`)
-    }
-
-    return this
   }
 
   // TODO: try removing any
@@ -563,13 +482,15 @@ export class Query implements Promise<any> {
     return clone
   }
 
-  // TODO: why is this public?
-  public input (value): Query {
-    return this.clone(q => q._input = value)
+  public setInput (elementOrArray: HTMLElement | HTMLElement[]) {
+    const input: HTMLElement[] = elementOrArray instanceof Array
+      ? elementOrArray
+      : [elementOrArray]
+
+    this._input = input
   }
 
-  // TODO: rename `input`/`getInput` to something better
-  public getInput (): [HTMLElement] {
+  public input (): HTMLElement[] {
     return this._input
   }
 
@@ -580,7 +501,6 @@ export class Query implements Promise<any> {
     this._hasExpectation = from._hasExpectation
 
     this._options = extend({}, from._options)
-    this._options.definitions = cloneDefinitions(from._options.definitions)
   }
 
   public shouldHaveElements (count: number, message?: string): Query {
@@ -622,10 +542,6 @@ export class Query implements Promise<any> {
     })
   }
 
-  public clickButton (name: string): Query {
-    return this.findButton(name).click()
-  }
-
   public submit (selector?: string): Query {
     return this.optionalSelector(selector)
       .shouldHaveElements(1)
@@ -653,10 +569,6 @@ export class Query implements Promise<any> {
         debug('enterText', element, text)
         this._dom.enterText(element as HTMLInputElement, text)
       })
-  }
-
-  public scope (element: HTMLElement): Query {
-    return this.input([element])
   }
 
   public mount (mount: {mount: (query: Query) => Query}): Query {
@@ -817,29 +729,7 @@ export class Query implements Promise<any> {
     })
   }
 
-  public addField (name: string | Object, finderDefinition?: FinderDefinition | string): this {
-    if (typeof finderDefinition === 'function') {
-      this._options.definitions.finders[name as string] = finderDefinition
-    } else if (typeof finderDefinition === 'string') {
-      this._options.definitions.finders[name as string] = q => q.find(finderDefinition)
-    } else if (name.constructor === Object && finderDefinition === undefined) {
-      Object.keys(name).forEach(key => this.addField(key, name[key]))
-    }
-
-    return this
-  }
-
-  public removeField(name: string): this {
-    if (!this._options.definitions.finders[name]) {
-      throw new Error(`field definition ${JSON.stringify(name)} doesn't exist`)
-    }
-
-    delete this._options.definitions.finders[name]
-
-    return this
-  }
-
-  private inputSelector (): string {
+  public inputSelector (): string {
     return this._options.definitions.inputs.map(i => i.selector).filter(Boolean).join(',')
   }
 
@@ -969,28 +859,17 @@ export class Query implements Promise<any> {
     return findElements
   }
 
-  public find (selector: string): Query {
-    // name(arg1, arg2, ...)
-    const match = /^\s*([$a-z_][0-9a-z_$]*)\s*(\((.*)\)\s*)?$/i.exec(selector)
+  public find (selector: string | Matcher): Query {
+    const selectorString = selector.toString()
 
-    if (match) {
-      const [, name,, value] = match
-      const finder = this._options.definitions.finders[name]
+    const matcherInvocation = parseMatcher(selectorString)
 
-      if (value !== undefined) {
-        if (finder) {
-          const func = new Function(`return [${value}]`)
-          const args = func()
-          return finder(this, ...args)
-        } else {
-          throw new Error('no such definition ' + name)
-        }
-      } else if (finder) {
-        return finder(this)
-      }
+    if (matcherInvocation) {
+      const {matcher, args = []} = matcherInvocation
+      return matcher[matcherFinder](this, ...args)
+    } else {
+      return this.findCss(selectorString)
     }
-
-    return this.findCss(selector)
   }
 
   public is (selector: string): Query {
@@ -1088,20 +967,6 @@ export class Query implements Promise<any> {
     }
     return this
   }
-}
-
-function cloneDefinitions(definitions: Definitions): Definitions {
-  const result = {}
-
-  Object.keys(definitions).forEach(function (key) {
-    if (definitions[key] instanceof Array) {
-      result[key] = definitions[key].slice()
-    } else {
-      result[key] = Object.assign({}, definitions[key])
-    }
-  })
-
-  return result as Definitions
 }
 
 function isIframe (element: HTMLElement): element is HTMLIFrameElement {

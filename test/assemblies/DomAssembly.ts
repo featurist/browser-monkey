@@ -3,7 +3,7 @@ const pathUtils = require('path')
 import retry from '../../lib/retry'
 const { expect } = require('chai')
 import Dom from '../../lib/Dom'
-import {Query} from '../../lib/Query'
+import { Query } from '../../lib/Query'
 const object = require('lowscore/object')
 import inspect from 'object-inspect'
 

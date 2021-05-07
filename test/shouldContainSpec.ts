@@ -1,7 +1,7 @@
 import {DomAssembly} from './assemblies/DomAssembly'
 import BrowserMonkeyAssertionError from '../lib/BrowserMonkeyAssertionError'
 import {elementAttributes} from '../lib/matchers'
-import {Query} from '../lib/Query'
+import {Query, createMatcher} from '../lib/Query'
 import Dom from '../lib/Dom'
 
 describe('shouldContain', function () {
@@ -595,10 +595,10 @@ describe('shouldContain', function () {
         </div>
       `)
 
-      browser.addField('Header', q => q.find('h1'))
+      const Header = createMatcher(q => q.find('h1'))
 
       await browser.shouldContain({
-        Header: 'Title',
+        [Header]: 'Title',
         '.content': 'The Content'
       })
     })
@@ -611,30 +611,11 @@ describe('shouldContain', function () {
         </div>
       `)
 
-      browser.addField('Header', 'h1')
+      const Header = createMatcher('h1')
 
       await browser.shouldContain({
-        Header: 'Title',
+        [Header]: 'Title',
         '.content': 'The Content'
-      })
-    })
-
-    it('can define a several fields using an object', async () => {
-      assembly.insertHtml(`
-        <div>
-          <h1>Title</h1>
-          <div class="content">The Content</div>
-        </div>
-      `)
-
-      browser.addField({
-        Header: 'h1',
-        Content: q => q.find('.content'),
-      })
-
-      await browser.shouldContain({
-        Header: 'Title',
-        Content: 'The Content'
       })
     })
 
@@ -650,43 +631,13 @@ describe('shouldContain', function () {
         </section>
       `)
 
-      browser.addField('Section', (query, value) => {
+      const Section = createMatcher((query, value) => {
         return query.find('section').containing({h1: value})
       })
 
       await browser.shouldContain({
-        'Section(/S.* A/)': {
+        [Section(/S.* A/)]: {
           '.content': 'Section A Content'
-        }
-      })
-    })
-
-    it('can define a several hierarchical fields using finders', async () => {
-      assembly.insertHtml(`
-        <div>
-          <h1>Title</h1>
-          <div class="content">
-            <div class="title">title</div>
-            <div class="body">
-              body
-            </div>
-          </div>
-        </div>
-      `)
-
-      browser.addField({
-        Title: 'h1',
-        Content: (q: Query) => q.find('.content').addField({
-          Title: '.title',
-          Body: '.body'
-        }),
-      })
-
-      await browser.shouldContain({
-        Title: 'Title',
-        Content: {
-          Title: 'title',
-          Body: 'body'
         }
       })
     })

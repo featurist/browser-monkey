@@ -1,6 +1,6 @@
 import {DomAssembly} from './assemblies/DomAssembly'
 import {expect} from 'chai'
-import { Query } from '../lib/Query'
+import { Query, Button } from '../lib/Query'
 
 describe('find', () => {
   let assembly: DomAssembly
@@ -126,7 +126,7 @@ describe('find', () => {
         assembly.useNormalRetry()
         assembly.eventuallyInsertHtml(`<iframe src="${DomAssembly.localUrl('page1.html')}"/>`)
 
-        await iframe.clickButton('page 2')
+        await iframe.click(Button('page 2'))
         await iframe.shouldContain({h1: 'Page 2'})
       })
     })

@@ -1,5 +1,5 @@
 import {DomAssembly} from './assemblies/DomAssembly'
-import {Query} from '../lib/Query'
+import {Query, Button} from '../lib/Query'
 
 describe('shouldAppearAfter shouldDisappearAfter', function () {
   let assembly
@@ -22,7 +22,7 @@ describe('shouldAppearAfter shouldDisappearAfter', function () {
 
       button.addEventListener('click', () => assembly.insertHtml('<div class="element"></div>'))
 
-      await browser.find('.element').shouldAppearAfter(() => browser.clickButton('Show'))
+      await browser.find('.element').shouldAppearAfter(() => browser.click(Button('Show')))
     })
 
     it('fails if the element fails to appear', async () => {
@@ -31,7 +31,7 @@ describe('shouldAppearAfter shouldDisappearAfter', function () {
       `)
 
       await assembly.assertRejection(
-        browser.find('.element').shouldAppearAfter(() => browser.clickButton('Show')),
+        browser.find('.element').shouldAppearAfter(() => browser.click(Button('Show'))),
         'expected one or more elements, found 0'
       )
     })
@@ -42,7 +42,7 @@ describe('shouldAppearAfter shouldDisappearAfter', function () {
       `)
 
       await assembly.assertRejection(
-        browser.find('.element').shouldAppearAfter(() => browser.clickButton('Show')),
+        browser.find('.element').shouldAppearAfter(() => browser.click(Button('Show'))),
         'expected no elements'
       )
     })
@@ -59,7 +59,7 @@ describe('shouldAppearAfter shouldDisappearAfter', function () {
 
       button.addEventListener('click', () => element.parentNode.removeChild(element))
 
-      await browser.find('.element').shouldDisappearAfter(() => browser.clickButton('Show'))
+      await browser.find('.element').shouldDisappearAfter(() => browser.click(Button('Show')))
     })
 
     it('fails if the element is still there after the action', async () => {
@@ -69,7 +69,7 @@ describe('shouldAppearAfter shouldDisappearAfter', function () {
       `)
 
       await assembly.assertRejection(
-        browser.find('.element').shouldDisappearAfter(() => browser.clickButton('Show')),
+        browser.find('.element').shouldDisappearAfter(() => browser.click(Button('Show'))),
         'expected no elements, found 1'
       )
     })
@@ -79,7 +79,7 @@ describe('shouldAppearAfter shouldDisappearAfter', function () {
       `)
 
       await assembly.assertRejection(
-        browser.find('.element').shouldDisappearAfter(() => browser.clickButton('Show')),
+        browser.find('.element').shouldDisappearAfter(() => browser.click(Button('Show'))),
         'expected one or more elements, found 0'
       )
     })

@@ -8,7 +8,8 @@ describe('value', function () {
 
   beforeEach(function () {
     assembly = new DomAssembly()
-    browser = assembly.browserMonkey().scope(document.body)
+    browser = assembly.browserMonkey()
+    browser.setInput(document.body)
   })
 
   afterEach(() => {

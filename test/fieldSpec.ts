@@ -1,14 +1,16 @@
 import {DomAssembly} from './assemblies/DomAssembly'
 import {expect} from 'chai'
-import {Query} from '../lib/Query'
+import {Query, Field as OriginalField} from '../lib/Query'
 
 describe('labels', function () {
   let assembly
   let browser: Query
+  let Field
 
   beforeEach(function () {
     assembly = new DomAssembly()
     browser = assembly.browserMonkey()
+    Field = OriginalField.clone()
   })
 
   afterEach(() => {
@@ -42,7 +44,7 @@ describe('labels', function () {
             Feature Enabled
           </label>
         `,
-        'Field("Feature Enabled")'
+        Field("Feature Enabled")
       )
     })
 
@@ -55,7 +57,7 @@ describe('labels', function () {
             Feature Enabled
           </label>
         `,
-        'Field("Feature Enabled")'
+        Field("Feature Enabled")
       )
     })
 
@@ -73,7 +75,7 @@ describe('labels', function () {
             </select>
           </label>
         `,
-        'Field(/Favourite Colour/)'
+        Field(/Favourite Colour/)
       )
     })
 
@@ -86,7 +88,7 @@ describe('labels', function () {
           </label>
           <input id="my-checkbox" type=checkbox class="result" />
         `,
-        'Field("Feature Enabled")'
+        Field("Feature Enabled")
       )
     })
 
@@ -99,7 +101,7 @@ describe('labels', function () {
           </label>
           <input id="my-checkbox" type=checkbox class="result" />
         `,
-        'Field("Feature Enabled")'
+        Field("Feature Enabled")
       )
     })
 
@@ -112,7 +114,7 @@ describe('labels', function () {
           </label>
           <input id="my-checkbox" type=checkbox class="result" />
         `,
-        'Field("Feature")'
+        Field("Feature")
       )
     })
 
@@ -125,7 +127,7 @@ describe('labels', function () {
           </label>
           <input id="my-checkbox" type=checkbox class="result" />
         `,
-        'Field(/Feature/)'
+        Field(/Feature/)
       )
     })
   })
@@ -137,7 +139,7 @@ describe('labels', function () {
         `
           <input aria-label="Search" type=text class="result" />
         `,
-        'Field("Search")'
+        Field("Search")
       )
     })
 
@@ -147,7 +149,7 @@ describe('labels', function () {
         `
           <input aria-label="Search" type=text class="result" />
         `,
-        'Field(/sea/i)'
+        Field(/sea/i)
       )
     })
 
@@ -157,7 +159,7 @@ describe('labels', function () {
         `
           <input aria-label="Search Box" type=text class="result" />
         `,
-        'Field("Search")'
+        Field("Search")
       )
     })
 
@@ -168,7 +170,7 @@ describe('labels', function () {
           <label id="search-label">Search</label>
           <input aria-labelledby="search-label" type=text class="result" />
         `,
-        'Field("Search")'
+        Field("Search")
       )
     })
 
@@ -179,7 +181,7 @@ describe('labels', function () {
           <label id="search-label">Search Box</label>
           <input aria-labelledby="search-label" type=text class="result" />
         `,
-        'Field(/sea/i)'
+        Field(/sea/i)
       )
     })
 
@@ -190,7 +192,7 @@ describe('labels', function () {
           <label id="search-label">Search</label>
           <input aria-labelledby="wrong-search-label" type=text class="result" />
         `,
-        'Field("Search")'
+        Field("Search")
       )
     })
 
@@ -201,7 +203,7 @@ describe('labels', function () {
           <label id="search-label">Search Box</label>
           <input aria-labelledby="wrong-search-label" type=text class="result" />
         `,
-        'Field("Search")'
+        Field("Search")
       )
     })
   })
@@ -213,7 +215,7 @@ describe('labels', function () {
         `
           <input type=text class="result" placeholder="Search" />
         `,
-        'Field("Search")'
+        Field("Search")
       )
     })
 
@@ -223,7 +225,7 @@ describe('labels', function () {
         `
           <input type=text class="result" placeholder="Search" />
         `,
-        'Field(/sea/i)'
+        Field(/sea/i)
       )
     })
   })
@@ -244,14 +246,14 @@ describe('labels', function () {
 
     const expected = assembly.findAll('.result')
 
-    const found = browser.find('Field("Feature Enabled")').result()
+    const found = browser.find(Field("Feature Enabled")).result()
 
     expect(found).to.eql(expected)
   })
 
   describe('label definitions', () => {
     it('can define a new way of finding labels', () => {
-      browser.addFieldDefinition((query, label) => (
+      Field.addFinder((query, label) => (
         query.find(`[data-label=${JSON.stringify(label)}]`)
       ))
 
@@ -260,28 +262,28 @@ describe('labels', function () {
         `
           <div class="result" data-label="Search"/>
         `,
-        'Field("Search")'
+        Field("Search")
       )
     })
 
     it('can add and remove a label definition by name', async () => {
-      browser.addFieldDefinition('data-label', (query, label) => query.findCss(`[data-label=${JSON.stringify(label)}]`))
+      Field.addFinder('data-label', (query, label) => query.findCss(`[data-label=${JSON.stringify(label)}]`))
 
       assertFoundElementByLabel(
         browser,
         `
           <div class="result" data-label="Search"/>
         `,
-        'Field("Search")'
+        Field("Search")
       )
 
-      browser.removeFieldDefinition('data-label')
+      Field.removeFinder('data-label')
 
-      await browser.find('Field("Search")').shouldNotExist().result()
+      await browser.find(Field("Search")).shouldNotExist().result()
     })
 
     it("throws if we try to undefine a label that doesn't exist", async () => {
-      expect(() => browser.removeFieldDefinition('data-label')).to.throw("doesn't exist")
+      expect(() => Field.removeFinder('data-label')).to.throw("doesn't exist")
     })
   })
 })

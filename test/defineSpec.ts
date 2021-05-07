@@ -1,14 +1,14 @@
 import { expect } from 'chai'
 import { DomAssembly } from './assemblies/DomAssembly'
-import {Query} from '../lib/Query'
+import {Query, createMatcher} from '../lib/Query'
 
 describe('define', function () {
   let assembly
-  let browser: Query
+  let query: Query
 
   beforeEach(function () {
     assembly = new DomAssembly()
-    browser = assembly.browserMonkey()
+    query = assembly.browserMonkey()
   })
 
   afterEach(() => {
@@ -17,9 +17,16 @@ describe('define', function () {
 
   it('can define a field', () => {
     assembly.insertHtml('<div class=hello>bye</div>')
-    browser.addField('Hello', q => q.find('.hello'))
+    const Hello = createMatcher(q => q.find('.hello'))
 
-    expect(browser.find('Hello').result()).to.eql(assembly.findAll('.hello'))
+    expect(query.find(Hello).result()).to.eql(assembly.findAll('.hello'))
+  })
+
+  it('can define', () => {
+    assembly.insertHtml('<div class=hello>bye</div>')
+    const Hello = createMatcher('.hello')
+
+    expect(query.find(Hello).result()).to.eql(assembly.findAll('.hello'))
   })
 
   it('finds defined field', async function() {
@@ -27,32 +34,19 @@ describe('define', function () {
       <div class="flash-success">Success!</div>
       <div class="flash-alert">Fail!</div>
     `)
-    browser.addField('Flash', (q, flashType) => q.find(`.flash-${flashType}`))
+    const Flash = createMatcher((q, flashType) => q.find(`.flash-${flashType}`))
 
-    await browser.shouldContain({
-      'Flash("success")': 'Success!',
-      'Flash("alert")': /Fail/,
+    const a = 'success'
+
+    await query.shouldContain({
+      [Flash(a)]: 'Success!',
+      [Flash("alert")]: /Fail/,
     })
-  })
-
-  it('removes field definition', function() {
-    assembly.insertHtml('<div class=hello>bye</div>')
-    browser.addField('Hello', q => q.find('.hello'))
-
-    expect(browser.find('Hello').result()).to.eql(assembly.findAll('.hello'))
-
-    browser.removeField('Hello')
-
-    expect(() => browser.find('Hello(1)')).to.throw('no such definition Hello')
   })
 
   describe('definition not found', () => {
-    it('with arguments: throws an error if the definition is not found', () => {
-      expect(() => browser.find('Hello("one", 2)')).to.throw('no such definition Hello')
-    })
-
     it('without arguments: assumes that it is CSS', () => {
-      expect(() => browser.find('Hello').shouldExist().result()).to.throw("expected one or more elements, found 0 (found: find('Hello') [0])")
+      expect(() => query.find('Hello').shouldExist().result()).to.throw("expected one or more elements, found 0 (found: find('Hello') [0])")
     })
   })
 })

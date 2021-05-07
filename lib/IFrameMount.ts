@@ -98,6 +98,7 @@ export default class IFrameMount extends Mount {
   }
 
   mount (query: Query): Query {
-    return query.scope(this._iframe).iframe()
+    query.setInput(this._iframe)
+    return query.iframe()
   }
 }

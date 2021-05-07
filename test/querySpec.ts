@@ -278,18 +278,24 @@ describe('query', () => {
   //   })
   // })
 
-  describe('scope', () => {
-    it('when scope is one element, sets the input to an array of one', () => {
-      const query = browser
-        .scope(document.body)
+  describe('input', () => {
+    it('when input is one element, sets the input to an array of one', () => {
+      browser.setInput(document.body)
 
-      expect(query.getInput()).to.eql([document.body])
+      expect(browser.input()).to.eql([document.body])
     })
 
-    it('scope can be passed in to constructor', () => {
+    it('when input is an array of elements, sets the input to that array', () => {
+      const array = [document.body]
+      browser.setInput(array)
+
+      expect(browser.input()).to.eq(array)
+    })
+
+    it('input can be passed in to constructor', () => {
       const query = new Query(document.body)
 
-      expect(query.getInput()).to.eql([document.body])
+      expect(query.input()).to.eql([document.body])
     })
   })
 

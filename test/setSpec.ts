@@ -1,7 +1,7 @@
 import {DomAssembly} from './assemblies/DomAssembly'
 import Dom from '../lib/Dom'
 import {expect} from 'chai'
-import {Query} from '../lib/Query'
+import {Query, createMatcher} from '../lib/Query'
 
 describe('set', function () {
   let assembly
@@ -364,12 +364,12 @@ describe('set', function () {
         </form>
       `)
 
-      browser.addField('phone', b => b.find('.phone'))
-      browser.addField('firstName', b => b.find('.first-name'))
+      const phone = createMatcher('.phone')
+      const firstName = createMatcher('.first-name')
 
       await browser.set({
-        phone: '123123123',
-        firstName: 'Barry'
+        [phone]: '123123123',
+        [firstName]: 'Barry'
       })
 
       expect(assembly.find('.phone').value).to.equal('123123123')
@@ -384,11 +384,11 @@ describe('set', function () {
         </form>
       `)
 
-      browser.addField('form', (b, name) => b.find('* [name=' + JSON.stringify(name) + ']'))
+      const form = createMatcher((b, name) => b.find('* [name=' + JSON.stringify(name) + ']'))
 
       await browser.set({
-        'form("phone")': '123123123',
-        'form("firstname")': 'Barry'
+        [form("phone")]: '123123123',
+        [form("firstname")]: 'Barry'
       })
 
       expect(assembly.find('.phone').value).to.equal('123123123')

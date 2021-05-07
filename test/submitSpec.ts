@@ -1,6 +1,6 @@
 import {DomAssembly} from './assemblies/DomAssembly'
 import {expect} from 'chai'
-import {Query} from '../lib/Query'
+import {Query, Button} from '../lib/Query'
 
 describe('submit', function () {
   let assembly
@@ -72,7 +72,7 @@ describe('submit', function () {
           <input type="submit" value="ok"></input>
         </form>
       `,
-      () => browser.clickButton('ok')
+      () => browser.click(Button('ok'))
     )
   })
 
@@ -94,7 +94,7 @@ describe('submit', function () {
             <input type="reset" value="ok"></input>
           </form>
         `,
-        () => browser.clickButton('ok')
+        () => browser.click(Button('ok'))
       )
     })
   })
