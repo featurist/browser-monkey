@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { DomAssembly } from './assemblies/DomAssembly'
-import {Query, createMatcher} from '../lib/Query'
+import {Query, createFinder} from '../lib/Query'
 
 describe('define', function () {
   let assembly
@@ -17,14 +17,14 @@ describe('define', function () {
 
   it('can define a field', () => {
     assembly.insertHtml('<div class=hello>bye</div>')
-    const Hello = createMatcher(q => q.find('.hello'))
+    const Hello = createFinder(q => q.find('.hello'))
 
     expect(query.find(Hello).result()).to.eql(assembly.findAll('.hello'))
   })
 
   it('can define', () => {
     assembly.insertHtml('<div class=hello>bye</div>')
-    const Hello = createMatcher('.hello')
+    const Hello = createFinder('.hello')
 
     expect(query.find(Hello).result()).to.eql(assembly.findAll('.hello'))
   })
@@ -34,7 +34,7 @@ describe('define', function () {
       <div class="flash-success">Success!</div>
       <div class="flash-alert">Fail!</div>
     `)
-    const Flash = createMatcher((q, flashType) => q.find(`.flash-${flashType}`))
+    const Flash = createFinder((q, flashType) => q.find(`.flash-${flashType}`))
 
     const a = 'success'
 

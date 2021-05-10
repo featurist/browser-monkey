@@ -21,18 +21,18 @@ import range from 'lowscore/range'
 import flatten from 'lowscore/flatten'
 import {match} from './match'
 import {
-  Matcher,
-  matcherFinder,
-  createMatcher,
-  parseMatcher
-} from './Matcher'
+  Finder,
+  callFinder,
+  createFinder,
+  parseFinder
+} from './Finder'
 import { Button } from './Button'
 import { Field } from './Field'
 import { Css } from './Css'
 
-export { MultiMatcher } from './MultiMatcher'
+export { MultiFinder } from './MultiFinder'
 
-export { Button, Field, createMatcher, Css }
+export { Button, Field, createFinder, Css }
 
 type Transform = (elements: Array<HTMLElement>, executedTransforms: ExecutedTransform[]) => any
 type Action = (elements: Array<HTMLElement>, executedTransforms: ExecutedTransform[]) => void
@@ -51,7 +51,7 @@ type Match = {
 
 type LiteralModel = string | RegExp | boolean
 type FunctionModel = (query: Query) => void
-type Model = LiteralModel | FunctionModel | { [key: string]: Model } | Model[]
+export type Model = LiteralModel | FunctionModel | { [key: string]: Model } | Model[]
 
 interface Definitions {
   inputs: InputDefinition[]
@@ -859,14 +859,14 @@ export class Query implements Promise<any> {
     return findElements
   }
 
-  public find (selector: string | Matcher): Query {
+  public find (selector: string | Finder): Query {
     const selectorString = selector.toString()
 
-    const matcherInvocation = parseMatcher(selectorString)
+    const finderInvocation = parseFinder(selectorString)
 
-    if (matcherInvocation) {
-      const {matcher, args = []} = matcherInvocation
-      return matcher[matcherFinder](this, ...args)
+    if (finderInvocation) {
+      const {finder, args = []} = finderInvocation
+      return callFinder(finder, this, ...args)
     } else {
       return this.findCss(selectorString)
     }

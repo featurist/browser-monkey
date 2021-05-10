@@ -1,8 +1,8 @@
 import { Query } from './Query'
-import { createMultiMatcher } from './MultiMatcher'
+import { createMultiFinder } from './MultiFinder'
 import * as fieldDefinitions from './fieldDefinitions'
 
-export const Field = createMultiMatcher([
+export const Field = createMultiFinder([
   fieldDefinitions.label((query: Query) => query.inputSelector()),
   fieldDefinitions.labelFor,
   fieldDefinitions.ariaLabel,

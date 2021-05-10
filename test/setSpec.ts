@@ -1,7 +1,7 @@
 import {DomAssembly} from './assemblies/DomAssembly'
 import Dom from '../lib/Dom'
 import {expect} from 'chai'
-import {Query, createMatcher} from '../lib/Query'
+import {Query, createFinder} from '../lib/Query'
 
 describe('set', function () {
   let assembly
@@ -364,8 +364,8 @@ describe('set', function () {
         </form>
       `)
 
-      const phone = createMatcher('.phone')
-      const firstName = createMatcher('.first-name')
+      const phone = createFinder('.phone')
+      const firstName = createFinder('.first-name')
 
       await browser.set({
         [phone]: '123123123',
@@ -384,7 +384,7 @@ describe('set', function () {
         </form>
       `)
 
-      const form = createMatcher((b, name) => b.find('* [name=' + JSON.stringify(name) + ']'))
+      const form = createFinder((b, name) => b.find('* [name=' + JSON.stringify(name) + ']'))
 
       await browser.set({
         [form("phone")]: '123123123',

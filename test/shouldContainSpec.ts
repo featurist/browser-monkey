@@ -1,7 +1,7 @@
 import {DomAssembly} from './assemblies/DomAssembly'
 import BrowserMonkeyAssertionError from '../lib/BrowserMonkeyAssertionError'
 import {elementAttributes} from '../lib/matchers'
-import {Query, createMatcher} from '../lib/Query'
+import {Query, createFinder} from '../lib/Query'
 import Dom from '../lib/Dom'
 
 describe('shouldContain', function () {
@@ -595,7 +595,7 @@ describe('shouldContain', function () {
         </div>
       `)
 
-      const Header = createMatcher(q => q.find('h1'))
+      const Header = createFinder(q => q.find('h1'))
 
       await browser.shouldContain({
         [Header]: 'Title',
@@ -611,7 +611,7 @@ describe('shouldContain', function () {
         </div>
       `)
 
-      const Header = createMatcher('h1')
+      const Header = createFinder('h1')
 
       await browser.shouldContain({
         [Header]: 'Title',
@@ -631,7 +631,7 @@ describe('shouldContain', function () {
         </section>
       `)
 
-      const Section = createMatcher((query, value) => {
+      const Section = createFinder((query, value) => {
         return query.find('section').containing({h1: value})
       })
 

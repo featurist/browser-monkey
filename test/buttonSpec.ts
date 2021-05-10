@@ -1,11 +1,11 @@
 import {DomAssembly} from './assemblies/DomAssembly'
 import {expect} from 'chai'
-import {Query, Button as OriginalButton, MultiMatcher} from '../lib/Query'
+import {Query, Button as OriginalButton, MultiFinder} from '../lib/Query'
 
 describe('buttons', function () {
   let assembly
   let browser: Query
-  let Button: MultiMatcher
+  let Button: MultiFinder
 
   beforeEach(function () {
     assembly = new DomAssembly()
