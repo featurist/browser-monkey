@@ -1,6 +1,6 @@
 // Uncomment when running project locally
 // import 'regenerator-runtime/runtime'
-import { Mount, Query } from "browser-monkey"
+import { Mount, Query, Field, Button } from "browser-monkey"
 import hyperdom from "hyperdom"
 import App from "../src/app"
 
@@ -27,12 +27,12 @@ describe("Browser-monkey", function () {
 
   it("fills an input", async function () {
     await page.set({
-      'Field("Name a beer")': "punk ipa"
+      [Field("Name a beer")]: "punk ipa"
     })
   })
 
   it("clicks a button", async function () {
-    await page.clickButton("Get It")
+    await page.find(Button("Get It")).click()
   })
 
   it("finds text, eventually rendered by an ajax call", async function () {
@@ -42,6 +42,5 @@ describe("Browser-monkey", function () {
   })
 })
 
-// This is a codesandbox specific hack - don't copy this line
 // eslint-disable-next-line
 mocha.run()
