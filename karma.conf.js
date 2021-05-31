@@ -79,7 +79,7 @@ module.exports = function(config) {
       accessKey: process.env.BROWSERSTACK_PASSWORD
     },
 
-    customLaunchers: browsers,
+    customLaunchers: browserstackBrowsers,
     browserNoActivityTimeout: 120000,
     browserDisconnectTimeout: 120000,
     browserDisconnectTolerance: 3,
