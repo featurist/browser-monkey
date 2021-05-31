@@ -31,6 +31,18 @@ describe('set', function () {
       expect(assembly.find('.address').value).to.equal('7 Lola St')
     })
 
+    it('can set text fields without explicit type', async () => {
+      assembly.insertHtml(`
+        <input class="address"/>
+      `)
+
+      await browser.set({
+        '.address': '7 Lola St',
+      })
+
+      expect(assembly.find('.address').value).to.equal('7 Lola St')
+    })
+
     it('can set select fields', async () => {
       assembly.insertHtml(`
         <select>
