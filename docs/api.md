@@ -4,11 +4,21 @@
 
 The API is made up of three concepts: queries, actions and assertions.
 
-* queries are chains of methods, such as `find(css)` and `containing(text)`, that progressively narrow the scope of elements to be searched for. Queries return new queries.
-* actions such as `clickButton()` and `enterText(text)` "execute" the query chain, waiting for the elements to be found before simulating a corresponding UI event. These return promises that resolve when the event has been dispatched. There is also `set({...})` that allows to set multiple multiple inputs at once.
-* assertions such as `shouldExist()` and `shouldContain()` also "execute" the query chain and ensure that the elements exist or contain text, classes or other properties. These return promises that resolve if queries are satisfied, or rejected otherwise (after retrying query for some time).
+* queries are chains of methods, such as `find` and `containing`, that progressively narrow the scope of elements to be searched for. Queries return new queries.
+* actions such as `click` and `enterText` "execute" the query chain, waiting for the elements to be found before simulating a corresponding UI event. These return promises that resolve when the event has been dispatched.
+* assertions such as `shouldExist` and `shouldContain` also "execute" the query chain and ensure that the elements exist or contain text, classes or other properties. These return promises that resolve if queries are satisfied, or rejected otherwise (after retrying query for some time).
 
-It is also possible to create semantic matchers (to be used in queries) with `query.addField()`.
+### Queries
+
+Queries can be of two types: those whose arguments filter elements based on their own properties (e.g. `find` or `is`), vs those whose arguments filter elements based on _contents_ of those elements (e.g. `containing`).
+
+The former accepts a selector, which is either a css string or a [custom finder](#createFinder). The latter accepts a "model" (TODO: find a better name) and that can be one of the following:
+
+* string: the exact text content
+* RegExp: a matcher for text content
+* [custom finder](#createFinder): to assert that certain elements are contained
+* an object where keys are selectors (css string or a finder) and values are one of the above or a nested object
+* an array with any of the above
 
 ## Mount
 
@@ -128,56 +138,49 @@ Returns query options.
 
 ### find
 
+Scope query by selector
+
 ```js
 const innerQuery = query.find(css)
 ```
 
-Returns a new query that matches `css`. A semantic matcher (see [`addField()`](#addField)) can also be used instead of CSS selector.
-
-### addField
-
-Defines a custom "tag" that can be used instead of css as a `find`/`set` argument. This allows you to use more semantic selectors than css. Example:
+Returns a new query that matches `css`. A custom finder (see [`createFinder()`](#createFinder)) can also be used instead of CSS selector. Example:
 
 ```js
-page.addField('Flash', q => q.find('.messages .flash'))
-await page.shouldContain({'Flach': 'Success!'})
+import { Button } from 'browser-monkey'
+
+await page.find(Button('Submit')).click()
 ```
 
-It's possible to define elements that accept parameters:
+### createFinder
+
+Defines a custom finder that can be used instead of css as an argument to `find`/`set`. Example:
 
 ```js
-page.addField('Flash', (q, flashType) => q.find(`.flash-${flashType}`))
+import { createFinder } from 'browser-monkey'
+
+const Flash = createFinder(q => q.find('.messages .flash'))
+await page.find(Flash).containing('Success!').shouldExist()
+```
+
+It's possible to create finders that accept parameters:
+
+```js
+const Flash = createFinder('Flash', (q, flashType) => q.find(`.flash-${flashType}`))
 await page.shouldContain({
-  'Flash("success")': 'Success!',
-  'Flash("alert")': /Fail/,
+  [Flash('success')]: 'Success!',
+  [Flash('alert')]: /Fail/,
 })
 ```
 
-Multiple matchers can be defined at the same time:
-
-```js
-page.addField({
-  Success: q => q.find('.flash .success'),
-  Alert: q => q.find('.flash .alert')
-})
-```
-
-Custom definitions can be used in [`set()`](#set) just as well as css:
+Custom finders can be used in [`set()`](#set) too:
 
 ```js
 page.set({
-  CustomParent: {
-    CustomChild: "new value"
+  [CustomParent]: {
+    [CustomChild]: "new value"
   }
 })
-```
-
-### removeField
-
-Removes field defined with [`addField()`](#addField).
-
-```js
-page.removeField('Flash')
 ```
 
 ### is
