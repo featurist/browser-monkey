@@ -27,7 +27,7 @@
     "httpism": "^2.6.2",
     "hyperdom": "^0.11",
     "is-node": "^1.0.2",
-    "karma": "3.1.4",
+    "karma": "6.3.16",
     "karma-browserify": "^6.0.0",
     "karma-browserstack-launcher": "https://github.com/karma-runner/karma-browserstack-launcher",
     "karma-chrome-launcher": "2.2.0",
