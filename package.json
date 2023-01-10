@@ -51,7 +51,7 @@
   "dependencies": {
     "array.prototype.find": "^2.0.3",
     "chai": "3.5.0",
-    "debug": "^2.6.3",
+    "debug": "^3.1.0",
     "detect-browser": "^1.6.2",
     "finished-promise": "0.0.2",
     "global": "^4.3.1",
